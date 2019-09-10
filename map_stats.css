@@ -1,0 +1,260 @@
+/*Haut de page*/
+
+/*Pied de page*/
+
+/*Menu*/
+
+/*Informations complémentaires*/
+
+/*Carte*/
+#mapid
+{
+	height: 550;
+	width: 100%;
+	z-index: 0;
+	margin-left: 20;
+	margin-right: -20;
+}
+
+/*Boutton de changement de visualisation de la carte*/
+#mapchoix
+{
+	position: fixed;
+	top: 220;
+	left: 28%;
+	width: 60;
+	z-index: 1;
+}
+
+#lausanne_logo
+{
+	margin-top:15;
+	margin-left:30;
+	height: 150;
+}
+
+#epfl_logo
+{
+	height : 150;
+}
+
+#menu
+{
+	position: fixed;
+	top: 205;
+	left: 1%;
+	width: 21%;
+	height: 530;
+	border: 1px solid black;
+	padding: 10;
+	overflow: auto;
+}
+
+#contact
+ {
+	font-size: 30;
+	margin-left: 50;
+	margin-top: 40;
+ }
+ 
+ #infos
+{
+	position: fixed;
+	top: 205;
+	left: 75%;
+	height: 530;
+	width:22%;
+	padding: 10;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+#perso
+{
+	position: fixed;
+	top: 205;
+	left: 1%;
+	height: 530;
+	width:71%;
+	padding: 10;
+	border: 1px solid black;
+	background-color: grey;
+	overflow: auto;
+	z-index = 2;
+}
+
+/*Boutton pour fermer la page de données personnelles, en haut à droite de celle-ci*/
+#quit
+{
+	position: fixed;
+	top: 220;
+	left: 70%;
+	width: 2%;
+	background-color: white;
+	z-index = 3;
+}
+
+.lien
+{
+	text-decoration: underline;
+	color: blue;
+}
+
+
+a
+{
+	text-decoration: none;
+	color: black;
+}
+
+header
+{
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 175;
+	width: 100%;
+	border: solid black;
+	display: flex;
+    flex-direction: row;
+}
+
+nav
+{
+	position: fixed;
+	top: 110;
+	left: 380;
+	height: 75;
+	width: 80%;
+    text-align: center;
+}
+
+section
+{
+	position: fixed;
+	top: 205;
+	left: 24%;
+	height: 500;
+	width:52%;
+	display: flex;
+    flex-direction: row;
+}
+
+footer
+{
+	position: fixed;
+	top: 780;
+	left: 0;
+	height: 170;
+	width: 100%;
+    border-top: solid black;
+    text-align: center;
+	padding: 10;
+	display: flex;
+    flex-direction: row;
+}
+
+aside
+{
+	margin: 10;
+	padding: 5;
+	padding-left: 0;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+
+
+h3
+{
+	font-size: 30;
+	font-weight: bold;
+	font-family: "Georgia";
+	text-align: center;
+	margin-top: 10;
+	margin-bottom: 35;
+}
+
+h4
+{
+	font-size: 25;
+	font-weight: bold;
+	margin-bottom: 20;
+}
+
+strong
+{
+	font-size: 18;
+	font-weight: bold;
+	margin-left: 10;
+}
+
+span
+{
+	padding: 3;
+	background-color: white;
+}
+
+label
+{
+	font-size: 22;
+	font-weight: bold;
+	margin-left: 15;
+}
+
+input
+{
+	font-size: 18;
+	margin-bottom: 10;
+}
+
+select
+{
+	font-size: 18;
+	margin-bottom: 10;
+	padding: 3;
+}
+
+button
+{
+	font-size: 30;
+	font-weight: bold;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 35;
+}
+
+
+/*Menu de navigation*/
+ul /*crée une liste sans puces*/
+{
+	list-style-type:none;
+}
+ul li a /*éléments de la liste*/
+{
+	font-size: 30;
+	display:block;
+	float:right;   
+	width:17%;
+	background-color:red;
+	color:black;
+	text-decoration:none;
+	text-align:center;
+	margin-right: 2%;
+	padding:2;
+	border: 2px solid black;
+ }
+ul li a:hover /*comportement des éléments au survol de la souris*/
+{
+	color: red;
+	background-color: blue;
+	border-color: black;
+ }
+ 
+ h1
+ {
+	font-size: 80;
+	margin-left: 300;
+	margin-top: 10;
+ }
