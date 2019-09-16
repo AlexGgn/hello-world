@@ -1,111 +1,28 @@
-/*Haut de page*/
+/*Texte*/
 
-/*Pied de page*/
-
-/*Menu*/
-
-/*Informations complémentaires*/
-
-/*Carte*/
-#mapid
-{
-	height: 550;
-	width: 100%;
-	z-index: 0;
-	margin-left: 20;
-	margin-right: -20;
-}
-
-/*Boutton de changement de visualisation de la carte*/
-#mapchoix
-{
-	position: fixed;
-	top: 220;
-	left: 28%;
-	width: 60;
-	z-index: 1;
-}
-
-#lausanne_logo
-{
-	margin-top:15;
-	margin-left:30;
-	height: 150;
-}
-
-#epfl_logo
-{
-	height : 150;
-}
-
-#menu
-{
-	position: fixed;
-	top: 205;
-	left: 1%;
-	width: 21%;
-	height: 530;
-	border: 1px solid black;
-	padding: 10;
-	overflow: auto;
-}
-
-#contact
- {
-	font-size: 30;
-	margin-left: 50;
-	margin-top: 40;
- }
- 
- #infos
-{
-	position: fixed;
-	top: 205;
-	left: 75%;
-	height: 530;
-	width:22%;
-	padding: 10;
-	border: 1px solid black;
-	overflow: auto;
-}
-
-#perso
-{
-	position: fixed;
-	top: 205;
-	left: 1%;
-	height: 530;
-	width:71%;
-	padding: 10;
-	border: 1px solid black;
-	background-color: grey;
-	overflow: auto;
-	z-index = 2;
-}
-
-/*Boutton pour fermer la page de données personnelles, en haut à droite de celle-ci*/
-#quit
-{
-	position: fixed;
-	top: 220;
-	left: 70%;
-	width: 2%;
-	background-color: white;
-	z-index = 3;
-}
-
-.lien
-{
-	text-decoration: underline;
-	color: blue;
-}
-
-
-a
+a /*lien hypertexte*/
 {
 	text-decoration: none;
 	color: black;
 }
+
+strong /*texte mis en valeur*/
+{
+	font-size: 18;
+	font-weight: bold;
+	margin-left: 10;
+}
+
+span /*texte normale*/
+{
+	padding: 3;
+	background-color: white;
+}
+
+
+
+
+/*Haut de page*/
 
 header
 {
@@ -119,26 +36,24 @@ header
     flex-direction: row;
 }
 
-nav
+h1 /*titre du site web*/
 {
-	position: fixed;
-	top: 110;
-	left: 380;
-	height: 75;
-	width: 80%;
-    text-align: center;
+	font-size: 80;
+	margin-left: 300;
+	margin-top: 10;
 }
 
-section
+#lausanne_logo /*logo de la ville de Lausanne*/
 {
-	position: fixed;
-	top: 205;
-	left: 24%;
-	height: 500;
-	width:52%;
-	display: flex;
-    flex-direction: row;
+	margin-top:15;
+	margin-left:30;
+	height: 150;
 }
+
+
+
+
+/*Pied de page*/
 
 footer
 {
@@ -154,83 +69,44 @@ footer
     flex-direction: row;
 }
 
-aside
+#epfl_logo /*logo de l'EPFL*/
 {
-	margin: 10;
-	padding: 5;
-	padding-left: 0;
-	border: 1px solid black;
-	overflow: auto;
+	height : 150;
 }
 
-
-
-h3
+#contact /*nom du lien pour contacter l'EPFL*/
 {
 	font-size: 30;
-	font-weight: bold;
-	font-family: "Georgia";
-	text-align: center;
-	margin-top: 10;
-	margin-bottom: 35;
+	margin-left: 50;
+	margin-top: 40;
 }
 
-h4
+.lien /*lien renvoyant vers envoi de mail à EPFL*/
 {
-	font-size: 25;
-	font-weight: bold;
-	margin-bottom: 20;
+	text-decoration: underline;
+	color: blue;
 }
 
-strong
-{
-	font-size: 18;
-	font-weight: bold;
-	margin-left: 10;
-}
 
-span
-{
-	padding: 3;
-	background-color: white;
-}
-
-label
-{
-	font-size: 22;
-	font-weight: bold;
-	margin-left: 15;
-}
-
-input
-{
-	font-size: 18;
-	margin-bottom: 10;
-}
-
-select
-{
-	font-size: 18;
-	margin-bottom: 10;
-	padding: 3;
-}
-
-button
-{
-	font-size: 30;
-	font-weight: bold;
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 35;
-}
 
 
 /*Menu de navigation*/
+
+nav
+{
+	position: fixed;
+	top: 110;
+	left: 380;
+	height: 75;
+	width: 80%;
+    text-align: center;
+}
+
 ul /*crée une liste sans puces*/
 {
 	list-style-type:none;
 }
+
 ul li a /*éléments de la liste*/
 {
 	font-size: 30;
@@ -244,17 +120,222 @@ ul li a /*éléments de la liste*/
 	margin-right: 2%;
 	padding:2;
 	border: 2px solid black;
- }
+}
+
 ul li a:hover /*comportement des éléments au survol de la souris*/
 {
 	color: red;
 	background-color: blue;
 	border-color: black;
- }
- 
- h1
- {
-	font-size: 80;
-	margin-left: 300;
+}
+
+
+
+
+/*Choix des stats à afficher*/
+
+#menu
+{
+	position: fixed;
+	top: 205;
+	left: 1%;
+	width: 21%;
+	height: 530;
+	border: 1px solid black;
+	padding: 10;
+	overflow: auto;
+}
+
+h2
+{
+	font-size: 30;
+	font-weight: bold;
+	text-align: center;
 	margin-top: 10;
- }
+	margin-bottom: 30;
+}
+
+
+
+
+/*Carte*/
+
+section
+{
+	position: fixed;
+	top: 205;
+	left: 24%;
+	height: 500;
+	width:52%;
+	display: flex;
+    flex-direction: row;
+}
+
+#mapid /*carte affichée*/
+{
+	height: 550;
+	width: 100%;
+	z-index: 0;
+	margin-left: 20;
+	margin-right: -20;
+}
+
+#mapchoix /*bouton de changement de visualisation de la carte*/
+{
+	position: fixed;
+	top: 220;
+	left: 28%;
+	width: 60;
+	z-index: 1;
+}
+
+
+
+
+/*Informations complémentaires*/
+
+#infos
+{
+	position: fixed;
+	top: 205;
+	left: 75%;
+	height: 530;
+	width:22%;
+	padding: 10;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+h3 /*titre de la fenêtre d'informations*/
+{
+	font-size: 30;
+	font-weight: bold;
+	font-family: "Georgia";
+	text-align: center;
+	margin-top: 10;
+	margin-bottom: 35;
+}
+
+
+/*Recherche d'adresse*/
+
+label /*nom de l'attribut à sélectionner/renseigner*/
+{
+	font-size: 22;
+	font-weight: bold;
+	margin-left: 15;
+}
+
+select /*sélection de la ville*/
+{
+	font-size: 18;
+	margin-bottom: 10;
+	padding: 3;
+}
+
+input /*attribut renseigné*/
+{
+	font-size: 18;
+	margin-bottom: 10;
+}
+
+button /*bouton de validation de la recherche*/
+{
+	font-size: 30;
+	font-weight: bold;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 35;
+}
+
+
+/*Adresse sélectionnée*/
+
+h4 /*sous-titres de la fenêtre d'information*/
+{
+	font-size: 25;
+	font-weight: bold;
+	margin-bottom: 20;
+}
+
+aside /*coordonnées d'une personne logée à l'adresse*/
+{
+	margin: 10;
+	padding: 5;
+	padding-left: 0;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+
+
+
+/*Fenêtre données personnelles*/
+
+#perso
+{
+	position: fixed;
+	top: 205;
+	left: 1%;
+	height: 530;
+	width:71%;
+	padding: 10;
+	border: 1px solid black;
+	background-color: grey;
+	overflow: auto;
+	z-index = 2;
+}
+
+#quit /*bouton pour fermer la fenêtre*/
+{
+	position: fixed;
+	top: 220;
+	left: 70%;
+	width: 2%;
+	background-color: white;
+	z-index = 3;
+}
+
+
+
+
+/*Légende des cartes raster de données statistiques*/
+
+#legende
+{
+	position: fixed;
+	top: 215;
+	left: 61%;
+	width: 10%;
+	padding: 10;
+	border: 1px solid black;
+	background-color: white;
+	overflow: auto;
+	z-index = 1 ;
+}
+
+h5 /*titre de la légende*/
+{
+	margin-top: 5;
+	margin-bottom: 10;
+	font-size: 18;
+	font-weight: bold;
+	text-align: center;
+}
+
+.ligne /*ligne comprenant couleur + valeurs associées à cette couleur*/
+{
+	padding:5;
+	display: flex;
+    flex-direction: row;
+	margin-left: 20%;
+}
+
+.couleur /*carré de couleur*/
+{
+	width:10%;
+	padding:3;
+	margin: 3;
+	border: 1px solid black;
+}
