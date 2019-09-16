@@ -7,6 +7,9 @@
         <title>Cartes statistiques</title>
     </head>
 	
+	
+	
+	
     <body>
 		
 		<!-- Haut de page -->
@@ -15,6 +18,7 @@
 			<h1>Cartographie statistiques</h1>
 		</header>
 
+
 		<!-- Pied de page -->
 		<footer>
 			<a href="https://www.epfl.ch/fr/" target="_blank"><img id="epfl_logo" src="epfl_logo.jpg" alt="Logo de l'EPFL" /></a> <!-- renvoie vers la page de l'EPFL si clic -->
@@ -22,7 +26,8 @@
             <a class="lien" href="mailto:alexandre.guegan@epfl.ch">Nous contacter !</a></p> <!-- renvoie vers page envoie mail si clic -->
 		</footer>
 
-		<!-- Menu -->
+
+		<!-- Menu de navigation -->
 		<nav>
 			<ul>
                 <li><a href="#">Item 5</a></li>
@@ -33,13 +38,18 @@
             </ul>
 		</nav>
 		
+		
 		<!-- Choix des stats à afficher -->
 		<div id="menu">
             <h2>Menu</h2>
-			<p>ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss sssssssssssss sssssssssssssssssss sssssssssssssssssssssss ssssssssssssssssssss</p>
+			<p><a href="#" onclick="stats_adresses(); return false;">Adresses</a></p>
+			<p><a href="#" onclick="stats_lettres(); return false;">Nombre de lettres</a></p>
+			<p><a href="#" onclick="stats_nombre(); return false;">Nombre d'adresses</a></p>
+			<p><a href="#">Autres stats</a></p>
 		</div>
 			
-		<!-- Corps principal de la page -->
+			
+		<!-- Carte -->
 		<section>
 		
 			<!-- Création de la carte -->
@@ -51,6 +61,7 @@
 			</figure>
 		
 		</section>
+			
 			
 		<!-- Informations complémentaires -->
 		<div id="infos">
@@ -71,8 +82,10 @@
 				<label>N° : </label>
 				<input type="text" name="numero" id="numero" placeholder="Ex: 8b" size="10" />
 			</p>
-			<button type="button" name="button" id="button" onclick="rechercherAdresse();return false;">Rechercher</button>
+			<button type="button" name="button" id="button" onclick="rechercherAttributs();return false;">Rechercher</button>
 		</div>
+		
+		
 		
 		
 		<!-- Mise en page de la carte -->
@@ -81,8 +94,14 @@
 		
 		<!-- contenu Javascript -->
 		<script type="text/javascript">
-            
-			// initialisation de la map
+
+
+// Actions réalisées automatiquement lors de l'ouverture de la page
+ 
+ 
+		// Initialisation de la carte
+		
+		
 			var mymap = L.map('mapid');
 			
 			//récupération de la cartographie
@@ -94,62 +113,20 @@
 				accessToken: 'pk.eyJ1IjoiYWxleGdnbiIsImEiOiJjanp3Znhza3YweWNzM2d1dGJpdTdwN295In0.ClcjKK7G2XM3NvUrWKx_OA'
 			}).addTo(mymap);
 			
-			// création du LayerGroup (marqueurs de la carte)
+			
+			// création du LayerGroup "affichage stats"
+			mapStats = new L.LayerGroup();
+			mymap.addLayer(mapStats);
+			
+			// création du LayerGroup "marqueurs de la carte"
 			mapMarkers = new L.LayerGroup();
 			mymap.addLayer(mapMarkers);
 			
-			/*
-			// marqueur sur l'EPFL
-			var marker = L.marker([46.520, 6.566]).addTo(mymap);
+		
+		
+		
+		// Ouverture de l'accès à la base de données (BDD) des adresses
 			
-			// cercle sur Rolex Learning Center
-			var circle = L.circle([46.518, 6.568], {
-				color: 'red',
-				fillColor: 'red',
-				fillOpacity: 0.5,
-				radius: 100
-			}).addTo(mymap);
-			
-			//rectangle autour de l'EPFL
-			var polygon = L.polygon([
-				[46.516, 6.560],
-				[46.522, 6.563],
-				[46.522, 6.572],
-				[46.518, 6.572]
-			]).addTo(mymap);
-			
-			// popups sur objet
-			marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup(); //popup ouverte initialement
-			circle.bindPopup("I am a circle.");
-			polygon.bindPopup("I am a polygon.");
-			
-			*/
-			
-			// change le mode d'affichage de la map lorsqu'on appuie sur l'image mapchoix
-			var typeMap=0;
-			function changeMap() {
-				if (typeMap==0) {
-					L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-						attribution: 'données © <a href="//osm.org/copyright">OpenStreetMap</a>/ODbL - rendu <a href="//openstreetmap.fr">OSM France</a>',
-						minZoom: 10,
-						maxZoom: 20
-					}).addTo(mymap);
-					typeMap=1;
-				}
-				else {
-					L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-						minZoom: 10,
-						maxZoom: 20,
-						id: 'mapbox.streets',
-						accessToken: 'pk.eyJ1IjoiYWxleGdnbiIsImEiOiJjanp3Znhza3YweWNzM2d1dGJpdTdwN295In0.ClcjKK7G2XM3NvUrWKx_OA'
-					}).addTo(mymap);
-					typeMap=0;
-				}
-			}
-			
-			
-			// récupère coordonnées adresses lausanne
 			
 			var requestURL = 'https://raw.githubusercontent.com/AlexGgn/hello-world/master/lausanne.json';
 			var request = new XMLHttpRequest();
@@ -161,39 +138,25 @@
 				adresses(villes);
 			}
 			
+
+			// fonction exécutée au démarrage de la page pour afficher l'ensemble des adresses de la BDD
 			function adresses(jsonObj) {
-				var cities = jsonObj['villes'];
-				/*
-				// récupère coordonnées limites
-				var lat_min = cities[0].field_13;
-				var lon_min = cities[0].field_14;
-				var lat_max = cities[0].field_15;
-				var lon_max = cities[0].field_16;
-				var c1 = L.latLng(lat_min, lon_min);
-				var c2 = L.latLng(lat_max, lon_max);
 				
-				// ajuste le zoom aux coordonnées limites
-				mymap.fitBounds(L.latLngBounds(c1, c2));
-				setTimeout(function() {mymap.setZoom(map.getZoom());}, 500);
-				*/
-				mymap.setView([cities[0].field_7, cities[0].field_8], 20);
+				var cities = jsonObj['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
 				
-				// crée cercle pour chaque logement
-				for (var i = 0; i < cities.length; i++) {
-					var latitude = cities[i].field_7;
-					var longitude = cities[i].field_8;
-					var circle = L.circle([latitude, longitude], {
-						color: 'red',
-						fillColor: 'red',
-						fillOpacity: 0.5,
-						radius: 1,
-						attribution: 18
-					}).addTo(mymap);
-				}
+				creerCercles(cities, 0, ad-1); // affiche l'ensemble des adresses sur la carte
+				ajusterCarte(cities, 0, ad-1); // ajuste le zoom de la carte à l'ensemble des adresses
 			}
 			
 			
-			// récupère les villes de la BDD
+			var adress = 0; // variable représentant l'adresse ouverte
+			
+			
+			
+			
+		// Récupère les villes de la BDD
+			
 			
 			class Ville {
 				constructor(id, nom, debut, fin) {
@@ -204,11 +167,12 @@
 				}
 			}
 			
+			
 			var villes = []; // liste des villes dans la BDD
 			setTimeout(recupVilles, 1000); // on doit mettre un délai (1s) avant d'exéduter la fonction, car le "request.response['villes']" ne fonctionne pas dans le main();
 			
 			
-			// fonction qui ajoute une nouvelle adresse à la liste villes[]
+			// fonction qui ajoute une nouvelle ville à la liste villes[]
 			function ajouterVille(id, nom, debut, fin) {
 				var ville = new Ville(id, nom, debut, fin);
 				villes.push(ville);
@@ -260,11 +224,102 @@
 			
 			
 			
-			var adress = 0; // variable représentant l'adresse ouverte
+		// Récupère les NPA de la BDD
 			
 			
+			class Npa {
+				constructor(npa, debut, fin) {
+					this.npa = npa; // npa
+					this.debut = debut; // indice de début du npa dans la BDD
+					this.fin = fin; // indice de fin du npa dans la BDD
+				}
+			}
+			
+			
+			var npas = []; // liste des npa dans la BDD
+			setTimeout(recupNpas, 3000); // on doit mettre un délai (3s) avant d'exéduter la fonction, car le "request.response['villes']" ne fonctionne pas dans le main();
+			
+			
+			// fonction qui ajoute un nouveau npa à la liste npas[]
+			function ajouterNpa(npa, debut, fin) {
+				var new_npa = new Npa(npa, debut, fin);
+				npas.push(new_npa);
+			}
+			
+
+			// fonction qui rempli la liste npas[]
+			function recupNpas() {
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
+			
+				var inpa = cities[0].field_2; // i-ème npa
+				var idebut = 0; // indice de début du i-ème npa
+				
+				for (var k=0; k<ad; k++) {
+					var npa = cities[k].field_2; // npa de la k-ième adresse de la BDD
+					// si le npa change, on ajoute un nouveau npa, qui va jusqu'à la (k-1)-ème adresse de la BDD (dû à l'ordre de la liste par ville puis npa)
+					if (npa != inpa) {
+						ajouterNpa(inpa,idebut,k-1);
+						inpa = npa;
+						idebut = k;
+					}
+				}
+				// on ajoute le dernière npa, qui va jusqu'à la dernière adresse de la BDD
+				ajouterNpa(inpa,idebut,ad-1);
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+// Fonctions réalisées lors d'une action de l'utilisateur sur la carte
+			
+		
+		// Clic sur le bouton de changement de visualisation
+			
+			
+			var typeMap=0;
+			
+			
+			// fonction qui change le mode d'affichage de la map lorsqu'on appuie sur l'image mapchoix
+			function changeMap() {
+				
+				// vue détaillée
+				if (typeMap==0) {
+					L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+						attribution: 'données © <a href="//osm.org/copyright">OpenStreetMap</a>/ODbL - rendu <a href="//openstreetmap.fr">OSM France</a>',
+						minZoom: 10,
+						maxZoom: 20
+					}).addTo(mymap);
+					typeMap=1;
+				}
+				
+				// vue standard
+				else {
+					L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+						minZoom: 10,
+						maxZoom: 20,
+						id: 'mapbox.streets',
+						accessToken: 'pk.eyJ1IjoiYWxleGdnbiIsImEiOiJjanp3Znhza3YweWNzM2d1dGJpdTdwN295In0.ClcjKK7G2XM3NvUrWKx_OA'
+					}).addTo(mymap);
+					typeMap=0;
+				}
+			}
+			
+			
+			
+			
+		// Clic sur la carte
+		
+		
 			// exécute la fonction onMapClick lorsqu'on clique sur la carte (hors des objets)
 			mymap.on('click', onMapClick);
+			
 			
 			// fonction qui affiche les informations sur l'adresse et ses habitants si clic sur une adresse, et affiche une fenêtre de recherche d'adresse sinon
 			function onMapClick(event) {
@@ -287,9 +342,7 @@
 					
 					// si clic sur le cercle d'une adresse
 					if (mousePoint.distanceTo(circlePoint) < 1) {
-						
 						afficherAdresse(i, latitude, longitude); // exécute la fonction pour afficher l'adresse et les informations de ses habitants
-						
 						test = 1; // une seule adresse peut correspondre au clic de la souris (gain de temps de calcul)
 					}
 					
@@ -297,83 +350,121 @@
 				}
 				
 				// si clic sur aucun cercle associé aux adresses
-				if (test == 0) {
+				if (test == 0) afficherRecherche(); // exécute la fonction pour afficher la fenêtre de recherche d'adresse
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+// Fonctions internes
+			
+			
+		// Affichage des adresses sur la carte
+		
+			
+			// fonction qui affiche, comme initialement, l'ensemble des adresses  et aucun polygône, avec ou sans modification du zoom
+			function affichageInitial(carte) {
+				
+				mapStats.clearLayers(); // enlève les éléments actuels de l'affichage de la carte
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
+				
+				creerCercles(cities, 0, ad-1); // affiche l'ensemble des adresses
+				
+				if (carte == 1) ajusterCarte(cities, 0, ad-1); // ajuste le zoom à l'ensemble des adresses, si souhaité
+			}
+			
+			
+			// fonction qui crée un cercle représentant chaque adresse de l'intervalle de recherche
+			function creerCercles(adresses, debut, fin) {
+				
+				mapStats.clearLayers(); // enlève les éléments actuels de l'affichage de la carte
+				
+				var latitude = 0;
+				var longitude = 0;
 					
-					// remplace le contenu de la case "infos" par la fenêtre de recherche d'adresse
-					var infos = document.getElementById('infos');
-					infos.innerHTML = ""; // vide le contenu de la case "infos"
-					var myInfos = document.createElement('h3');
-					myInfos.textContent = 'Rechercher une adresse';
-					infos.appendChild(myInfos);
-						
-					// créer la liste déroulante des ville
-					var myPara1 = document.createElement('p');
-					var Localite = document.createElement('label');
-					Localite.textContent = 'Localité : ';
-					myPara1.appendChild(Localite);
-					var myLocalite = document.createElement('select');
-					myLocalite.setAttribute("name","localite");
-					myLocalite.setAttribute("id","localite");
-					myPara1.appendChild(myLocalite);
-					infos.appendChild(myPara1);
-					afficherVilles();
-						
-					// saisir le NPA
-					var myPara2 = document.createElement('p');
-					var Npa = document.createElement('label');
-					Npa.textContent = 'NPA : ';
-					myPara2.appendChild(Npa);
-					var myNpa = document.createElement('input');
-					myNpa.setAttribute("type","number");
-					myNpa.setAttribute("name","npa");
-					myNpa.setAttribute("id","npa");
-					myNpa.setAttribute("placeholder","Ex: 1003");
-					myNpa.setAttribute("size","10");
-					myPara2.appendChild(myNpa);
-					infos.appendChild(myPara2);
-					
-					// saisir le nom de la rue
-					var myPara3 = document.createElement('p');
-					var Rue = document.createElement('label');
-					Rue.textContent = 'Rue : ';
-					myPara3.appendChild(Rue);
-					var myRue = document.createElement('input');
-					myRue.setAttribute("type","text");
-					myRue.setAttribute("name","rue");
-					myRue.setAttribute("id","rue");
-					myRue.setAttribute("placeholder","Ex: Rue du Grand-Chêne");
-					myRue.setAttribute("size","30");
-					myPara3.appendChild(myRue);
-					infos.appendChild(myPara3);
-					
-					// saisir le numéro de rue
-					var myPara4 = document.createElement('p');
-					var Numero = document.createElement('label');
-					Numero.textContent = 'N° : ';
-					myPara4.appendChild(Numero);
-					var myNumero = document.createElement('input');
-					myNumero.setAttribute("type","text");
-					myNumero.setAttribute("name","numero");
-					myNumero.setAttribute("id","numero");
-					myNumero.setAttribute("placeholder","Ex: 8b");
-					myNumero.setAttribute("size","10");
-					myPara4.appendChild(myNumero);
-					infos.appendChild(myPara4);
-					
-					// bouton déclenchant la fonction de recherche de l'adresse
-					var Button = document.createElement('button');
-					Button.setAttribute("type","button");
-					Button.setAttribute("name","button");
-					Button.setAttribute("id","button");
-					Button.setAttribute("onclick","rechercherAdresse(); return false;");
-					Button.textContent = "Rechercher";
-					infos.appendChild(Button);
+				for (var i=debut; i<=fin; i++) {
+					latitude = adresses[i].field_7;
+					longitude = adresses[i].field_8;
+					var circle = L.circle([latitude, longitude], {
+						color: 'red',
+						fillColor: 'red',
+						fillOpacity: 0.5,
+						radius: 1
+					}).addTo(mapStats); // ajout du cercle au LayerGroup "affichage stats"
 				}
 			}
 			
 			
-			// fonction qui zoom sur l'adresse sélectionnée, crée un marqueur dessus et affiche ses informations ainsi que celles de ses habitants
+			// fonction qui ajuste le zoom aux adresses de l'intervalle de recherche
+			function ajusterCarte(adresses, debut, fin) {
+				
+				// récupère coordonnées limites
+				var latitudes = [];
+				var longitudes = [];
+				for (var i=debut; i<=fin; i++) {
+					latitudes.push(adresses[i].field_7);
+					longitudes.push(adresses[i].field_8);
+				}
+				var lat_min = Math.min(...latitudes);
+				var lat_max = Math.max(...latitudes);
+				var lon_min = Math.min(...longitudes);
+				var lon_max = Math.max(...longitudes);
+				var c1 = L.latLng(lat_min, lon_min);
+				var c2 = L.latLng(lat_max, lon_max);
+				
+				// ajuste le zoom aux coordonnées limites
+				mymap.fitBounds(L.latLngBounds(c1, c2));
+			}
+			
+			
+			// fonction qui crée un polygône englobant les adresses de l'intervalle de recherche
+			function creerPolygone(adresses, debut, fin) {
+				
+				var poly_adresses = []; // adresses de l'intervalle de recherche
+				
+				// récupère les coordonnées limites dans l'intervalle de recherche
+				var latitudes = [];
+				var longitudes = [];
+				for (var i=debut; i<=fin; i++) {
+					latitudes.push(adresses[i].field_7);
+					longitudes.push(adresses[i].field_8);
+				}
+				var lat_min = Math.min(...latitudes);
+				var lat_max = Math.max(...latitudes);
+				var lon_min = Math.min(...longitudes);
+				var lon_max = Math.max(...longitudes);
+				
+				// crée les extrémités du polygône
+				var c1 = L.latLng(lat_min, lon_min);
+				var c2 = L.latLng(lat_max, lon_min);
+				var c3 = L.latLng(lat_max, lon_max);
+				var c4 = L.latLng(lat_min, lon_max);
+				
+				// créer un polygône à partir de ces adresses
+				var polygon = L.polygon([c1,c2,c3,c4],{
+					color: 'transparent',
+					fillColor: 'blue',
+					fillOpacity: 0.1,
+					smoothFactor: 10
+				}).addTo(mapStats);
+			}
+			
+			
+			
+		
+		// Page informations d'une adresse
+		
+		
+			// fonction qui crée un marqueur sur l'adresse sélectionnée et affiche ses informations ainsi que celles de ses habitants
 			function afficherAdresse(i, latitude, longitude) {
+				
+				affichageInitial(0); // reprend l'affichage initial (toutes les adresses et aucun polygône) sans toucher au zoom
 				
 				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
 				
@@ -582,9 +673,91 @@
 			}
 			
 			
-			// fonction qui recherche une adresse sur la carte
-			function rechercherAdresse() {
+			
+			
+		// Rechercher une adresse
+			
+			
+			// fonction qui affiche la fenêtre de recherche d'adresse
+			function afficherRecherche() {
+			
+				// remplace le contenu de la case "infos" par la fenêtre de recherche d'adresse
+				var infos = document.getElementById('infos');
+				infos.innerHTML = ""; // vide le contenu de la case "infos"
+				var myInfos = document.createElement('h3');
+				myInfos.textContent = 'Rechercher une adresse';
+				infos.appendChild(myInfos);
+					
+				// créer la liste déroulante des ville
+				var myPara1 = document.createElement('p');
+				var Localite = document.createElement('label');
+				Localite.textContent = 'Localité : ';
+				myPara1.appendChild(Localite);
+				var myLocalite = document.createElement('select');
+				myLocalite.setAttribute("name","localite");
+				myLocalite.setAttribute("id","localite");
+				myPara1.appendChild(myLocalite);
+				infos.appendChild(myPara1);
+				afficherVilles();
+					
+				// saisir le NPA
+				var myPara2 = document.createElement('p');
+				var Npa = document.createElement('label');
+				Npa.textContent = 'NPA : ';
+				myPara2.appendChild(Npa);
+				var myNpa = document.createElement('input');
+				myNpa.setAttribute("type","number");
+				myNpa.setAttribute("name","npa");
+				myNpa.setAttribute("id","npa");
+				myNpa.setAttribute("placeholder","Ex: 1003");
+				myNpa.setAttribute("size","10");
+				myPara2.appendChild(myNpa);
+				infos.appendChild(myPara2);
 				
+				// saisir le nom de la rue
+				var myPara3 = document.createElement('p');
+				var Rue = document.createElement('label');
+				Rue.textContent = 'Rue : ';
+				myPara3.appendChild(Rue);
+				var myRue = document.createElement('input');
+				myRue.setAttribute("type","text");
+				myRue.setAttribute("name","rue");
+				myRue.setAttribute("id","rue");
+				myRue.setAttribute("placeholder","Ex: Rue du Grand-Chêne");
+				myRue.setAttribute("size","30");
+				myPara3.appendChild(myRue);
+				infos.appendChild(myPara3);
+				
+				// saisir le numéro de rue
+				var myPara4 = document.createElement('p');
+				var Numero = document.createElement('label');
+				Numero.textContent = 'N° : ';
+				myPara4.appendChild(Numero);
+				var myNumero = document.createElement('input');
+				myNumero.setAttribute("type","text");
+				myNumero.setAttribute("name","numero");
+				myNumero.setAttribute("id","numero");
+				myNumero.setAttribute("placeholder","Ex: 8b");
+				myNumero.setAttribute("size","10");
+				myPara4.appendChild(myNumero);
+				infos.appendChild(myPara4);
+				
+				// bouton déclenchant la fonction de recherche à partir des attributs remplis
+				var Button = document.createElement('button');
+				Button.setAttribute("type","button");
+				Button.setAttribute("name","button");
+				Button.setAttribute("id","button");
+				Button.setAttribute("onclick","rechercherAttributs(); return false;");
+				Button.textContent = "Rechercher";
+				infos.appendChild(Button);
+			}
+		
+		
+			// fonction qui effectue une recherche d'adresses sur la carte, en fonction des attributs remplis
+			function rechercherAttributs() {
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+					
 				// récupère l'id de la ville sélectionnée, ce qui donne l'intervalle [ville.debut, ville.fin] de la recherche d'adresse en utilisant la liste villes[]
 				var localite = document.getElementById("localite").value;
 				var debut = 0; // première adresse de l'intervalle de recherche
@@ -599,50 +772,72 @@
 				// récupère les éléments rentrés dans la fenêtre de recherche, en les transformant en minuscules et en les séparant en sous-chaînes
 				var npa = document.getElementById("npa").value;
 				var rue = document.getElementById("rue").value;
-				var rue_split = rue.toLowerCase().split(/[\s-,._]+/); // séparateurs : ' ';'-';',';'.';'_'
 				var numero = document.getElementById("numero").value;
-				var numero_split = numero.toLowerCase().split(""); // tous les caractères sont séparés 1 à 1 (pour reconnaître "5a" ou "3bis" par exemple)
 				
+				var npa_rempli = 0; // test si le npa est rempli
+				var npa_valide = 0; // test si le npa rempli est valide
+				
+				// si un NPA est rentré, réduit l'intervalle de recherche
+				if (npa != "") {
+					npa_rempli = 1;
+					for (var inpa of npas) {
+						if (npa == inpa.npa) {
+							debut = inpa.debut;
+							fin = inpa.fin;
+							npa_valide = 1;
+						}
+					}
+				}
+				
+				// si la rue est remplie, exécute la fonction de recherche d'adresse dans la BDD
+				if (rue != "") {
+					rechercherAdresse(cities, debut, fin, npa, rue, numero);
+				}
+				else {
+					// si le npa est 'non rempli' ou 'rempli et valide', réalise un zoom adapté sur les adresses de la ville ou du npa sélectionné et crée un polygône qui englobe ces adresses
+					if (npa_rempli + npa_valide != 1) {
+						creerCercles(cities, debut, fin);
+						ajusterCarte(cities, debut, fin);
+						creerPolygone(cities, debut, fin);
+					}
+					// sinon, message d'erreur
+					else {
+						alert('Merci de remplir un NPA valide');
+					}
+				}
+			}
+			
+			
+			// fonction qui recherche une adresse sur la carte
+			function rechercherAdresse(adresses, debut, fin, npa, rue, numero) {
+				
+				// transforme les données remplies en minuscules et en les séparant en sous-chaînes, afin de les comparer aux données de la BDD, qui vont subir les mêmes opérations
+				var rue_split = rue.toLowerCase().split(/[\s-,._]+/); // séparateurs : ' ';'-';',';'.';'_'
+				var numero_split = numero.toLowerCase().split(""); // tous les caractères sont séparés 1 à 1 (pour reconnaître "5a" ou "3bis" par exemple)
 				
 				var ans = 0; // id de l'adresse la plus ressemblante à la recherche
 				var res = 0; // degré de ressemblance avec l'adresse la plus ressemblante à la recherche
 				var idem = 0; // pourcentage de ressemblance entre l'adresse tapée dans la barre de recherche et celle renvoyée
 				
 				var res_min = 20; // degré de ressemblance minimal avec l'adresse la plus ressemblante à la recherche pour qu'une adresse soit renvoyée (2 mots identiques pour le nom de rue)
-				var attributs = 2; // nombre d'attributs remplis et donc comparés entre l'adresse recherchée et la BDD (on part de 2 car la ville est sélectionnée et la rue doit être renseignée pour que res >= res_min)
+				var attributs = 2; // nombre d'attributs remplis et donc comparés entre l'adresse recherchée et la BDD (on part de 2 car ville et rue sont forcément sélectionnés pour que la fonction s'exécute)
 				
 				// si un npa est rempli dans la fenêtre de recherche
 				if (npa != "") {
 					attributs += 1; // on compare un attribut en plus
-					res_min += 100; // car ressemblance += 100 si npa exact
-				}
-				// si un numéro de rue est rempli dans la fenêtre de recherche
-				if (numero_split.length > 0) {
-					attributs += 1; // on compare un attribut en plus
 				}
 				
-				
-				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
 				
 				// boucle qui parcourt toutes les adresses de la BDD dans l'intervalle de recherche, pour les comparer à la recherche, en pondérant la ressemblance une fois chaque attribut spéaré et transformé en minuscule
 				//(permet par exemple de considérer comme identiques "Rue-test" et "rue test")
 				for (var i=debut; i<=fin; i++) {
 					
 					var res_temp = 0; // degré de ressemblance avec la i-ème adresse
-					var idem_temp = 1; // pourcentage de ressemblance entre la i-ème adresse et l'adresse tapée de la barre de recherche (on part de 1 car la ville est forcément identique)
-					
-					// on compare le NPA si un NPA est rentré
-					if (npa != "") {
-						var inpa = cities[i].field_2;
-						if (npa == inpa) {
-							res_temp += 100;
-							idem_temp += 1;
-						}
-					}
-					
+					var idem_temp = attributs - 1; // pourcentage de ressemblance entre la i-ème adresse et l'adresse tapée de la barre de recherche (on part de 1 car la ville est forcément identique, + 1 si un npa est rentré, car identique également)
+										
 					// on compare le nom de rue
 					var nb = 0; // nombre de mots communs
-					var irue_split = cities[i].field_3.toLowerCase().split(/[\s-,._]+/);
+					var irue_split = adresses[i].field_3.toLowerCase().split(/[\s-,._]+/);
 					for (var txt of rue_split) {
 						for (var itxt of irue_split) {
 							if (txt == itxt) {
@@ -654,10 +849,11 @@
 					idem_temp += nb / irue_split.length;
 					
 					// si un numero de rue est rentré, et si le nom de rue ressemble, on compare le numero de la rue
-					if (numero_split.length > 0) {
+					if (numero_split.length != "") {
 						if (res_temp >= res_min) {
+							attributs += 1;
 							var nb = 0; // nombre de caractères communs
-							var inumero_split = cities[i].field_4.toLowerCase().split("");
+							var inumero_split = adresses[i].field_4.toLowerCase().split("");
 							for (var txt of numero_split) {
 								for (var itxt of inumero_split) {
 									if (txt == itxt) {
@@ -683,19 +879,437 @@
 					}
 				}
 				
-				// affiche l'adresse si ville/npa/rue sont un minimum ressemblant, et affiche un message d'erreur sinon
+				
+				// affiche l'adresse si ville/npa/rue sont un minimum ressemblant
 				if (res >= res_min) {				
 					alert("Une adresse à été trouvée ! \nPourcentage de ressemblance :  " + idem + "%");
 					// zoom de la carte sur l'adresse recherchée
-					var lat_rech = cities[ans].field_7;
-					var lng_rech = cities[ans].field_8;
+					var lat_rech = adresses[ans].field_7;
+					var lng_rech = adresses[ans].field_8;
 					mymap.setView([lat_rech, lng_rech], 20);
 					// exécute la fonction pour afficher l'adresse recherchée et les informations de ses habitants
 					afficherAdresse(ans, lat_rech, lng_rech);
 				}
+				// sinon, affiche un message d'erreur
 				else {
 					alert("Aucune adresse n'a été trouvée ! \nMerci de remplir des éléments d'une adresse valide.");
 				}
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+// Fonctions d'analyse spatiale
+		
+
+		// Fonctions exécutées automatiquement dès l'ouverture de la page web
+		
+		
+			// coordonnées limites et pas en latitude et en longitude
+		
+			var lat_minC = 0;
+			var lat_maxC = 0;
+			var lat_pasC = 0;
+			
+			var lon_minC = 0;
+			var lon_maxC = 0;
+			var lon_pasC = 0;
+			
+			// coefficient multiplicateur du pas de la carte raster
+			
+			const pas = 10**5.5;
+			
+			
+			// calcule ces données
+			
+			setTimeout(recupLimites, 5000); // on doit mettre un délai (3s) avant d'exéduter la fonction, car le "request.response['villes']" ne fonctionne pas dans le main();	
+			
+			function recupLimites() {
+				
+				bornes = coordLimites();
+				pas_min = pasMin();
+				
+				lat_minC = bornes[0];
+				lat_maxC = bornes [1];
+				lat_pasC = pas_min;
+				
+				lon_minC = bornes[2];
+				lon_maxC = bornes [3];
+				lon_pasC = 1.6* pas_min; // pour ressembler à des carrés, on doit multiplier par 1.6 (car latitude proche de 45°)
+			}
+		
+
+			// fonction qui récupère les coordonnées limites des adresses de Lausanne
+			function coordLimites() {	
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
+				
+				// listes de l'ensemble des coordonnées des adresses
+				var latitudes = [];
+				var longitudes = [];
+				for (var i=0; i<ad; i++) {
+					latitudes.push(cities[i].field_7);
+					longitudes.push(cities[i].field_8);
+				}
+				
+				// calcul des bornes
+				var lat_min = Math.min(...latitudes);
+				var lat_max = Math.max(...latitudes);
+				var lon_min = Math.min(...longitudes);
+				var lon_max = Math.max(...longitudes);
+				
+				// renvoie des bornes
+				var bornes = [];
+				bornes.push(lat_min);
+				bornes.push(lat_max);
+				bornes.push(lon_min);
+				bornes.push(lon_max);
+				
+				return bornes;
+			}
+			
+			
+			// fonction qui calcule le pas minimum en latitude et en longitude à adopter entre 2 adresses pour qu'elles ne se rencontre pas
+			function pasMin() {	
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
+				
+				// calcul de la plus faible distance entre 2 adresses consécutives (BDD ordononnée par ville, npa puis adresse, donc devrait être distance minimale entre 2 adresses de la BDD) -> diminue le temps de calcul
+				// attention aux adresses identiques consécutives (on aurait alors un pas nul)
+					
+				var lat = 0;
+				var lon = 0;
+				var lat_next = cities[0].field_7;
+				var lon_next = cities[0].field_8;
+				
+				var pas_lat = 1;
+				var pas_lon = 1;
+				
+				for (var i=1; i<ad; i++) {
+					lat = lat_next;
+					lon = lon_next;
+					lat_next = cities[i].field_7;
+					lon_next = cities[i].field_8;
+					
+					if (pas_lat > Math.abs(lat_next - lat) && Math.abs(lat_next - lat) > 0) {
+						pas_lat = Math.abs(lat_next - lat);
+					}
+					if (pas_lon > Math.abs(lon_next - lon) && Math.abs(lon_next - lon) > 0) {
+						pas_lon = Math.abs(lon_next - lon);
+					}
+				}
+				
+				// renvoie le pas minimum, entre pas_lat et pas_lon/2
+				return Math.min(...[pas_lat, pas_lon/2]);
+			}
+		
+		
+		
+		
+		
+		// Liste raster
+			
+			
+			// classe qui crée pour chaque carré un doublet permettant ensuite de calculer la moyenne des valeurs (de l'élément mesuré) dans le carré
+			class Element {
+				constructor(nombre, somme_valeurs) {
+					this.nombre = nombre; // nombre d'adresses dans le carré
+					this.somme_valeurs = somme_valeurs; // somme des valeurs (de l'élément mesuré) des différentes adresses dans le carré
+				}
+			}
+			
+				
+			// fonction qui initialise une nouvelle liste raster vide
+			function initialiserListe() {
+				
+				var L = [];
+				
+				var lat_pas = pas * lat_pasC;
+				var lon_pas = pas * lon_pasC;
+				
+				var a_max = Math.floor((lat_maxC - lat_minC) / lat_pas) + 1;
+				var b_max = Math.floor((lon_maxC - lon_minC) / lon_pas) + 1;
+				
+				for (var a = 0; a < a_max; a++) {
+					
+					var L_a = [];
+					var element_nul = new Element(0,0);
+					
+					for (var b = 0; b < b_max; b++) {
+						L_a.push(element_nul);
+					}
+					
+					L.push(L_a);
+				}
+				
+				return L;
+			}			
+			
+			
+			
+			
+		// Couleurs des différents carrés raster
+			
+			
+			// différentes listes de couleurs pouvant être utilisées pour la cartographie statistique
+			var couleurs = ['lightyellow','yellow','orange','orangered','red','darkred'] // ensemble des couleurs utilisées pour les statistiques (du plus clair au plus foncé)
+			var couleurs_restreint = ['yellow','orange','red','darkred'] // liste plus restreinte, si intervalle de recherche moins important
+			
+			
+			// fonction qui renvoie la couleur de l'élement selon les paramètres choisis (liste de couleur choisie, début et pas de l'intervalle de couleurs)
+			function attribuerCouleurs(valeur, liste_couleurs, debut_couleurs, pas_couleurs) {
+				
+				// couleur blanche pour les attributs en-dessous de l'intervalle
+				if (valeur < debut_couleurs)
+					return 'white';
+					
+				else {
+					
+					// parcours la liste de couleur pour trouvé la couleur associée à la valeur en paramètre
+					for (var k = 0; k < liste_couleurs.length; k++) {
+						if (valeur < debut_couleurs + (k+1)*pas_couleurs)
+							return liste_couleurs[k];
+					}
+					
+					// couleur noire pour les attributs au-dessus de l'intervalle de recherche
+					return 'black';
+				}
+			}
+			
+			
+			
+			
+		// Affichage de la carte raster et de sa légende
+		
+		
+			// fonction qui crée sur la carte des carrés dont la couleur dépend du nombre de caractères moyens dans le nom de la rue des adresses du carré
+			function afficherStats(liste, nom, liste_couleurs, debut_couleurs, pas_couleurs) {
+				
+				mapStats.clearLayers(); // enlève les éléments actuels de l'affichage de la carte
+				
+				var lat_pas = pas * lat_pasC;
+				var lon_pas = pas * lon_pasC;
+				
+				var a_max = Math.floor((lat_maxC - lat_minC) / lat_pas) + 1;
+				var b_max = Math.floor((lon_maxC - lon_minC) / lon_pas) + 1;
+				
+				for (var a = 0; a < a_max; a++) {
+				
+					for (var b = 0; b < b_max; b++) {
+						
+						// informations du carré concernant l'élément mesuré
+						var carre = liste[a][b];
+						
+						// crée un carré coloré uniquement si une adresse est à l'intéreur du carré
+						if (carre.nombre > 0) {
+						
+							var moyenne = carre.somme_valeurs / carre.nombre; // nombre de caractères moyens dans le nom de la rue des adresses du carré
+							
+							// couleur du carré en fonction de la valeur ci-dessus
+							var couleur = attribuerCouleurs(moyenne, liste_couleurs, debut_couleurs, pas_couleurs);
+						
+							// coordonnées du carré
+							var x = lat_minC + a* lat_pas;
+							var y = lon_minC + b* lon_pas;
+						
+							// crée les extrémités du carré
+							var c1 = L.latLng(x, y);
+							var c2 = L.latLng(x, y + lon_pas);
+							var c3 = L.latLng(x + lat_pas, y + lon_pas);
+							var c4 = L.latLng(x + lat_pas, y);
+				
+							// créer un polygône à partir de ces adresses
+							var polygon = L.polygon([c1,c2,c3,c4],{
+								color: couleur,
+								fillColor: couleur,
+								fillOpacity: 1
+							}).addTo(mapStats);
+						}
+					}
+				}
+				
+				afficherLegende(nom, liste_couleurs, debut_couleurs, pas_couleurs);
+			}
+			
+			
+			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster
+			function afficherLegende(nom, liste_couleurs, debut_couleurs, pas_couleurs) {
+				
+				// crée la case 'légende'
+				var Legend = document.createElement('div');
+				Legend.setAttribute("id","legende");
+				
+				// ajoute le titre à la case 'légende'
+				var myLegend = document.createElement('h5');
+				myLegend.textContent = nom;
+				Legend.appendChild(myLegend);
+					
+				// couleur blanche pour les valeurs inférieures à l'intervalle de couleurs
+				var White = document.createElement('div');
+				White.setAttribute("class","ligne");
+				var myWhite = document.createElement('div');
+				myWhite.setAttribute("class","couleur");
+				myWhite.setAttribute("style","background-color:white;");
+				White.appendChild(myWhite);
+				var myWhiteText = document.createElement('span');
+				var finWhite = debut_couleurs - 1;
+				myWhiteText.textContent = "< " + finWhite;
+				White.appendChild(myWhiteText);
+				Legend.appendChild(White);
+				
+				// couleur pour chaque valeur de l'intervalle de couleurs
+				for (var k = 0; k < liste_couleurs.length; k++) {
+					var Color = document.createElement('div');
+					Color.setAttribute("class","ligne");
+					var myColor = document.createElement('div');
+					myColor.setAttribute("class","couleur");
+					var couleur = liste_couleurs[k];
+					myColor.setAttribute("style","background-color:"+couleur+";");
+					Color.appendChild(myColor);
+					var myColorText = document.createElement('span');
+					var debutColor = debut_couleurs + k* pas_couleurs;
+					var finColor = debut_couleurs + (k+1)* pas_couleurs - 1;
+					myColorText.textContent = debutColor + " à " + finColor;
+					Color.appendChild(myColorText);
+					Legend.appendChild(Color);
+				}
+				
+				// couleur noire pour les valeurs supérieures à l'intervalle de couleurs
+				var Black = document.createElement('div');
+				Black.setAttribute("class","ligne");
+				var myBlack = document.createElement('div');
+				myBlack.setAttribute("class","couleur");
+				myBlack.setAttribute("style","background-color:black;");
+				Black.appendChild(myBlack);
+				var myBlackText = document.createElement('span');
+				var debutBlack = debut_couleurs + liste_couleurs.length * pas_couleurs;
+				myBlackText.textContent = "> " + debutBlack;
+				Black.appendChild(myBlackText);
+				Legend.appendChild(Black);
+				
+				document.body.appendChild(Legend);
+			}
+			
+			
+			// fonction qui supprime la légende existante, s'il y en a une
+			function effacerLegende() {
+				if (document.getElementById('legende')) {
+					var legende = document.getElementById('legende');
+					document.body.removeChild(legende);
+				}
+			}
+			
+			
+			
+						
+		// Fonctions attribuée au clic sur 'Adresses' (menu)
+
+
+			// fonction qui affiche toutes les adresses de la carte (avec zoom adapté et sans polygône)
+			function stats_adresses() {
+				affichageInitial(1); // affiche la carte comme initialement (toutes les adresses, aucun polygône)
+				effacerLegende(); // supprime la légende existante, s'il y en a une
+			}
+			
+			
+		
+		
+		// Fonction au clic attribuée sur 'Nombre de lettres' (menu)
+		
+		
+			// fonction qui affiche une représentation du nombre de lettres dans chaque adresse
+			function stats_lettres() {
+				affichageInitial(1); // affiche la carte comme initialement (toutes les adresses, aucun polygône)
+				effacerLegende(); // supprime la légende existante, s'il y en a une
+				var L = nombreLettres(); // crée la carte raster
+				afficherStats(L, "Nombre de lettres par adresse", couleurs, 10, 3); // affiche la carte raster et sa légende
+			}
+			
+			
+			// fonction qui renvoie une liste donnant le nombre de lettre par adresse
+			function nombreLettres() {
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
+			
+				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
+				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
+				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
+				
+				var L = initialiserListe();
+				
+				var lat_pas = pas * lat_pasC;
+				var lon_pas = pas * lon_pasC;
+
+				for (var i=0; i<ad; i++) {
+					
+					var latitude = cities[i].field_7;
+					var lat_carre = Math.floor((latitude - lat_minC) / lat_pas); // abscisse du carré raster où se trouve l'adresse
+					
+					var longitude = cities[i].field_8;
+					var lon_carre = Math.floor((longitude - lon_minC) / lon_pas); // ordonnée du carré raster où se trouve l'adresse
+					
+					rue = cities[i].field_3;
+					rue_split = rue.split("");
+					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
+				
+					// modifie les données du carré raster où se trouve l'adresse
+					var new_nombre = L[lat_carre][lon_carre].nombre + 1;
+					var new_somme_valeurs = L[lat_carre][lon_carre].somme_valeurs + rue_length;
+					var new_carre= new Element(new_nombre, new_somme_valeurs);
+					L[lat_carre].splice(lon_carre, 1, new_carre);
+				}
+				
+				return L;
+			}
+			
+			
+			
+			
+		// Fonction au clic attribuée sur 'Nombre d'adresses' (menu)
+		
+		
+			// fonction qui affiche une représentation du nombre de lettres dans chaque adresse
+			function stats_nombre() {
+				affichageInitial(1); // affiche la carte comme initialement (toutes les adresses, aucun polygône)
+				effacerLegende(); // supprime la légende existante, s'il y en a une
+				var L = nombreAdresses(); // crée la carte raster
+				afficherStats(L, "Nombre d'adresses", couleurs, 1, 15); // affiche la carte raster et sa légende
+			}
+			
+			
+			// fonction qui renvoie une liste donnant le nombre de lettre par adresse
+			function nombreAdresses() {
+				
+				var cities = request.response['villes']; // permet d'accéder aux informations de la base de données
+				var ad = cities.length; // nombre d'adresses dans la BDD
+			
+				var L = initialiserListe();
+				
+				var lat_pas = pas * lat_pasC;
+				var lon_pas = pas * lon_pasC;
+
+				for (var i=0; i<ad; i++) {
+					
+					var latitude = cities[i].field_7;
+					var lat_carre = Math.floor((latitude - lat_minC) / lat_pas); // abscisse du carré raster où se trouve l'adresse
+					
+					var longitude = cities[i].field_8;
+					var lon_carre = Math.floor((longitude - lon_minC) / lon_pas); // ordonnée du carré raster où se trouve l'adresse
+					
+					// modifie les données du carré raster où se trouve l'adresse
+					var new_somme_valeurs = L[lat_carre][lon_carre].somme_valeurs + 1;
+					var new_carre= new Element(1, new_somme_valeurs);
+					L[lat_carre].splice(lon_carre, 1, new_carre);
+				}
+				
+				return L;
 			}
 
         </script>
