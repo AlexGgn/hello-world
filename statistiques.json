@@ -1,7 +1,7 @@
 [
 {"affichage":-2,"fonction":"","statistiques":"Généralités"},
 {"affichage":1,"fonction":"stats_lettres","statistiques":"Nombre moyen de lettres par adresse"},
-{"affichage":1,"fonction":"stats_adresses","statistiques":"Nombre d'adresses"},
+{"affichage":1,"fonction":"stats_nombre","statistiques":"Nombre d'adresses"},
 {"affichage":0,"fonction":"","statistiques":"Nombre d'habitants"},
 {"affichage":0,"fonction":"","statistiques":"Taux de réponse au questionnaire"},
 {"affichage":0,"fonction":"","statistiques":"Satisfaction du lieu de résidence"},
