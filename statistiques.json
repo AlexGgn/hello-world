@@ -1,7 +1,7 @@
 [
 {"affichage":-4,"fonction":"","informations":"","nom":"Généralités"},
 {"affichage":1,"fonction":"stats_lettres","informations":"Nombre moyen de caractères dans le nom de rue des adresses à l'intérieur du carré","nom":"Nombre moyen de lettres par adresse"},
-{"affichage":1,"fonction":"stats_adresses","informations":"Nombre d'adresses à l'intérieur du carré","nom":"Nombre d'adresses"},
+{"affichage":1,"fonction":"stats_nombre","informations":"Nombre d'adresses à l'intérieur du carré","nom":"Nombre d'adresses"},
 {"affichage":1,"fonction":"","informations":"","nom":"Nombre d'habitants"},
 {"affichage":1,"fonction":"","informations":"","nom":"Taux de réponse au questionnaire"},
 {"affichage":0,"fonction":"","informations":"","nom":"Satisfaction du lieu de résidence"},
