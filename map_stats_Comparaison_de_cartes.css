@@ -1,0 +1,302 @@
+/*Texte*/
+
+a /*lien hypertexte*/
+{
+	text-decoration: none;
+	color: black;
+}
+
+strong /*texte mis en valeur*/
+{
+	font-size: 18;
+	font-weight: bold;
+	margin-left: 10;
+}
+
+span /*texte normale*/
+{
+	padding: 3;
+	background-color: white;
+}
+
+
+
+
+/*Haut de page*/
+
+header
+{
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 175;
+	width: 100%;
+	border: solid black;
+	display: flex;
+    flex-direction: row;
+}
+
+h1 /*titre du site web*/
+{
+	font-size: 80;
+	margin-left: 350;
+	margin-top: 10;
+}
+
+#lausanne_logo /*logo de la ville de Lausanne*/
+{
+	margin-top:15;
+	margin-left:30;
+	height: 150;
+}
+
+
+
+
+/*Pied de page*/
+
+footer
+{
+	position: fixed;
+	top: 780;
+	left: 0;
+	height: 170;
+	width: 100%;
+    border-top: solid black;
+    text-align: center;
+	padding: 10;
+	display: flex;
+    flex-direction: row;
+}
+
+#epfl_logo /*logo de l'EPFL*/
+{
+	height : 150;
+}
+
+#contact /*nom du lien pour contacter l'EPFL*/
+{
+	font-size: 30;
+	margin-left: 50;
+	margin-top: 40;
+}
+
+.lien /*lien renvoyant vers envoi de mail à EPFL*/
+{
+	text-decoration: underline;
+	color: blue;
+}
+
+
+
+
+/*Menu de navigation*/
+
+nav
+{
+	position: fixed;
+	top: 110;
+	left: 380;
+	height: 75;
+	width: 80%;
+    text-align: center;
+}
+
+ul /*crée une liste sans puces*/
+{
+	list-style-type:none;
+}
+
+ul li a /*éléments de la liste*/
+{
+	font-size: 30;
+	display:block;
+	float:right;   
+	width:21%;
+	background-color:red;
+	color:black;
+	text-decoration:none;
+	text-align:center;
+	margin-right: 3%;
+	padding:2;
+	border: 2px solid black;
+}
+
+ul li a:hover /*comportement des éléments au survol de la souris*/
+{
+	color: red;
+	background-color: blue;
+	border-color: black;
+}
+
+
+
+
+/*Choix des cartes à afficher*/
+
+#menu
+{
+	position: fixed;
+	top: 205;
+	left: 1%;
+	width: 23%;
+	height: 546;
+	border: solid black;
+	padding: 0;
+	overflow: auto;
+}
+
+.cartes /*fenêtre de choix de carte*/
+{
+	margin: 0;
+	padding: 15;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+h6 /*Sous-titres de la fenêtre*/
+{
+	font-size: 30;
+	font-weight: bold;
+	text-decoration: underline;
+	text-align: center;
+	margin-top: 3;
+	margin-bottom: 20;
+}
+
+.carte_attribut /*Attributs de la carte à afficher*/
+{
+	font-size: 20;
+	font-weight: bold;
+}
+
+.carte_option /*Choix de la ville et de la précision de la carte à afficher*/
+{
+	font-size: 14;
+	margin-bottom: 0;
+}
+
+.carte_stat_option /*Choix de la statistique à afficher*/
+{
+	font-size: 14;
+	margin-top: 10;
+	margin-bottom: 0;
+	margin-top: 10;
+}
+
+.button_carte /*Bouton de validation de la recherche*/
+{
+	font-size: 20;
+	font-weight: bold;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 8;
+}
+
+
+
+
+/*Cartes*/
+
+section
+{
+	position: fixed;
+	top: 205;
+	left: 26%;
+	height: 500;
+	width: 80%;
+	display: flex;
+    flex-direction: row;
+}
+
+#mapid1 /*carte 1*/
+{
+	height: 550;
+	width: 50%;
+	border: 1px solid black;
+	z-index: 0;
+}
+
+#mapid2 /*carte 2*/
+{
+	height: 550;
+	width: 50%;
+	border: 1px solid black;
+	z-index: 0;
+	margin-left: 2%;
+}
+
+#mapchoix1 /*bouton de changement de visualisation de la carte 1*/
+{
+	position: fixed;
+	top: 220;
+	left: 30%;
+	width: 60;
+	z-index: 1;
+}
+
+#mapchoix2 /*bouton de changement de visualisation de la carte 2*/
+{
+	position: fixed;
+	top: 220;
+	left: 66%;
+	width: 60;
+	z-index: 1;
+}
+
+
+
+
+/*Légendes des cartes raster de données statistiques*/
+
+#legende1
+{
+	position: fixed;
+	top: 205;
+	left: 53%;
+	width: 7%;
+	padding: 10;
+	border: 1px solid black;
+	background-color: white;
+	overflow: auto;
+	z-index = 1 ;
+}
+
+#legende2
+{
+	position: fixed;
+	top: 215;
+	left: 80%;
+	width: 7%;
+	padding: 10;
+	border: 1px solid black;
+	background-color: white;
+	overflow: auto;
+	z-index = 1 ;
+}
+
+h5 /*titre de la légende*/
+{
+	margin-top: 5;
+	margin-bottom: 10;
+	font-size: 16;
+	font-weight: bold;
+	text-align: center;
+}
+
+.ligne /*ligne comprenant couleur + valeurs associées à cette couleur*/
+{
+	padding:5;
+	display: flex;
+    flex-direction: row;
+	margin-left: 20%;
+}
+
+.couleur /*carré de couleur*/
+{
+	width:10%;
+	padding:3;
+	margin: 3;
+	border: 1px solid black;
+}
