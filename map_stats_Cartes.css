@@ -39,7 +39,7 @@ header
 h1 /*titre du site web*/
 {
 	font-size: 80;
-	margin-left: 300;
+	margin-left: 350;
 	margin-top: 10;
 }
 
@@ -112,12 +112,12 @@ ul li a /*éléments de la liste*/
 	font-size: 30;
 	display:block;
 	float:right;   
-	width:17%;
+	width:21%;
 	background-color:red;
 	color:black;
 	text-decoration:none;
 	text-align:center;
-	margin-right: 2%;
+	margin-right: 3%;
 	padding:2;
 	border: 2px solid black;
 }
@@ -132,27 +132,76 @@ ul li a:hover /*comportement des éléments au survol de la souris*/
 
 
 
-/*Choix des stats à afficher*/
+/*Choix des cartes à afficher*/
 
 #menu
 {
 	position: fixed;
 	top: 205;
 	left: 1%;
-	width: 21%;
+	width: 23%;
 	height: 530;
-	border: 1px solid black;
+	border: solid black;
 	padding: 10;
 	overflow: auto;
 }
 
-h2
+h2 /*Titre de la fenêtre*/
 {
-	font-size: 30;
+	font-size: 60;
 	font-weight: bold;
 	text-align: center;
 	margin-top: 10;
-	margin-bottom: 30;
+	margin-bottom: -15;
+}
+
+.cartes /*fenêtre de choix de carte*/
+{
+	margin: 10;
+	margin-top: 30;
+	margin-bottom: 15;
+	padding: 5;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+h6 /*Sous-titres de la fenêtre*/
+{
+	font-size: 30;
+	font-weight: bold;
+	text-decoration: underline;
+	text-align: center;
+	margin-top: 10;
+	margin-bottom: 20;
+}
+
+.carte_attribut /*Attributs de la carte à afficher*/
+{
+	font-size: 20;
+}
+
+.carte_option /*Choix de la ville et de la précision de la carte à afficher*/
+{
+	font-size: 14;
+	margin-bottom: 0;
+}
+
+.carte_stat_option /*Choix de la statistique à afficher*/
+{
+	font-size: 14;
+	margin-top: 10;
+	margin-bottom: 0;
+	margin-top: 10;
+}
+
+.button_carte /*Bouton de validation de la recherche*/
+{
+	font-size: 20;
+	font-weight: bold;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10;
 }
 
 
@@ -164,9 +213,9 @@ section
 {
 	position: fixed;
 	top: 205;
-	left: 24%;
+	left: 27%;
 	height: 500;
-	width:52%;
+	width:50%;
 	display: flex;
     flex-direction: row;
 }
@@ -175,16 +224,15 @@ section
 {
 	height: 550;
 	width: 100%;
+	border: 1px solid black;
 	z-index: 0;
-	margin-left: 20;
-	margin-right: -20;
 }
 
 #mapchoix /*bouton de changement de visualisation de la carte*/
 {
 	position: fixed;
 	top: 220;
-	left: 28%;
+	left: 30%;
 	width: 60;
 	z-index: 1;
 }
@@ -239,7 +287,7 @@ input /*attribut renseigné*/
 	margin-bottom: 10;
 }
 
-button /*bouton de validation de la recherche*/
+#button /*bouton de validation de la recherche*/
 {
 	font-size: 30;
 	font-weight: bold;
@@ -266,6 +314,21 @@ aside /*coordonnées d'une personne logée à l'adresse*/
 	padding-left: 0;
 	border: 1px solid black;
 	overflow: auto;
+}
+
+
+/*Informations concernant la statistique affichée*/
+
+#infos_stat
+{
+	font-size: 20;
+}
+
+#nom_stat 
+{
+	font-size: 22;
+	font-weight: bold;
+	text-decoration: underline;
 }
 
 
