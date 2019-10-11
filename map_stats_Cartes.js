@@ -91,6 +91,8 @@
 				recupVilles(); // rempli la liste villes[] et les listes déroulantes
 				recupNpas(); // rempli la liste npas[]
 				pasMin(); // récupère le pas minimum en latitude et en longitude de la carte ratser
+				creerBDD_secteurs(); // crée la BDD locale des sous-secteurs statistiques
+				creerBDD_adresses_secteurs(); // crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel elle apparatient
 			}
 
 
@@ -302,10 +304,10 @@
 				}
 				
 				// modifications des éléments affichés dans la fenêtre de choix de carte statistique en fonction de la ville sélectionnée 
-				if (ville_carte == 0)
+				/*if (ville_carte == 0)
 					choixCarte_lausanne();
 				else
-					choixCarte_autres();
+					choixCarte_autres();*/
 			}
 
 
@@ -683,12 +685,9 @@
 			var lat_min_secteurs = 0;
 			var lat_max_secteurs = 0;
 			
-			var lon_min_secteurs = 0:
+			var lon_min_secteurs = 0;
 			var lon_max_secteurs = 0;
 			
-			
-			
-			creerBDD_secteurs(); // dès l'ouverture de la page, remplit la BDD locale des sous-secteurs statistiques
 			
 			
 			// fonction qui crée la BDD locale des sous-secteurs statistiques
@@ -714,7 +713,7 @@
 						latitudes.push(latitude);
 						longitudes.push(longitude);
 						
-						var secteurBDD.push([latitude, longitude]);
+						secteurBDD.push([latitude, longitude]);
 					}
 					
 					BDD_secteurs.push(secteurBDD);
@@ -741,13 +740,10 @@
 			
 			
 			
-			creerBDD_adresses_secteurs(); // dès l'ouverture de la page, crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel il apparatient
-			
-			
-			// fonction qui crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel il apparatient
-			function creerBDD_adresses_secteurssecteurs() {
+			// fonction qui crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel elle apparatient
+			function creerBDD_adresses_secteurs() {
 				
-				for (var i = ville.debut; i <= ville.fin; i++) {
+				for (var i = ville_debut; i <= ville_fin; i++) {
 					
 					var latitude = BDD_adresses[i].latitude;
 					var longitude = BDD_adresses[i].longitude;
@@ -777,7 +773,7 @@
 
 				var intersections = 0;
 
-				for (var i = 0, j = polygon.length – 1; i < polygon.length; j = i++) {
+				for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
 
 					var xi = polygon[i][0], yi = polygon[i][1];
 					var xj = polygon[j][0], yj = polygon[j][1];
@@ -789,7 +785,7 @@
 
 					if (y > Math.min(yj, yi) && y <= Math.max(yj, yi) && x <= Math.max(xj, xi) && yj != yi) {
 						
-						var intercept = (y – yj) * (xi – xj) / (yi – yj) + xj;
+						var intercept = (y - yj) * (xi - xj) / (yi - yj) + xj;
 						
 						// cas où le point est sur une arête (non horizontale) du polygône
 						if (intercept == x) {
@@ -798,7 +794,7 @@
 						
 						if (xj == xi || x <= intercept) {
 							intersections++; 
-						} 
+						}
 					}
 				}
 
