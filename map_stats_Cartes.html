@@ -2,7 +2,8 @@
 
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+		<link rel="stylesheet" href="../css/map_stats.css" />
 		<link rel="stylesheet" href="../css/map_stats_Cartes.css" />
         <title>Cartes statistiques</title>
     </head>
@@ -13,91 +14,92 @@
     <body>
 		
 		<!-- Haut de page -->
-		<header>
-			<a href="https://www.lausanne.ch/" target="_blank"><img id="lausanne_logo" src="../images/lausanne_logo.png" alt="Logo de la ville de lausanne" /></a> <!-- renvoie vers la page de la ville de Lausanne si clic -->
-			<h1>Cartographie statistique</h1>
+		<header id="stats_header">
+			<a class="stats_a" href="https://www.lausanne.ch/" target="_blank"><img id="stats_logo_lausanne" src="../images/lausanne_logo.png" alt="Logo de la ville de lausanne" /></a> <!-- renvoie vers la page de la ville de Lausanne si clic -->
+			<h1 id="stats_nom_site">Cartographie statistique</h1>
 		</header>
 
 
 		<!-- Pied de page -->
-		<footer>
-			<a href="https://www.epfl.ch/fr/" target="_blank"><img id="epfl_logo" src="../images/epfl_logo.jpg" alt="Logo de l'EPFL" /></a> <!-- renvoie vers la page de l'EPFL si clic -->
-			<p id="contact" >EPFL - LASIG<br/>
-            <a class="lien" href="mailto:alexandre.guegan@epfl.ch">Nous contacter !</a></p> <!-- renvoie vers page envoie mail si clic -->
+		<footer id="stats_footer">
+			<a class="stats_a" href="https://www.epfl.ch/fr/" target="_blank"><img id="stats_logo_epfl" src="../images/epfl_logo.jpg" alt="Logo de l'EPFL" /></a> <!-- renvoie vers la page de l'EPFL si clic -->
+			<p id="stats_contact" >EPFL - LASIG<br/>
+            <a class="stats_lien" href="mailto:alexandre.guegan@epfl.ch">Nous contacter !</a></p> <!-- renvoie vers page envoie mail si clic -->
 		</footer>
 
 
 		<!-- Menu de navigation -->
-		<nav>
-			<ul>
-                <li><a href="#">Utilisateur</a></li>
-                <li><a href="#">Statistiques</a></li>
-                <li><a href="map_stats_Comparaison_de_cartes.html">Comparaison de cartes</a></li>
-				<li><a href="map_stats_Cartes.html">Cartes</a></li>
+		<nav id="stats_nav">
+			<ul id="stats_liste">
+                <li><a class="stats_liste_element" href="#">Utilisateur</a></li>
+                <li><a class="stats_liste_element" href="map_stats_Statistiques.html">Statistiques</a></li>
+                <li><a class="stats_liste_element" href="map_stats_Comparaison_de_cartes.html">Comparaison de cartes</a></li>
+				<li><a class="stats_liste_element" style="background-color:orange; color:black; font-weight:bold;">Cartes</a></li>
             </ul>
 		</nav>
 		
 		
 		<!-- Choix des cartes à afficher -->
-		<div id="menu">
-            <h2>Cartes</h2>
-			<div class="cartes">
-				<h6>Carte des adresses</h6>
-				<button class="button_carte" type="button" name="button_carte" id="button_carte" onclick="stats_adresses();return false;">Afficher</button>
+		<div id="stats_Cartes_menu">
+            <h2 id="stats_Cartes_menu_titre">Cartes</h2>
+			<div class="stats_Cartes_carte_choix">
+				<h3 class="stats_Cartes_carte_choix_titre">Carte des adresses</h3>
+				<button class="stats_Cartes_carte_button" type="button" name="carte_adresses_button" id="stats_Cartes_carte_adresses_button" onclick="carte_adresses();return false;">Afficher</button>
 			</div>
-			<div class="cartes">
-				<h6>Cartes statistiques</h6>
+			<div class="stats_Cartes_carte_choix">
+				<h3 class="stats_Cartes_carte_choix_titre">Cartes statistiques</h3>
 				<p>
-					<label class="carte_attribut">Ville : </label>
-					<select class="carte_option" name="ville_carte" id="ville_carte" onchange="attribuerVille(); return false;"></select>
+					<label class="stats_Cartes_carte_attribut">Ville : </label>
+					<select class="stats_Cartes_carte_option" name="carte_stat_option_ville" id="stats_Cartes_carte_stat_option_ville" onchange="attribuerVille(); return false;"></select>
 				</p>
 				<p>
-					<label class="carte_attribut">Statistique : </label>
-					<select class="carte_stat_option" name="stat" id="stat" onchange="attribuerStat(); return false;"></select>
+					<label class="stats_Cartes_carte_attribut">Statistique : </label>
+					<select class="stats_Cartes_carte_option" name="carte_stat_option_stat" id="stats_Cartes_carte_stat_option_stat" onchange="attribuerStat(); return false;"></select>
 				</p>
-				<p>
-					<label class="carte_attribut">Précision : </label>
-					<select class="carte_option" name="precision" id="precision" onchange="attribuerPrecision(); return false;"></select>
+				<div id="stats_Cartes_carte_lausanne"></div>
+				<p id="stats_Cartes_carte_attributs">
+					<label class="stats_Cartes_carte_attribut">Nombre de classes : </label>
+					<select class="stats_Cartes_carte_option" name="carte_stat_option_classes" id="stats_Cartes_carte_stat_option_classes" onchange="attribuerClasses(); return false;"></select>
 				</p>
-				<button class="button_carte" type="button" name="button_stat" id="button_stat">Afficher</button>
+				<button class="stats_Cartes_carte_button" type="button" name="carte_stat_button" id="stats_Cartes_carte_stat_button">Afficher</button>
 			</div>
 		</div>
 			
 			
 		<!-- Carte -->
-		<section>
+		<section id="stats_Cartes_section">
 		
 			<!-- Création de la carte -->
-			<div id="mapid"></div>
+			<div id="stats_Cartes_mapid"></div>
 		
 			<!-- Bouton de changement de visualisation de la carte -->
 			<figure>
-				<img id="mapchoix" src="../images/visu.png" alt="Changement de visualisation" onclick="changeMap()">
+				<img id="stats_Cartes_mapchoix" src="../images/visu.png" alt="Changement de visualisation" onclick="changeMap()">
 			</figure>
 		
 		</section>
 			
 			
 		<!-- Informations complémentaires -->
-		<div id="infos">
-			<h3>Rechercher une adresse</h3>
+		<div id="stats_Cartes_infos">
+			<h2 id="stats_Cartes_infos_titre">Rechercher une adresse</h2>
 			<p>
-				<label>Ville : </label>
-				<select name="ville" id="ville"></select>
+				<label class="stats_Cartes_recherche_label">Ville : </label>
+				<select class="stats_Cartes_recherche_select" name="recherche_ville" id="stats_Cartes_recherche_ville"></select>
 			</p>
 			<p>
-				<label>NPA : </label>
-				<input type="number" name="npa" id="npa" placeholder="Ex: 1003" size="10" />
+				<label class="stats_Cartes_recherche_label">NPA : </label>
+				<input class="stats_Cartes_recherche_input" type="number" name="recherche_npa" id="stats_Cartes_recherche_npa" placeholder="Ex: 1003" min="0" max="9999" />
 			</p>
 			<p>
-				<label>Rue : </label>
-				<input type="text" name="rue" id="rue" placeholder="Ex: Rue du Grand-Chêne" size="30" />
+				<label class="stats_Cartes_recherche_label">Rue : </label>
+				<input class="stats_Cartes_recherche_input" type="text" name="recherche_rue" id="stats_Cartes_recherche_rue" placeholder="Ex: Rue du Grand-Chêne" size="30" />
 			</p>
 			<p>
-				<label>N° : </label>
-				<input type="text" name="numero" id="numero" placeholder="Ex: 8b" size="10" />
+				<label class="stats_Cartes_recherche_label">N° : </label>
+				<input class="stats_Cartes_recherche_input" type="text" name="recherche_numero" id="stats_Cartes_recherche_numero" placeholder="Ex: 8b" size="3" />
 			</p>
-			<button type="button" name="button" id="button" onclick="rechercherAttributs();return false;">Rechercher</button>
+			<button type="button" name="recherche_button" id="stats_Cartes_recherche_button" onclick="rechercherAttributs();return false;">Rechercher</button>
 		</div>
 		
 		
@@ -106,9 +108,9 @@
 		<!-- Mise en page de la carte -->
 		<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
 		
-		
 		<!-- contenu Javascript -->
 		<script src="../javascript/map_stats_Cartes.js" type="text/javascript"></script>
+		<!-- <script src="../javascript/conversion_secteurs_mn95.js" type="text/javascript"></script> -->
 		
 		
 		
