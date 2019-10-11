@@ -1,226 +1,102 @@
-/*Texte*/
-
-a /*lien hypertexte*/
-{
-	text-decoration: none;
-	color: black;
-}
-
-strong /*texte mis en valeur*/
-{
-	font-size: 18;
-	font-weight: bold;
-	margin-left: 10;
-}
-
-span /*texte normale*/
-{
-	padding: 3;
-	background-color: white;
-}
-
-
-
-
-/*Haut de page*/
-
-header
-{
-	position: fixed;
-	top: 0;
-	left: 0;
-	height: 175;
-	width: 100%;
-	border: solid black;
-	display: flex;
-    flex-direction: row;
-}
-
-h1 /*titre du site web*/
-{
-	font-size: 80;
-	margin-left: 350;
-	margin-top: 10;
-}
-
-#lausanne_logo /*logo de la ville de Lausanne*/
-{
-	margin-top:15;
-	margin-left:30;
-	height: 150;
-}
-
-
-
-
-/*Pied de page*/
-
-footer
-{
-	position: fixed;
-	top: 780;
-	left: 0;
-	height: 170;
-	width: 100%;
-    border-top: solid black;
-    text-align: center;
-	padding: 10;
-	display: flex;
-    flex-direction: row;
-}
-
-#epfl_logo /*logo de l'EPFL*/
-{
-	height : 150;
-}
-
-#contact /*nom du lien pour contacter l'EPFL*/
-{
-	font-size: 30;
-	margin-left: 50;
-	margin-top: 40;
-}
-
-.lien /*lien renvoyant vers envoi de mail à EPFL*/
-{
-	text-decoration: underline;
-	color: blue;
-}
-
-
-
-
-/*Menu de navigation*/
-
-nav
-{
-	position: fixed;
-	top: 110;
-	left: 380;
-	height: 75;
-	width: 80%;
-    text-align: center;
-}
-
-ul /*crée une liste sans puces*/
-{
-	list-style-type:none;
-}
-
-ul li a /*éléments de la liste*/
-{
-	font-size: 30;
-	display:block;
-	float:right;   
-	width:21%;
-	background-color:red;
-	color:black;
-	text-decoration:none;
-	text-align:center;
-	margin-right: 3%;
-	padding:2;
-	border: 2px solid black;
-}
-
-ul li a:hover /*comportement des éléments au survol de la souris*/
-{
-	color: red;
-	background-color: blue;
-	border-color: black;
-}
-
-
-
-
 /*Choix des cartes à afficher*/
 
-#menu
+#stats_Cartes_menu
 {
 	position: fixed;
 	top: 205;
-	left: 1%;
-	width: 23%;
-	height: 530;
+	left: 20;
+	width: 450;
+	height: 520;
 	border: solid black;
 	padding: 10;
 	overflow: auto;
 }
 
-h2 /*Titre de la fenêtre*/
+#stats_Cartes_menu_titre /*titre du menu*/
 {
 	font-size: 60;
 	font-weight: bold;
 	text-align: center;
-	margin-top: 10;
-	margin-bottom: -15;
+	margin-top: 0;
+	margin-bottom: -10;
 }
 
-.cartes /*fenêtre de choix de carte*/
+.stats_Cartes_carte_choix /*fenêtres de choix de carte*/
 {
 	margin: 10;
-	margin-top: 30;
-	margin-bottom: 15;
+	margin-top: 25;
+	margin-bottom: 10;
 	padding: 5;
 	border: 1px solid black;
 	overflow: auto;
 }
 
-h6 /*Sous-titres de la fenêtre*/
+.stats_Cartes_carte_choix_titre /*titres des fenêtres de choix de carte*/
 {
 	font-size: 30;
 	font-weight: bold;
 	text-decoration: underline;
 	text-align: center;
-	margin-top: 10;
+	margin-top: 5;
 	margin-bottom: 20;
 }
 
-.carte_attribut /*Attributs de la carte à afficher*/
+.stats_Cartes_carte_attribut /*attributs de la carte statistique*/
 {
 	font-size: 20;
+	font-weight: bold;
+	margin-left: 5;
 }
 
-.carte_option /*Choix de la ville et de la précision de la carte à afficher*/
+.stats_Cartes_carte_option /*listes déroulantes des options de la carte statistique*/
 {
 	font-size: 14;
+	margin-top: 0;
 	margin-bottom: 0;
 }
 
-.carte_stat_option /*Choix de la statistique à afficher*/
+#stats_Cartes_carte_stat_option_stat /*choix de la statistique de la carte statistique*/
 {
-	font-size: 14;
-	margin-top: 10;
-	margin-bottom: 0;
-	margin-top: 10;
+	margin-top: 5;
 }
 
-.button_carte /*Bouton de validation de la recherche*/
+#stats_Cartes_carte_stat_option_classes /*choix du nombre de classes de la carte statistique*/
+{
+	margin-right: 40;
+}
+
+.stats_Cartes_carte_stat_type /*choix du type de carte (pour la ville de Lausanne)*/
+{
+	margin-left: 20;
+}
+
+.stats_Cartes_carte_button /*boutons de validation de l'affichage des cartes*/
 {
 	font-size: 20;
 	font-weight: bold;
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-	margin-bottom: 10;
+	margin-bottom: 8;
 }
 
 
 
 
-/*Carte*/
+/*Affichage de la carte*/
 
-section
+#stats_Cartes_section
 {
 	position: fixed;
 	top: 205;
-	left: 27%;
+	left: 530;
 	height: 500;
-	width:50%;
+	width: 950;
 	display: flex;
     flex-direction: row;
 }
 
-#mapid /*carte affichée*/
+#stats_Cartes_mapid /*carte affichée*/
 {
 	height: 550;
 	width: 100%;
@@ -228,11 +104,11 @@ section
 	z-index: 0;
 }
 
-#mapchoix /*bouton de changement de visualisation de la carte*/
+#stats_Cartes_mapchoix /*bouton de changement de visualisation de la carte*/
 {
 	position: fixed;
 	top: 220;
-	left: 30%;
+	left: 590;
 	width: 60;
 	z-index: 1;
 }
@@ -242,19 +118,19 @@ section
 
 /*Informations complémentaires*/
 
-#infos
+#stats_Cartes_infos
 {
 	position: fixed;
 	top: 205;
-	left: 75%;
+	left: 1440;
 	height: 530;
-	width:22%;
+	width: 420;
 	padding: 10;
 	border: 1px solid black;
 	overflow: auto;
 }
 
-h3 /*titre de la fenêtre d'informations*/
+#stats_Cartes_infos_titre /*titre de la fenêtre d'informations*/
 {
 	font-size: 30;
 	font-weight: bold;
@@ -264,30 +140,48 @@ h3 /*titre de la fenêtre d'informations*/
 	margin-bottom: 35;
 }
 
+.stats_Cartes_infos_sous_titre /*sous-titres de la fenêtre d'information*/
+{
+	font-size: 25;
+	font-weight: bold;
+	margin-bottom: 20;
+}
+
+.stats_Cartes_infos_habitant /*taux de réponse au questionnaire de chaque habitant*/
+{
+	margin: 10;
+	padding: 5;
+	width: 130;
+	border: 1px solid black;
+	overflow: auto;
+}
+
+
+
 
 /*Recherche d'adresse*/
 
-label /*nom de l'attribut à sélectionner/renseigner*/
+.stats_Cartes_recherche_label /*nom de l'attribut à sélectionner/renseigner*/
 {
 	font-size: 22;
 	font-weight: bold;
 	margin-left: 15;
 }
 
-select /*sélection de la ville*/
+.stats_Cartes_recherche_select /*sélection de la ville*/
 {
 	font-size: 18;
 	margin-bottom: 10;
 	padding: 3;
 }
 
-input /*attribut renseigné*/
+.stats_Cartes_recherche_input /*attribut renseigné*/
 {
 	font-size: 18;
 	margin-bottom: 10;
 }
 
-#button /*bouton de validation de la recherche*/
+#stats_Cartes_recherche_button /*bouton de validation de la recherche*/
 {
 	font-size: 30;
 	font-weight: bold;
@@ -298,66 +192,20 @@ input /*attribut renseigné*/
 }
 
 
-/*Adresse sélectionnée*/
-
-h4 /*sous-titres de la fenêtre d'information*/
-{
-	font-size: 25;
-	font-weight: bold;
-	margin-bottom: 20;
-}
-
-aside /*coordonnées d'une personne logée à l'adresse*/
-{
-	margin: 10;
-	padding: 5;
-	padding-left: 0;
-	border: 1px solid black;
-	overflow: auto;
-}
 
 
 /*Informations concernant la statistique affichée*/
 
-#infos_stat
-{
-	font-size: 20;
-}
-
-#nom_stat 
+#stats_Cartes_stat_nom
 {
 	font-size: 22;
 	font-weight: bold;
 	text-decoration: underline;
 }
 
-
-
-
-/*Fenêtre données personnelles*/
-
-#perso
+#stats_Cartes_stat_infos
 {
-	position: fixed;
-	top: 205;
-	left: 1%;
-	height: 530;
-	width:71%;
-	padding: 10;
-	border: 1px solid black;
-	background-color: grey;
-	overflow: auto;
-	z-index = 2;
-}
-
-#quit /*bouton pour fermer la fenêtre*/
-{
-	position: fixed;
-	top: 220;
-	left: 70%;
-	width: 2%;
-	background-color: white;
-	z-index = 3;
+	font-size: 20;
 }
 
 
@@ -365,20 +213,20 @@ aside /*coordonnées d'une personne logée à l'adresse*/
 
 /*Légende des cartes raster de données statistiques*/
 
-#legende
+#stats_Cartes_legende
 {
 	position: fixed;
 	top: 215;
-	left: 61%;
-	width: 10%;
+	left: 1218;
+	width: 150;
 	padding: 10;
 	border: 1px solid black;
 	background-color: white;
 	overflow: auto;
-	z-index = 1 ;
+	z-index = 1;
 }
 
-h5 /*titre de la légende*/
+#stats_Cartes_legende_titre /*titre de la légende*/
 {
 	margin-top: 5;
 	margin-bottom: 10;
@@ -387,7 +235,7 @@ h5 /*titre de la légende*/
 	text-align: center;
 }
 
-.ligne /*ligne comprenant couleur + valeurs associées à cette couleur*/
+.stats_Cartes_legende_ligne /*ligne comprenant couleur + valeurs associées à cette couleur*/
 {
 	padding:5;
 	display: flex;
@@ -395,7 +243,7 @@ h5 /*titre de la légende*/
 	margin-left: 20%;
 }
 
-.couleur /*carré de couleur*/
+.stats_Cartes_legende_couleur /*carré de couleur*/
 {
 	width:10%;
 	padding:3;
