@@ -2,7 +2,8 @@
 
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+		<link rel="stylesheet" href="../css/map_stats.css" />
 		<link rel="stylesheet" href="../css/map_stats_Comparaison_de_cartes.css" />
         <title>Cartes statistiques</title>
     </head>
@@ -13,81 +14,87 @@
     <body>
 		
 		<!-- Haut de page -->
-		<header>
-			<a href="https://www.lausanne.ch/" target="_blank"><img id="lausanne_logo" src="../images/lausanne_logo.png" alt="Logo de la ville de lausanne" /></a> <!-- renvoie vers la page de la ville de Lausanne si clic -->
-			<h1>Cartographie statistique</h1>
+		<header id="stats_header">
+			<a class="stats_a" href="https://www.lausanne.ch/" target="_blank"><img id="stats_logo_lausanne" src="../images/lausanne_logo.png" alt="Logo de la ville de lausanne" /></a> <!-- renvoie vers la page de la ville de Lausanne si clic -->
+			<h1 id="stats_nom_site">Cartographie statistique</h1>
 		</header>
 
 
 		<!-- Pied de page -->
-		<footer>
-			<a href="https://www.epfl.ch/fr/" target="_blank"><img id="epfl_logo" src="../images/epfl_logo.jpg" alt="Logo de l'EPFL" /></a> <!-- renvoie vers la page de l'EPFL si clic -->
-			<p id="contact" >EPFL - LASIG<br/>
-            <a class="lien" href="mailto:alexandre.guegan@epfl.ch">Nous contacter !</a></p> <!-- renvoie vers page envoie mail si clic -->
+		<footer id="stats_footer">
+			<a class="stats_a" href="https://www.epfl.ch/fr/" target="_blank"><img id="stats_logo_epfl" src="../images/epfl_logo.jpg" alt="Logo de l'EPFL" /></a> <!-- renvoie vers la page de l'EPFL si clic -->
+			<p id="stats_contact" >EPFL - LASIG<br/>
+            <a class="stats_lien" href="mailto:alexandre.guegan@epfl.ch">Nous contacter !</a></p> <!-- renvoie vers page envoie mail si clic -->
 		</footer>
 
 
 		<!-- Menu de navigation -->
-		<nav>
-			<ul>
-                <li><a href="#">Utilisateur</a></li>
-                <li><a href="#">Statistiques</a></li>
-                <li><a href="map_stats_Comparaison_de_cartes.html">Comparaison de cartes</a></li>
-				<li><a href="map_stats_Cartes.html">Cartes</a></li>
+		<nav id="stats_nav">
+			<ul id="stats_liste">
+                <li><a class="stats_liste_element" href="#">Utilisateur</a></li>
+                <li><a class="stats_liste_element" href="map_stats_Statistiques.html">Statistiques</a></li>
+                <li><a class="stats_liste_element" style="background-color:orange; color:black; font-weight:bold;">Comparaison de cartes</a></li>
+				<li><a class="stats_liste_element" href="map_stats_Cartes.html">Cartes</a></li>
             </ul>
 		</nav>
 		
 		
 		<!-- Choix des cartes à afficher -->
-		<div id="menu">
-            <div class="cartes">
-				<h6>Carte 1</h6>
+		<div id="stats_Comparaison_menu">
+            <div class="stats_Comparaison_carte_choix">
+				<div class="stats_Comparaison_carte_choix_header">
+					<p class="stats_Comparaison_carte_choix_titre">Carte 1</p>
+					<button class="stats_Comparaison_carte_button" type="button" name="carte_button1" id="stats_Comparaison_carte_button1">Afficher</button>
+				</div>
 				<p>
-					<label class="carte_attribut">Ville : </label>
-					<select class="carte_option" name="ville_carte1" id="ville_carte1" onchange="attribuerVille1(); return false;"></select>
+					<label class="stats_Comparaison_carte_attribut">Ville : </label>
+					<select class="stats_Comparaison_carte_option" name="carte_option_ville1" id="stats_Comparaison_carte_option_ville1" onchange="attribuerVille1(); return false;"></select>
 				</p>
 				<p>
-					<label class="carte_attribut">Statistique : </label>
-					<select class="carte_stat_option" name="stat1" id="stat1" onchange="attribuerStat1(); return false;"></select>
+					<label class="stats_Comparaison_carte_attribut">Statistique : </label>
+					<select class="stats_Comparaison_carte_option_stat" name="carte_option_stat1" id="stats_Comparaison_carte_option_stat1" onchange="attribuerStat1(); return false;"></select>
 				</p>
-				<p>
-					<label class="carte_attribut">Précision : </label>
-					<select class="carte_option" name="precision1" id="precision1" onchange="attribuerPrecision1(); return false;"></select>
+				<div id="stats_Comparaison_carte_lausanne1"></div>
+				<p id="stats_Comparaison_carte_attributs1">
+					<label class="stats_Comparaison_carte_attribut">Nombre de classes : </label>
+					<select class="stats_Comparaison_carte_option_classes" name="carte_option_classes1" id="stats_Comparaison_carte_option_classes1" onchange="attribuerClasses1(); return false;"></select>
 				</p>
-				<button class="button_carte" type="button" name="button_stat1" id="button_stat1">Afficher</button>
 			</div>
-			<div class="cartes">
-				<h6>Carte 2</h6>
+			<div class="stats_Comparaison_carte_choix">
+				<div class="stats_Comparaison_carte_choix_header">
+					<p class="stats_Comparaison_carte_choix_titre">Carte 2</p>
+					<button class="stats_Comparaison_carte_button" type="button" name="carte_button2" id="stats_Comparaison_carte_button2">Afficher</button>
+				</div>
 				<p>
-					<label class="carte_attribut">Ville : </label>
-					<select class="carte_option" name="ville_carte2" id="ville_carte2" onchange="attribuerVille2(); return false;"></select>
+					<label class="stats_Comparaison_carte_attribut">Ville : </label>
+					<select class="stats_Comparaison_carte_option" name="carte_option_ville2" id="stats_Comparaison_carte_option_ville2" onchange="attribuerVille2(); return false;"></select>
 				</p>
 				<p>
-					<label class="carte_attribut">Statistique : </label>
-					<select class="carte_stat_option" name="stat2" id="stat2" onchange="attribuerStat2(); return false;"></select>
+					<label class="stats_Comparaison_carte_attribut">Statistique : </label>
+					<select class="stats_Comparaison_carte_option_stat" name="carte_option_stat2" id="stats_Comparaison_carte_option_stat2" onchange="attribuerStat2(); return false;"></select>
 				</p>
-				<p>
-					<label class="carte_attribut">Précision : </label>
-					<select class="carte_option" name="precision2" id="precision2" onchange="attribuerPrecision2(); return false;"></select>
+				<div id="stats_Comparaison_carte_lausanne2"></div>
+				<p id="stats_Comparaison_carte_attributs2">
+					<label class="stats_Comparaison_carte_attribut">Nombre de classes : </label>
+					<select class="stats_Comparaison_carte_option_classes" name="carte_option_classes2" id="stats_Comparaison_carte_option_classes2" onchange="attribuerClasses2(); return false;"></select>
 				</p>
-				<button class="button_carte" type="button" name="button_stat2" id="button_stat2">Afficher</button>
 			</div>
 		</div>
 			
 			
 		<!-- Cartes -->
-		<section>
+		<section id="stats_Comparaison_section">
 		
 			<!-- Création des 2 cartes -->
-			<div id="mapid1"></div>
-			<div id="mapid2"></div>
+			<div class="stats_Comparaison_mapid" id="stats_Comparaison_mapid1"></div>
+			<div class="stats_Comparaison_mapid" id="stats_Comparaison_mapid2"></div>
 		
 			<!-- Boutons de changement de visualisation de la carte -->
 			<figure>
-				<img id="mapchoix1" src="../images/visu.png" alt="Changement de visualisation" onclick="changeMap1()">
+				<img class="stats_Comparaison_mapchoix" id="stats_Comparaison_mapchoix1" src="../images/visu.png" alt="Changement de visualisation" onclick="changeMap1()">
 			</figure>
 			<figure>
-				<img id="mapchoix2" src="../images/visu.png" alt="Changement de visualisation" onclick="changeMap2()">
+				<img class="stats_Comparaison_mapchoix" id="stats_Comparaison_mapchoix2" src="../images/visu.png" alt="Changement de visualisation" onclick="changeMap2()">
 			</figure>
 		
 		</section>
