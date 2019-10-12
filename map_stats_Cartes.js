@@ -90,7 +90,7 @@
 				afficherCarte(); // ajuste le zoom de la carte pour afficher l'ensemble des adresses de la BDD
 				recupVilles(); // rempli la liste villes[] et les listes déroulantes
 				recupNpas(); // rempli la liste npas[]
-				pasMin(); // récupère le pas minimum en latitude et en longitude de la carte ratser
+				pasMin(); // récupère le pas minimum en latitude et en longitude de la carte raster
 				creerBDD_secteurs(); // crée la BDD locale des sous-secteurs statistiques
 				creerBDD_adresses_secteurs(); // crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel elle apparatient
 			}
@@ -1355,7 +1355,7 @@
 			
 
 
-		// Affichage de la légende de la carte raster et des informations concernant la statistique
+		// Affichage de la légende de la carte et des informations concernant la statistique
 		
 		
 			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte
@@ -1825,7 +1825,7 @@
 					var Classes = document.createElement('label');
 					Classes.setAttribute("class","stats_Cartes_carte_attribut");
 					Classes.setAttribute("id","stats_Cartes_carte_stat_attribut_precision");
-					Classes.textContent = "Précision : ";
+					Classes.textContent = "Precision : ";
 					attributs.appendChild(Classes);
 					
 					var myClasses = document.createElement('select');
