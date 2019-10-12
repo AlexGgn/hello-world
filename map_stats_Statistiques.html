@@ -1,0 +1,84 @@
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+		<link rel="stylesheet" href="../css/map_stats.css" />
+		<link rel="stylesheet" href="../css/map_stats_Statistiques.css" />
+        <title>Cartes statistiques</title>
+    </head>
+	
+	
+	
+	
+    <body>
+		
+		<!-- Haut de page -->
+		<header id="stats_header">
+			<a class="stats_a" href="https://www.lausanne.ch/" target="_blank"><img id="stats_logo_lausanne" src="../images/lausanne_logo.png" alt="Logo de la ville de lausanne" /></a> <!-- renvoie vers la page de la ville de Lausanne si clic -->
+			<h1 id="stats_nom_site">Cartographie statistique</h1>
+		</header>
+
+
+		<!-- Pied de page -->
+		<footer id="stats_footer">
+			<a class="stats_a" href="https://www.epfl.ch/fr/" target="_blank"><img id="stats_logo_epfl" src="../images/epfl_logo.jpg" alt="Logo de l'EPFL" /></a> <!-- renvoie vers la page de l'EPFL si clic -->
+			<p id="stats_contact" >EPFL - LASIG<br/>
+            <a class="stats_lien" href="mailto:alexandre.guegan@epfl.ch">Nous contacter !</a></p> <!-- renvoie vers page envoie mail si clic -->
+		</footer>
+
+
+		<!-- Menu de navigation -->
+		<nav id="stats_nav">
+			<ul id="stats_liste">
+                <li><a class="stats_liste_element" href="#">Utilisateur</a></li>
+                <li><a class="stats_liste_element" style="background-color:orange; color:black; font-weight:bold;">Statistiques</a></li>
+                <li><a class="stats_liste_element" href="map_stats_Comparaison_de_cartes.html">Comparaison de cartes</a></li>
+				<li><a class="stats_liste_element" href="map_stats_Cartes.html">Cartes</a></li>
+            </ul>
+		</nav>
+		
+		
+		<!-- Choix des statistiques à afficher -->
+		<div id="stats_Statistiques_menu">
+            <h2 id="stats_Statistiques_menu_titre">Satistiques</h2>
+			<p id="stats_Statistiques_menu_statistiques">
+			</p>
+		</div>
+			
+			
+		<!-- Informations complémentaires -->
+		<div id="stats_Statistiques_infos">
+		</div>
+		
+		
+		<!-- Carte d'autocorrélation spatiale-->
+		<section id="stats_Statistiques_section">
+		
+			<!-- Titre de la carte -->
+			<h2 id="stats_Statistiques_section_titre">Niveau local d'autocorrélation spatiale</h2>
+			
+			<p id="stats_Statistiques_section_ville">
+				<label id="stats_Statistiques_section_ville_label">Ville : </label>
+				<select id="stats_Statistiques_section_ville_liste" name="section_ville_liste" onchange="attribuerVille(); return false;"></select>
+				<a class="stats_a" href="#" onclick="return false;"><img id="stats_Statistiques_section_ville_refresh" src="../images/refresh.png" alt="Rafraîchir la carte d'autocorrélation spatiale" /></a>
+			</p>
+			
+			<!-- Création de la carte -->
+			<div id="stats_Statistiques_section_mapid"></div>
+		
+		</section>
+		
+		
+		
+		
+		<!-- Mise en page de la carte -->
+		<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+		
+		<!-- contenu Javascript -->
+		<script src="../javascript/map_stats_Statistiques.js" type="text/javascript"></script>
+		
+		
+		
+    </body>
+</html>
