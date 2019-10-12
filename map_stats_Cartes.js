@@ -304,10 +304,10 @@
 				}
 				
 				// modifications des éléments affichés dans la fenêtre de choix de carte statistique en fonction de la ville sélectionnée 
-				/*if (ville_carte == 0)
+				if (ville_carte == 0) 
 					choixCarte_lausanne();
 				else
-					choixCarte_autres();*/
+					choixCarte_autres();
 			}
 
 
@@ -818,7 +818,9 @@
 		// Types de cartes statistiques
 
 			
-			var type_carte = "raster"; // type de carte statistique
+			var type_carte = "raster"; // type de carte statistique (initialement raster)
+			
+			choixCarte_raster(); // type de carte initial : raster
 		
 		
 		
@@ -837,7 +839,7 @@
 					var Classes = document.createElement('label');
 					Classes.setAttribute("class","stats_Cartes_carte_attribut");
 					Classes.setAttribute("id","stats_Cartes_carte_stat_attribut_precision");
-					Classes.textContent = 'Précision : ';
+					Classes.textContent = "Précision : ";
 					attributs.appendChild(Classes);
 					
 					var myClasses = document.createElement('select');
@@ -886,12 +888,15 @@
 				
 				// ajoute le choix du type de carte statistique à afficher
 				
-				var Type = document.getElementById('stats_Cartes_carte_lausanne');
+				var lausanne = document.getElementById('stats_Cartes_carte_lausanne');
+				
+				var Type = document.createElement('p');
 				
 				
-				var myType = document.createElement('p');
-				
-				myType.textContent = "Type de Carte";
+				var myType = document.createElement('label');
+				myType.setAttribute("class","stats_Cartes_carte_attribut");
+				myType.textContent = "Type de Carte :";
+				Type.appendChild(myType);
 				
 				
 				// type 'raster'
@@ -902,14 +907,14 @@
 				Raster.setAttribute("name","carte_stat_type");
 				Raster.setAttribute("value","raster");
 				Raster.setAttribute("id","stats_Cartes_carte_stat_type_raster");
-				Raster.setAttribute("onchecked","choixCarte_raster();");
+				Raster.setAttribute("onchange","choixCarte_raster();");
 				Raster.setAttribute("checked","true");
-				myType.appendChild(Raster);
+				Type.appendChild(Raster);
 				
 				var myRaster = document.createElement('label');
 				myRaster.setAttribute("class","stats_Cartes_carte_stat_type_label");
 				myRaster.textContent = "Raster";
-				myType.appendChild(myRaster);
+				Type.appendChild(myRaster);
 				
 				
 				// type 'secteurs'
@@ -920,22 +925,22 @@
 				Secteurs.setAttribute("name","carte_stat_type");
 				Secteurs.setAttribute("value","secteurs");
 				Secteurs.setAttribute("id","stats_Cartes_carte_stat_type_secteurs");
-				Secteurs.setAttribute("onchecked","choixCarte_secteurs();");
-				myType.appendChild(Secteurs);
+				Secteurs.setAttribute("onchange","choixCarte_secteurs();");
+				Type.appendChild(Secteurs);
 				
 				var mySecteurs = document.createElement('label');
 				mySecteurs.setAttribute("class","stats_Cartes_carte_stat_type_label");
 				mySecteurs.textContent = "Secteurs statistiques";
-				myType.appendChild(mySecteurs);
+				Type.appendChild(mySecteurs);
 				
 				
-				Type.appendChild(myType);
+				lausanne.appendChild(Type);
 			}
 			
 			
 			
 			// Choix de carte statistique pour une autre ville
-			function choixCarte_lausanne() {
+			function choixCarte_autres() {
 				
 				// vide les boutons de choix du type de carte statistique à afficher
 				var Type = document.getElementById('stats_Cartes_carte_lausanne');
@@ -1470,7 +1475,7 @@
 			// fonction qui rempli la liste déroulante de la fenêtre de choix du nombre de classes de la carte à afficher
 			function recupClasses() {
 
-				var nombre_classes = document.getElementById('stats_Cartes_carte_stat_option_nombre_classes'); // liste déroulante du nombre de classes de la carte
+				var nombre_classes = document.getElementById('stats_Cartes_carte_stat_option_classes'); // liste déroulante du nombre de classes de la carte
 
 				for (var k=3; k<=9; k++) {
 					var newNombre = document.createElement('option');
@@ -1487,7 +1492,7 @@
 
 			// fonction qui change le nombre de classes de la carte en fonction de la valeur sélectionnée
 			function attribuerClasses() {
-				var nombre_classes = document.getElementById("stats_Cartes_carte_stat_option_nombre_classes").value; // récupère la valeur du nombre de classes (ATTENTION : renvoie un string !!)
+				var nombre_classes = document.getElementById("stats_Cartes_carte_stat_option_classes").value; // récupère la valeur du nombre de classes (ATTENTION : renvoie un string !!)
 				nombre_couleurs = parseInt(nombre_classes,10); // le nombre de couleurs de la carte raster est égal au nombre de classes (convertit ce string en nombre)
 			}		
 		
@@ -1741,7 +1746,7 @@
 
 			// fonction qui affiche la ville sélectionnée
 			function afficherCarte_raster() {
-
+alert(pas);
 				// enlève les éléments actuels de l'affichage de la carte
 				mapStats.clearLayers();
 				mapMarkers.clearLayers();
@@ -1928,16 +1933,26 @@
 
 			// fonction qui affiche une représentation du nombre de lettres dans chaque adresse
 			function stats_lettres() {
-				afficherVille(); // affiche la ville sélectionnée
-				effacerLegende(); // supprime la légende existante, s'il y en a une
-				var L = nombreLettres(); // crée la carte raster
-				afficherStat(L, "Nombre de lettres par adresse"); // affiche la carte raster et sa légende
+				
+				// affichage d'une carte raster
+				if (type_carte == "raster") {
+					afficherCarte_raster(); // affiche la ville sélectionnée
+					var L = nombreLettres_raster(); // crée la liste raster
+					afficherStat_raster(L, "Nombre de lettres par adresse"); // affiche la carte raster et sa légende
+				}
+				
+				// affichage d'une carte utilisant les sous-secteurs statistiques de Lausanne
+				else {
+					afficherCarte_secteurs(); // affiche les sous-secteurs statistiques
+					var L = nombreLettres_secteurs(); // crée la liste des secteurs
+					afficherStat_secteurs(L, "Nombre de lettres par adresse"); // affiche la carte et sa légende
+				}
 			}
 
 
 
-			// fonction qui renvoie une liste donnant le nombre de lettre par adresse
-			function nombreLettres() {
+			// fonction qui renvoie une liste raster donnant le nombre moyen de lettres par adresse
+			function nombreLettres_raster() {
 
 				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
 				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
@@ -1945,7 +1960,7 @@
 
 				coordLimites(); // récupère les bornes et le pas de la carte raster
 
-				var L = initialiserListe(); // crée une liste raster vide
+				var L = initialiserListe_raster(); // crée une liste raster vide
 
 
 				for (var i=ville_debut; i<=ville_fin; i++) {
@@ -1973,26 +1988,67 @@
 
 
 
+			// fonction qui renvoie une liste de secteurs donnant le nombre moyen de lettres par adresse
+			function nombreLettres_secteurs() {
+
+				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
+				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
+				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
+
+				var L = initialiserListe_secteurs(); // crée une liste de sous-secteurs vide
+
+
+				for (var i=ville_debut; i<=ville_fin; i++) {
+
+					var secteur = BDD_adresses_secteurs[i]; // sous-secteur statistique auquel appartient l'adresse
+
+					rue = BDD_adresses[i].rue;
+					rue_split = rue.split("");
+					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
+
+					// modifie les données du carré raster où se trouve l'adresse
+					var new_nombre = L[i].nombre + 1;
+					var new_somme_valeurs = L[i].somme_valeurs + rue_length;
+					var new_secteur= new Element(new_nombre, new_somme_valeurs);
+					L.splice(secteur, 1, new_secteur);
+				}
+
+
+				return L;
+			}
+
+
+
 
 		// Fonction associée à la carte statistique 'Nombre d'adresses'
 
 
 			// fonction qui affiche une représentation du nombre d'adresses par carré
 			function stats_nombre() {
-				afficherVille(); // affiche la ville sélectionnée
-				effacerLegende(); // supprime la légende existante, s'il y en a une
-				var L = nombreAdresses(); // crée la carte raster
-				afficherStat(L, "Nombre d'adresses"); // affiche la carte raster et sa légende
+				
+				// affichage d'une carte raster
+				if (type_carte == "raster") {
+					afficherCarte_raster(); // affiche la ville sélectionnée
+					var L = nombreAdresses_raster(); // crée la liste raster
+					afficherStat_raster(L, "Nombre d'adresses"); // affiche la carte raster et sa légende
+				}
+				
+				// affichage d'une carte utilisant les sous-secteurs statistiques de Lausanne
+				else {
+					afficherCarte_secteurs(); // affiche les sous-secteurs statistiques
+					var L = nombreAdresses_secteurs(); // crée la liste des secteurs
+					afficherStat_secteurs(L, "Nombre d'adresses"); // affiche la carte et sa légende
+				}
 			}
 
 
 
 			// fonction qui renvoie une liste donnant le nombre d'adresses par carré
-			function nombreAdresses() {
+			function nombreAdresses_raster() {
 
 				coordLimites(); // récupère les bornes et le pas de la carte raster
 
-				var L = initialiserListe(); // crée une liste raster vide
+				var L = initialiserListe_raster(); // crée une liste raster vide
 
 
 				for (var i=ville_debut; i<=ville_fin; i++) {
@@ -2007,6 +2063,32 @@
 					var new_somme_valeurs = L[lat_carre][lon_carre].somme_valeurs + 1;
 					var new_carre= new Element(1, new_somme_valeurs);
 					L[lat_carre].splice(lon_carre, 1, new_carre);
+				}
+
+
+				return L;
+			}
+
+
+
+			// fonction qui renvoie une liste de secteurs donnant le nombre d'adresses par sous-secteur statistique
+			function nombreAdresses_secteurs() {
+
+				var L = initialiserListe_secteurs(); // crée une liste de sous-secteurs vide
+
+
+				for (var i=ville_debut; i<=ville_fin; i++) {
+
+					var secteur = BDD_adresses_secteurs[i]; // sous-secteur statistique auquel appartient l'adresse
+
+					rue = BDD_adresses[i].rue;
+					rue_split = rue.split("");
+					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
+
+					// modifie les données du carré raster où se trouve l'adresse
+					var new_somme_valeurs = L[i].somme_valeurs + 1;
+					var new_secteur= new Element(1, new_somme_valeurs);
+					L.splice(secteur, 1, new_secteur);
 				}
 
 
@@ -2051,6 +2133,384 @@
 						Purples:  {3: ['rgb(239,237,245)', 'rgb(188,189,220)', 'rgb(117,107,177)'], 4: ['rgb(242,240,247)', 'rgb(203,201,226)', 'rgb(158,154,200)', 'rgb(106,81,163)'], 5: ['rgb(242,240,247)', 'rgb(203,201,226)', 'rgb(158,154,200)', 'rgb(117,107,177)', 'rgb(84,39,143)'], 6: ['rgb(242,240,247)', 'rgb(218,218,235)', 'rgb(188,189,220)', 'rgb(158,154,200)', 'rgb(117,107,177)', 'rgb(84,39,143)'], 7: ['rgb(242,240,247)', 'rgb(218,218,235)', 'rgb(188,189,220)', 'rgb(158,154,200)', 'rgb(128,125,186)', 'rgb(106,81,163)', 'rgb(74,20,134)'], 8: ['rgb(252,251,253)', 'rgb(239,237,245)', 'rgb(218,218,235)', 'rgb(188,189,220)', 'rgb(158,154,200)', 'rgb(128,125,186)', 'rgb(106,81,163)', 'rgb(74,20,134)'], 9: ['rgb(252,251,253)', 'rgb(239,237,245)', 'rgb(218,218,235)', 'rgb(188,189,220)', 'rgb(158,154,200)', 'rgb(128,125,186)', 'rgb(106,81,163)', 'rgb(84,39,143)', 'rgb(63,0,125)'], 'properties':{'type': 'seq','blind':[1],'print':[1,0,0,0,0,0,0],'copy':[1,2,0,0,0,0,0],'screen':[1,0,0,0,0,0,0] } } ,
 						GnBu:  {3: ['rgb(224,243,219)', 'rgb(168,221,181)', 'rgb(67,162,202)'], 4: ['rgb(240,249,232)', 'rgb(186,228,188)', 'rgb(123,204,196)', 'rgb(43,140,190)'], 5: ['rgb(240,249,232)', 'rgb(186,228,188)', 'rgb(123,204,196)', 'rgb(67,162,202)', 'rgb(8,104,172)'], 6: ['rgb(240,249,232)', 'rgb(204,235,197)', 'rgb(168,221,181)', 'rgb(123,204,196)', 'rgb(67,162,202)', 'rgb(8,104,172)'], 7: ['rgb(240,249,232)', 'rgb(204,235,197)', 'rgb(168,221,181)', 'rgb(123,204,196)', 'rgb(78,179,211)', 'rgb(43,140,190)', 'rgb(8,88,158)'], 8: ['rgb(247,252,240)', 'rgb(224,243,219)', 'rgb(204,235,197)', 'rgb(168,221,181)', 'rgb(123,204,196)', 'rgb(78,179,211)', 'rgb(43,140,190)', 'rgb(8,88,158)'], 9: ['rgb(247,252,240)', 'rgb(224,243,219)', 'rgb(204,235,197)', 'rgb(168,221,181)', 'rgb(123,204,196)', 'rgb(78,179,211)', 'rgb(43,140,190)', 'rgb(8,104,172)', 'rgb(8,64,129)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,1,2,2,2,0],'copy':[1,2,0,0,0,0,0],'screen':[1,1,2,0,0,0,0] } } ,
 						Greys:  {3: ['rgb(240,240,240)', 'rgb(189,189,189)', 'rgb(99,99,99)'], 4: ['rgb(247,247,247)', 'rgb(204,204,204)', 'rgb(150,150,150)', 'rgb(82,82,82)'], 5: ['rgb(247,247,247)', 'rgb(204,204,204)', 'rgb(150,150,150)', 'rgb(99,99,99)', 'rgb(37,37,37)'], 6: ['rgb(247,247,247)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(99,99,99)', 'rgb(37,37,37)'], 7: ['rgb(247,247,247)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(115,115,115)', 'rgb(82,82,82)', 'rgb(37,37,37)'], 8: ['rgb(255,255,255)', 'rgb(240,240,240)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(115,115,115)', 'rgb(82,82,82)', 'rgb(37,37,37)'], 9: ['rgb(255,255,255)', 'rgb(240,240,240)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(115,115,115)', 'rgb(82,82,82)', 'rgb(37,37,37)', 'rgb(0,0,0)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,2,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } ,
+						YlOrRd:  {3: ['rgb(255,237,160)', 'rgb(254,178,76)', 'rgb(240,59,32)'], 4: ['rgb(255,255,178)', 'rgb(254,204,92)', 'rgb(253,141,60)', 'rgb(227,26,28)'], 5: ['rgb(255,255,178)', 'rgb(254,204,92)', 'rgb(253,141,60)', 'rgb(240,59,32)', 'rgb(189,0,38)'], 6: ['rgb(255,255,178)', 'rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(240,59,32)', 'rgb(189,0,38)'], 7: ['rgb(255,255,178)', 'rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(252,78,42)', 'rgb(227,26,28)', 'rgb(177,0,38)'], 8: ['rgb(255,255,204)', 'rgb(255,237,160)', 'rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(252,78,42)', 'rgb(227,26,28)', 'rgb(177,0,38)'], 9:['rgb(255,255,204)','rgb(255,237,160)','rgb(254,217,118)','rgb(254,178,76)','rgb(253,141,60)','rgb(252,78,42)','rgb(227,26,28)','rgb(189,0,38)','rgb(128,0,38)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,2,2,0,0,0],'copy':[1,2,2,0,0,0,0],'screen':[1,2,2,0,0,0,0] } } ,
+						PuRd:  {3: ['rgb(231,225,239)', 'rgb(201,148,199)', 'rgb(221,28,119)'], 4: ['rgb(241,238,246)', 'rgb(215,181,216)', 'rgb(223,101,176)', 'rgb(206,18,86)'], 5: ['rgb(241,238,246)', 'rgb(215,181,216)', 'rgb(223,101,176)', 'rgb(221,28,119)', 'rgb(152,0,67)'], 6: ['rgb(241,238,246)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(221,28,119)', 'rgb(152,0,67)'], 7: ['rgb(241,238,246)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(231,41,138)', 'rgb(206,18,86)', 'rgb(145,0,63)'], 8: ['rgb(247,244,249)', 'rgb(231,225,239)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(231,41,138)', 'rgb(206,18,86)', 'rgb(145,0,63)'], 9: ['rgb(247,244,249)', 'rgb(231,225,239)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(231,41,138)', 'rgb(206,18,86)', 'rgb(152,0,67)', 'rgb(103,0,31)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,1,0,0,0,0],'copy':[1,2,0,0,0,0,0],'screen':[1,1,1,0,0,0,0] } } ,
+						Blues:  {3: ['rgb(222,235,247)', 'rgb(158,202,225)', 'rgb(49,130,189)'], 4: ['rgb(239,243,255)', 'rgb(189,215,231)', 'rgb(107,174,214)', 'rgb(33,113,181)'], 5: ['rgb(239,243,255)', 'rgb(189,215,231)', 'rgb(107,174,214)', 'rgb(49,130,189)', 'rgb(8,81,156)'], 6: ['rgb(239,243,255)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(49,130,189)', 'rgb(8,81,156)'], 7: ['rgb(239,243,255)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,69,148)'], 8: ['rgb(247,251,255)', 'rgb(222,235,247)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,69,148)'], 9: ['rgb(247,251,255)', 'rgb(222,235,247)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,81,156)', 'rgb(8,48,107)'], 'properties':{'type': 'seq','blind':[1],'print':[1,2,0,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } ,
+						PuBuGn:  {3: ['rgb(236,226,240)', 'rgb(166,189,219)', 'rgb(28,144,153)'], 4: ['rgb(246,239,247)', 'rgb(189,201,225)', 'rgb(103,169,207)', 'rgb(2,129,138)'], 5: ['rgb(246,239,247)', 'rgb(189,201,225)', 'rgb(103,169,207)', 'rgb(28,144,153)', 'rgb(1,108,89)'], 6: ['rgb(246,239,247)', 'rgb(208,209,230)', 'rgb(166,189,219)', 'rgb(103,169,207)', 'rgb(28,144,153)', 'rgb(1,108,89)'], 7: ['rgb(246,239,247)', 'rgb(208,209,230)', 'rgb(166,189,219)', 'rgb(103,169,207)', 'rgb(54,144,192)', 'rgb(2,129,138)', 'rgb(1,100,80)'], 8: ['rgb(255,247,251)', 'rgb(236,226,240)', 'rgb(208,209,230)', 'rgb(166,189,219)', 'rgb(103,169,207)', 'rgb(54,144,192)', 'rgb(2,129,138)', 'rgb(1,100,80)'], 9: ['rgb(255,247,251)', 'rgb(236,226,240)', 'rgb(208,209,230)', 'rgb(166,189,219)', 'rgb(103,169,207)', 'rgb(54,144,192)', 'rgb(2,129,138)', 'rgb(1,108,89)', 'rgb(1,70,54)'], 'properties':{'type': 'seq','blind':[1],'print':[1,2,2,0,0,0,0],'copy':[1,2,0,0,0,0,0],'screen':[1,1,2,0,0,0,0] } } ,
+						/** Diverging **/
+						Spectral:  {3: ['rgb(252,141,89)', 'rgb(255,255,191)', 'rgb(153,213,148)'], 4: ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(171,221,164)', 'rgb(43,131,186)'], 5: ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(255,255,191)', 'rgb(171,221,164)', 'rgb(43,131,186)'], 6: ['rgb(213,62,79)', 'rgb(252,141,89)', 'rgb(254,224,139)', 'rgb(230,245,152)', 'rgb(153,213,148)', 'rgb(50,136,189)'], 7: ['rgb(213,62,79)', 'rgb(252,141,89)', 'rgb(254,224,139)', 'rgb(255,255,191)', 'rgb(230,245,152)', 'rgb(153,213,148)', 'rgb(50,136,189)'], 8: ['rgb(213,62,79)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(230,245,152)', 'rgb(171,221,164)', 'rgb(102,194,165)', 'rgb(50,136,189)'], 9: ['rgb(213,62,79)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(255,255,191)', 'rgb(230,245,152)', 'rgb(171,221,164)', 'rgb(102,194,165)', 'rgb(50,136,189)'], 10: ['rgb(158,1,66)', 'rgb(213,62,79)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(230,245,152)', 'rgb(171,221,164)', 'rgb(102,194,165)', 'rgb(50,136,189)', 'rgb(94,79,162)'], 11: ['rgb(158,1,66)', 'rgb(213,62,79)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(255,255,191)', 'rgb(230,245,152)', 'rgb(171,221,164)', 'rgb(102,194,165)', 'rgb(50,136,189)', 'rgb(94,79,162)'], 'properties':{'type': 'div', 'blind':[2,2,2,0,0,0,0,0,0],'print':[1,1,1,0,0,0,0,0,0],'copy':[1,1,1,0,0,0,0,0,0],'screen':[1,1,2,0,0,0,0,0,0] } } ,
+						RdYlGn:  {3: ['rgb(252,141,89)', 'rgb(255,255,191)', 'rgb(145,207,96)'], 4: ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(166,217,106)', 'rgb(26,150,65)'], 5: ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(255,255,191)', 'rgb(166,217,106)', 'rgb(26,150,65)'], 6: ['rgb(215,48,39)', 'rgb(252,141,89)', 'rgb(254,224,139)', 'rgb(217,239,139)', 'rgb(145,207,96)', 'rgb(26,152,80)'], 7: ['rgb(215,48,39)', 'rgb(252,141,89)', 'rgb(254,224,139)', 'rgb(255,255,191)', 'rgb(217,239,139)', 'rgb(145,207,96)', 'rgb(26,152,80)'], 8: ['rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(217,239,139)', 'rgb(166,217,106)', 'rgb(102,189,99)', 'rgb(26,152,80)'], 9: ['rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(255,255,191)', 'rgb(217,239,139)', 'rgb(166,217,106)', 'rgb(102,189,99)', 'rgb(26,152,80)'], 10: ['rgb(165,0,38)', 'rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(217,239,139)', 'rgb(166,217,106)', 'rgb(102,189,99)', 'rgb(26,152,80)', 'rgb(0,104,55)'], 11: ['rgb(165,0,38)', 'rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,139)', 'rgb(255,255,191)', 'rgb(217,239,139)', 'rgb(166,217,106)', 'rgb(102,189,99)', 'rgb(26,152,80)', 'rgb(0,104,55)'], 'properties':{'type': 'div', 'blind':[2,2,2,0,0,0,0,0,0],'print':[1,1,1,2,0,0,0,0,0],'copy':[0],'screen':[1,1,1,0,0,0,0,0,0] } } ,
+						RdBu:  {3: ['rgb(239,138,98)', 'rgb(247,247,247)', 'rgb(103,169,207)'], 4: ['rgb(202,0,32)', 'rgb(244,165,130)', 'rgb(146,197,222)', 'rgb(5,113,176)'], 5: ['rgb(202,0,32)', 'rgb(244,165,130)', 'rgb(247,247,247)', 'rgb(146,197,222)', 'rgb(5,113,176)'], 6: ['rgb(178,24,43)', 'rgb(239,138,98)', 'rgb(253,219,199)', 'rgb(209,229,240)', 'rgb(103,169,207)', 'rgb(33,102,172)'], 7: ['rgb(178,24,43)', 'rgb(239,138,98)', 'rgb(253,219,199)', 'rgb(247,247,247)', 'rgb(209,229,240)', 'rgb(103,169,207)', 'rgb(33,102,172)'], 8: ['rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(209,229,240)', 'rgb(146,197,222)', 'rgb(67,147,195)', 'rgb(33,102,172)'], 9: ['rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(247,247,247)', 'rgb(209,229,240)', 'rgb(146,197,222)', 'rgb(67,147,195)', 'rgb(33,102,172)'], 10: ['rgb(103,0,31)', 'rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(209,229,240)', 'rgb(146,197,222)', 'rgb(67,147,195)', 'rgb(33,102,172)', 'rgb(5,48,97)'], 11: ['rgb(103,0,31)', 'rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(247,247,247)', 'rgb(209,229,240)', 'rgb(146,197,222)', 'rgb(67,147,195)', 'rgb(33,102,172)', 'rgb(5,48,97)'], 'properties':{'type': 'div','blind':[1],'print':[1,1,1,1,0,0,0,0,0],'copy':[0],'screen':[1,1,1,0,0,0,0,0,0] } } ,
+						PiYG:  {3: ['rgb(233,163,201)', 'rgb(247,247,247)', 'rgb(161,215,106)'], 4: ['rgb(208,28,139)', 'rgb(241,182,218)', 'rgb(184,225,134)', 'rgb(77,172,38)'], 5: ['rgb(208,28,139)', 'rgb(241,182,218)', 'rgb(247,247,247)', 'rgb(184,225,134)', 'rgb(77,172,38)'], 6: ['rgb(197,27,125)', 'rgb(233,163,201)', 'rgb(253,224,239)', 'rgb(230,245,208)', 'rgb(161,215,106)', 'rgb(77,146,33)'], 7: ['rgb(197,27,125)', 'rgb(233,163,201)', 'rgb(253,224,239)', 'rgb(247,247,247)', 'rgb(230,245,208)', 'rgb(161,215,106)', 'rgb(77,146,33)'], 8: ['rgb(197,27,125)', 'rgb(222,119,174)', 'rgb(241,182,218)', 'rgb(253,224,239)', 'rgb(230,245,208)', 'rgb(184,225,134)', 'rgb(127,188,65)', 'rgb(77,146,33)'], 9: ['rgb(197,27,125)', 'rgb(222,119,174)', 'rgb(241,182,218)', 'rgb(253,224,239)', 'rgb(247,247,247)', 'rgb(230,245,208)', 'rgb(184,225,134)', 'rgb(127,188,65)', 'rgb(77,146,33)'], 10: ['rgb(142,1,82)', 'rgb(197,27,125)', 'rgb(222,119,174)', 'rgb(241,182,218)', 'rgb(253,224,239)', 'rgb(230,245,208)', 'rgb(184,225,134)', 'rgb(127,188,65)', 'rgb(77,146,33)', 'rgb(39,100,25)'], 11: ['rgb(142,1,82)', 'rgb(197,27,125)', 'rgb(222,119,174)', 'rgb(241,182,218)', 'rgb(253,224,239)', 'rgb(247,247,247)', 'rgb(230,245,208)', 'rgb(184,225,134)', 'rgb(127,188,65)', 'rgb(77,146,33)', 'rgb(39,100,25)'], 'properties':{'type': 'div','blind':[1],'print':[1,1,2,0,0,0,0,0,0],'copy':[0],'screen':[1,1,2,0,0,0,0,0,0] } } ,
+						PRGn:  {3: ['rgb(175,141,195)', 'rgb(247,247,247)', 'rgb(127,191,123)'], 4: ['rgb(123,50,148)', 'rgb(194,165,207)', 'rgb(166,219,160)', 'rgb(0,136,55)'], 5: ['rgb(123,50,148)', 'rgb(194,165,207)', 'rgb(247,247,247)', 'rgb(166,219,160)', 'rgb(0,136,55)'], 6: ['rgb(118,42,131)', 'rgb(175,141,195)', 'rgb(231,212,232)', 'rgb(217,240,211)', 'rgb(127,191,123)', 'rgb(27,120,55)'], 7: ['rgb(118,42,131)', 'rgb(175,141,195)', 'rgb(231,212,232)', 'rgb(247,247,247)', 'rgb(217,240,211)', 'rgb(127,191,123)', 'rgb(27,120,55)'], 8: ['rgb(118,42,131)', 'rgb(153,112,171)', 'rgb(194,165,207)', 'rgb(231,212,232)', 'rgb(217,240,211)', 'rgb(166,219,160)', 'rgb(90,174,97)', 'rgb(27,120,55)'], 9: ['rgb(118,42,131)', 'rgb(153,112,171)', 'rgb(194,165,207)', 'rgb(231,212,232)', 'rgb(247,247,247)', 'rgb(217,240,211)', 'rgb(166,219,160)', 'rgb(90,174,97)', 'rgb(27,120,55)'], 10: ['rgb(64,0,75)', 'rgb(118,42,131)', 'rgb(153,112,171)', 'rgb(194,165,207)', 'rgb(231,212,232)', 'rgb(217,240,211)', 'rgb(166,219,160)', 'rgb(90,174,97)', 'rgb(27,120,55)', 'rgb(0,68,27)'], 11: ['rgb(64,0,75)', 'rgb(118,42,131)', 'rgb(153,112,171)', 'rgb(194,165,207)', 'rgb(231,212,232)', 'rgb(247,247,247)', 'rgb(217,240,211)', 'rgb(166,219,160)', 'rgb(90,174,97)', 'rgb(27,120,55)', 'rgb(0,68,27)'], 'properties':{'type': 'div','blind':[1],'print':[1,1,1,1,0,0,0,0,0],'copy':[0],'screen':[1,1,2,2,0,0,0,0,0] } } ,
+						RdYlBu:  {3: ['rgb(252,141,89)', 'rgb(255,255,191)', 'rgb(145,191,219)'], 4: ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(171,217,233)', 'rgb(44,123,182)'], 5: ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(255,255,191)', 'rgb(171,217,233)', 'rgb(44,123,182)'], 6: ['rgb(215,48,39)', 'rgb(252,141,89)', 'rgb(254,224,144)', 'rgb(224,243,248)', 'rgb(145,191,219)', 'rgb(69,117,180)'], 7: ['rgb(215,48,39)', 'rgb(252,141,89)', 'rgb(254,224,144)', 'rgb(255,255,191)', 'rgb(224,243,248)', 'rgb(145,191,219)', 'rgb(69,117,180)'], 8: ['rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,144)', 'rgb(224,243,248)', 'rgb(171,217,233)', 'rgb(116,173,209)', 'rgb(69,117,180)'], 9: ['rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,144)', 'rgb(255,255,191)', 'rgb(224,243,248)', 'rgb(171,217,233)', 'rgb(116,173,209)', 'rgb(69,117,180)'], 10: ['rgb(165,0,38)', 'rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,144)', 'rgb(224,243,248)', 'rgb(171,217,233)', 'rgb(116,173,209)', 'rgb(69,117,180)', 'rgb(49,54,149)'], 11: ['rgb(165,0,38)', 'rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,144)', 'rgb(255,255,191)', 'rgb(224,243,248)', 'rgb(171,217,233)', 'rgb(116,173,209)', 'rgb(69,117,180)', 'rgb(49,54,149)'], 'properties':{'type': 'div','blind':[1],'print':[1,1,1,1,2,0,0,0,0],'copy':[0],'screen':[1,1,1,2,0,0,0,0,0] } } ,
+						BrBG:  {3: ['rgb(216,179,101)', 'rgb(245,245,245)', 'rgb(90,180,172)'], 4: ['rgb(166,97,26)', 'rgb(223,194,125)', 'rgb(128,205,193)', 'rgb(1,133,113)'], 5: ['rgb(166,97,26)', 'rgb(223,194,125)', 'rgb(245,245,245)', 'rgb(128,205,193)', 'rgb(1,133,113)'], 6: ['rgb(140,81,10)', 'rgb(216,179,101)', 'rgb(246,232,195)', 'rgb(199,234,229)', 'rgb(90,180,172)', 'rgb(1,102,94)'], 7: ['rgb(140,81,10)', 'rgb(216,179,101)', 'rgb(246,232,195)', 'rgb(245,245,245)', 'rgb(199,234,229)', 'rgb(90,180,172)', 'rgb(1,102,94)'], 8: ['rgb(140,81,10)', 'rgb(191,129,45)', 'rgb(223,194,125)', 'rgb(246,232,195)', 'rgb(199,234,229)', 'rgb(128,205,193)', 'rgb(53,151,143)', 'rgb(1,102,94)'], 9: ['rgb(140,81,10)', 'rgb(191,129,45)', 'rgb(223,194,125)', 'rgb(246,232,195)', 'rgb(245,245,245)', 'rgb(199,234,229)', 'rgb(128,205,193)', 'rgb(53,151,143)', 'rgb(1,102,94)'], 10: ['rgb(84,48,5)', 'rgb(140,81,10)', 'rgb(191,129,45)', 'rgb(223,194,125)', 'rgb(246,232,195)', 'rgb(199,234,229)', 'rgb(128,205,193)', 'rgb(53,151,143)', 'rgb(1,102,94)', 'rgb(0,60,48)'], 11: ['rgb(84,48,5)', 'rgb(140,81,10)', 'rgb(191,129,45)', 'rgb(223,194,125)', 'rgb(246,232,195)', 'rgb(245,245,245)', 'rgb(199,234,229)', 'rgb(128,205,193)', 'rgb(53,151,143)', 'rgb(1,102,94)', 'rgb(0,60,48)'], 'properties':{'type': 'div','blind':[1],'print':[1,1,1,1,0,0,0,0,0],'copy':[0],'screen':[1,1,1,1,0,0,0,0,0] } } ,
+						RdGy:  {3: ['rgb(239,138,98)', 'rgb(255,255,255)', 'rgb(153,153,153)'], 4: ['rgb(202,0,32)', 'rgb(244,165,130)', 'rgb(186,186,186)', 'rgb(64,64,64)'], 5: ['rgb(202,0,32)', 'rgb(244,165,130)', 'rgb(255,255,255)', 'rgb(186,186,186)', 'rgb(64,64,64)'], 6: ['rgb(178,24,43)', 'rgb(239,138,98)', 'rgb(253,219,199)', 'rgb(224,224,224)', 'rgb(153,153,153)', 'rgb(77,77,77)'], 7: ['rgb(178,24,43)', 'rgb(239,138,98)', 'rgb(253,219,199)', 'rgb(255,255,255)', 'rgb(224,224,224)', 'rgb(153,153,153)', 'rgb(77,77,77)'], 8: ['rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(224,224,224)', 'rgb(186,186,186)', 'rgb(135,135,135)', 'rgb(77,77,77)'], 9: ['rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(255,255,255)', 'rgb(224,224,224)', 'rgb(186,186,186)', 'rgb(135,135,135)', 'rgb(77,77,77)'], 10: ['rgb(103,0,31)', 'rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(224,224,224)', 'rgb(186,186,186)', 'rgb(135,135,135)', 'rgb(77,77,77)', 'rgb(26,26,26)'], 11: ['rgb(103,0,31)', 'rgb(178,24,43)', 'rgb(214,96,77)', 'rgb(244,165,130)', 'rgb(253,219,199)', 'rgb(255,255,255)', 'rgb(224,224,224)', 'rgb(186,186,186)', 'rgb(135,135,135)', 'rgb(77,77,77)', 'rgb(26,26,26)'], 'properties':{'type': 'div','blind':[2],'print':[1,1,1,2,0,0,0,0,0],'copy':[0],'screen':[1,1,2,0,0,0,0,0,0] } } ,
+						PuOr:  {3: ['rgb(241,163,64)', 'rgb(247,247,247)', 'rgb(153,142,195)'], 4: ['rgb(230,97,1)', 'rgb(253,184,99)', 'rgb(178,171,210)', 'rgb(94,60,153)'], 5: ['rgb(230,97,1)', 'rgb(253,184,99)', 'rgb(247,247,247)', 'rgb(178,171,210)', 'rgb(94,60,153)'], 6: ['rgb(179,88,6)', 'rgb(241,163,64)', 'rgb(254,224,182)', 'rgb(216,218,235)', 'rgb(153,142,195)', 'rgb(84,39,136)'], 7: ['rgb(179,88,6)', 'rgb(241,163,64)', 'rgb(254,224,182)', 'rgb(247,247,247)', 'rgb(216,218,235)', 'rgb(153,142,195)', 'rgb(84,39,136)'], 8: ['rgb(179,88,6)', 'rgb(224,130,20)', 'rgb(253,184,99)', 'rgb(254,224,182)', 'rgb(216,218,235)', 'rgb(178,171,210)', 'rgb(128,115,172)', 'rgb(84,39,136)'], 9: ['rgb(179,88,6)', 'rgb(224,130,20)', 'rgb(253,184,99)', 'rgb(254,224,182)', 'rgb(247,247,247)', 'rgb(216,218,235)', 'rgb(178,171,210)', 'rgb(128,115,172)', 'rgb(84,39,136)'], 10: ['rgb(127,59,8)', 'rgb(179,88,6)', 'rgb(224,130,20)', 'rgb(253,184,99)', 'rgb(254,224,182)', 'rgb(216,218,235)', 'rgb(178,171,210)', 'rgb(128,115,172)', 'rgb(84,39,136)', 'rgb(45,0,75)'], 11: ['rgb(127,59,8)', 'rgb(179,88,6)', 'rgb(224,130,20)', 'rgb(253,184,99)', 'rgb(254,224,182)', 'rgb(247,247,247)', 'rgb(216,218,235)', 'rgb(178,171,210)', 'rgb(128,115,172)', 'rgb(84,39,136)', 'rgb(45,0,75)'], 'properties':{'type': 'div','blind':[1],'print':[1,1,2,2,0,0,0,0,0],'copy':[1,1,0,0,0,0,0,0,0],'screen':[1,1,1,1,0,0,0,0,0] } } ,
+						/** Qualitative **/
+						Set2:  {3: ['rgb(102,194,165)', 'rgb(252,141,98)', 'rgb(141,160,203)'], 4: ['rgb(102,194,165)', 'rgb(252,141,98)', 'rgb(141,160,203)', 'rgb(231,138,195)'], 5: ['rgb(102,194,165)', 'rgb(252,141,98)', 'rgb(141,160,203)', 'rgb(231,138,195)', 'rgb(166,216,84)'], 6: ['rgb(102,194,165)', 'rgb(252,141,98)', 'rgb(141,160,203)', 'rgb(231,138,195)', 'rgb(166,216,84)', 'rgb(255,217,47)'], 7: ['rgb(102,194,165)', 'rgb(252,141,98)', 'rgb(141,160,203)', 'rgb(231,138,195)', 'rgb(166,216,84)', 'rgb(255,217,47)', 'rgb(229,196,148)'], 8: ['rgb(102,194,165)', 'rgb(252,141,98)', 'rgb(141,160,203)', 'rgb(231,138,195)', 'rgb(166,216,84)', 'rgb(255,217,47)', 'rgb(229,196,148)', 'rgb(179,179,179)'], 'properties':{'type': 'qual','blind':[1,2,2,2,0,0,0],'print':[1,1,1,2,2,2],'copy':[0],'screen':[1,1,2,2,2,2] } } ,
+						Accent:  {3: ['rgb(127,201,127)', 'rgb(190,174,212)', 'rgb(253,192,134)'], 4: ['rgb(127,201,127)', 'rgb(190,174,212)', 'rgb(253,192,134)', 'rgb(255,255,153)'], 5: ['rgb(127,201,127)', 'rgb(190,174,212)', 'rgb(253,192,134)', 'rgb(255,255,153)', 'rgb(56,108,176)'], 6: ['rgb(127,201,127)', 'rgb(190,174,212)', 'rgb(253,192,134)', 'rgb(255,255,153)', 'rgb(56,108,176)', 'rgb(240,2,127)'], 7: ['rgb(127,201,127)', 'rgb(190,174,212)', 'rgb(253,192,134)', 'rgb(255,255,153)', 'rgb(56,108,176)', 'rgb(240,2,127)', 'rgb(191,91,23)'], 8: ['rgb(127,201,127)', 'rgb(190,174,212)', 'rgb(253,192,134)', 'rgb(255,255,153)', 'rgb(56,108,176)', 'rgb(240,2,127)', 'rgb(191,91,23)', 'rgb(102,102,102)'], 'properties':{'type': 'qual','blind':[2,0,0,0,0,0,0],'print':[1,1,2,2,2,2],'copy':[0],'screen':[1,1,1,2,2,2] } } ,
+						Set1:  {3: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)'], 4: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)'], 5: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)'], 6: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)'], 7: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)'], 8: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)', 'rgb(247,129,191)'], 9: ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)', 'rgb(247,129,191)', 'rgb(153,153,153)'], 'properties':{'type': 'qual','blind':[2],'print':[1],'copy':[0],'screen':[1] } } ,
+						Set3:  {3: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)'], 4: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)'], 5: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)'], 6: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)'], 7: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)'], 8: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)'], 9: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)'], 10: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)'], 11: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)'], 12: ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)', 'rgb(255,237,111)'], 'properties':{'type': 'qual','blind':[2,2,0,0,0,0,0,0,0,0],'print':[1,1,1,1,1,1,2,0,0,0],'copy':[1,2,2,2,2,2,2,0,0,0],'screen':[1,1,1,2,2,2,0,0,0,0] } } ,
+						Dark2:  {3: ['rgb(27,158,119)', 'rgb(217,95,2)', 'rgb(117,112,179)'], 4: ['rgb(27,158,119)', 'rgb(217,95,2)', 'rgb(117,112,179)', 'rgb(231,41,138)'], 5: ['rgb(27,158,119)', 'rgb(217,95,2)', 'rgb(117,112,179)', 'rgb(231,41,138)', 'rgb(102,166,30)'], 6: ['rgb(27,158,119)', 'rgb(217,95,2)', 'rgb(117,112,179)', 'rgb(231,41,138)', 'rgb(102,166,30)', 'rgb(230,171,2)'], 7: ['rgb(27,158,119)', 'rgb(217,95,2)', 'rgb(117,112,179)', 'rgb(231,41,138)', 'rgb(102,166,30)', 'rgb(230,171,2)', 'rgb(166,118,29)'], 8: ['rgb(27,158,119)', 'rgb(217,95,2)', 'rgb(117,112,179)', 'rgb(231,41,138)', 'rgb(102,166,30)', 'rgb(230,171,2)', 'rgb(166,118,29)', 'rgb(102,102,102)'], 'properties':{'type': 'qual','blind':[1,2,2,2,0,0],'print':[1],'copy':[0],'screen':[1] } } ,
+						Paired:  {3: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)'], 4: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)'], 5: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)'], 6: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)'], 7: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)'], 8: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)'], 9: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)'], 10: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)'], 11: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)', 'rgb(255,255,153)'], 12: ['rgb(166,206,227)', 'rgb(31,120,180)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)', 'rgb(255,255,153)', 'rgb(177,89,40)'], 'properties':{'type': 'qual','blind':[1,1,2,2,2,2,0,0,0],'print':[1,1,1,1,1,2,2,2,2],'copy':[0],'screen':[1,1,1,1,1,1,1,1,2] } } ,
+						Pastel2:  {3: ['rgb(179,226,205)', 'rgb(253,205,172)', 'rgb(203,213,232)'], 4: ['rgb(179,226,205)', 'rgb(253,205,172)', 'rgb(203,213,232)', 'rgb(244,202,228)'], 5: ['rgb(179,226,205)', 'rgb(253,205,172)', 'rgb(203,213,232)', 'rgb(244,202,228)', 'rgb(230,245,201)'], 6: ['rgb(179,226,205)', 'rgb(253,205,172)', 'rgb(203,213,232)', 'rgb(244,202,228)', 'rgb(230,245,201)', 'rgb(255,242,174)'], 7: ['rgb(179,226,205)', 'rgb(253,205,172)', 'rgb(203,213,232)', 'rgb(244,202,228)', 'rgb(230,245,201)', 'rgb(255,242,174)', 'rgb(241,226,204)'], 8: ['rgb(179,226,205)', 'rgb(253,205,172)', 'rgb(203,213,232)', 'rgb(244,202,228)', 'rgb(230,245,201)', 'rgb(255,242,174)', 'rgb(241,226,204)', 'rgb(204,204,204)'], 'properties':{'type': 'qual','blind':[2,0,0,0,0,0],'print':[2,0,0,0,0,0],'copy':[0],'screen':[2,2,0,0,0,0] } } ,
+						Pastel1:  {3: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)'], 4: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)', 'rgb(222,203,228)'], 5: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)', 'rgb(222,203,228)', 'rgb(254,217,166)'], 6: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)', 'rgb(222,203,228)', 'rgb(254,217,166)', 'rgb(255,255,204)'], 7: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)', 'rgb(222,203,228)', 'rgb(254,217,166)', 'rgb(255,255,204)', 'rgb(229,216,189)'], 8: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)', 'rgb(222,203,228)', 'rgb(254,217,166)', 'rgb(255,255,204)', 'rgb(229,216,189)', 'rgb(253,218,236)'], 9: ['rgb(251,180,174)', 'rgb(179,205,227)', 'rgb(204,235,197)', 'rgb(222,203,228)', 'rgb(254,217,166)', 'rgb(255,255,204)', 'rgb(229,216,189)', 'rgb(253,218,236)', 'rgb(242,242,242)'], 'properties':{'type': 'qual','blind':[2,0,0,0,0,0,0],'print':[2,2,2,0,0,0,0],'copy':[0],'screen':[2,2,2,2,0,0,0] } }
+					};
+
+					// define array of values
+					this.setSeries = function (seriesArr) {
+						this.series = Array();
+						this.series = seriesArr;
+						this.series = this.series.sort(function (a, b) { return a-b });
+					};
+
+					// return array of values
+					this.getSeries = function () {
+						return this.series;
+					};
+
+					// set number of classes
+					this.setNumClasses = function (n) {
+						this.numClasses = n;
+					};
+
+					// get number of classes
+					this.getNumClasses = function () {
+						return this.numClasses;
+					};
+
+					// define color ramp color
+					this.setColorCode = function (color) {
+						this.colorCode = color;
+					};
+
+					// get available color ramps
+					this.getColorCode = function () {
+						return this.colorCode;
+					};
+
+					// get color codes
+					this.getColorCodes = function () {
+						var colorCodes = [];
+						for ( code in this.colorSchemes ) {
+							if ( this.colorSchemes.hasOwnProperty(code) ) {
+								colorCodes.push(code);
+							}
+						}
+						return colorCodes;
+					};
+
+					// get color codes by type
+					this.getColorCodesByType = function () {
+						var colorTypes = {};
+						for ( code in this.colorSchemes ) {
+							if ( this.colorSchemes.hasOwnProperty(code) ) {
+								if( !colorTypes.hasOwnProperty(this.colorSchemes[code].properties.type) ) {
+									colorTypes[this.colorSchemes[code].properties.type] = []
+								}
+								colorTypes[this.colorSchemes[code].properties.type].push(code);
+							}
+						}
+						return colorTypes;
+					};
+
+					/**** Classification Methods ****/
+
+					this._classifyEqualInterval = function () {
+						var min = Math.min.apply(null, this.series);
+						var max = Math.max.apply(null, this.series);
+
+						var a = [];
+						var val = min;
+						var interval = (max - min) / this.getNumClasses();
+
+						for (i = 0; i <= this.getNumClasses(); i++) {
+							a[i] = val;
+							val += interval;
+						}
+
+						//-> Fix last bound to Max of values
+						a[this.getNumClasses()] = max;
+
+						this.range = a;
+						this.range.sort(function (a, b) { return a-b });
+
+						return this.range;
+					};
+
+					this._classifyQuantile = function () {
+						var tmp = this.series.sort(function (a, b) { return a-b });
+						var quantiles = [];
+						var step = this.series.length / this.getNumClasses();
+						for (var i = 1; i < this.getNumClasses(); i++) {
+							var qidx = Math.round(i*step+0.49);
+							quantiles.push(tmp[qidx-1]); // zero-based
+						}
+						var bounds = quantiles;
+
+						bounds.unshift(tmp[0]);
+						if (bounds[tmp.length - 1] !== tmp[tmp.length - 1])
+							bounds.push(tmp[tmp.length - 1]);
+
+						this.range = bounds;
+						this.range.sort(function (a, b) { return a-b });
+
+						return this.range;
+					};
+
+					this._classifyStdDeviation = function () {
+						var min = Math.min.apply(null, this.series);
+						var max = Math.max.apply(null, this.series);
+
+						var a = [];
+
+						// number of classes is odd
+						if(this.getNumClasses % 2 == 1) {
+
+							// Euclidean division to get the inferior bound
+							var infBound = Math.floor(this.getNumClasses() / 2);
+
+							var supBound = infBound + 1;
+
+							// we set the central bounds
+							a[infBound] = this._mean(this.series) - ( this._stdDev(this.series) / 2);
+							a[supBound] = this._mean(this.series) + ( this._stdDev(this.series) / 2);
+
+							// Values < to infBound, except first one
+							for (i = infBound - 1; i > 0; i--) {
+								var val = a[i+1] - this._stdDev(this.series);
+								a[i] = val;
+							}
+
+							// Values > to supBound, except last one
+							for (i = supBound + 1; i < this.getNumClasses(); i++) {
+								var val = a[i-1] + this._stdDev(this.series);
+								a[i] = val;
+							}
+
+							// number of classes is even
+						} else {
+
+							var meanBound = this.getNumClasses() / 2;
+
+							// we get the mean value
+							a[meanBound] = this._mean(this.series);
+
+							// Values < to the mean, except first one
+							for (i = meanBound - 1; i > 0; i--) {
+								var val = a[i+1] - this._stdDev(this.series);
+								a[i] = val;
+							}
+
+							// Values > to the mean, except last one
+							for (i = meanBound + 1; i < this.getNumClasses(); i++) {
+								var val = a[i-1] + this._stdDev(this.series);
+								a[i] = val;
+							}
+						}
+
+
+						// we finally set the first value
+						a[0] = min;
+
+						// we finally set the last value
+						a[this.getNumClasses()] = max;
+
+						this.range = a;
+						this.range.sort(function (a, b) { return a-b });
+
+						return this.range;
+					};
+
+					this._classifyJenks = function () {
+						var mat1 = [];
+						for ( var x = 0, xl = this.series.length + 1; x < xl; x++) {
+							var temp = []
+							for ( var j = 0, jl = this.numClasses + 1; j < jl; j++) {
+								temp.push(0)
+							}
+							mat1.push(temp)
+						}
+
+						var mat2 = []
+						for ( var i = 0, il = this.series.length + 1; i < il; i++) {
+							var temp2 = []
+							for ( var c = 0, cl = this.numClasses + 1; c < cl; c++) {
+								temp2.push(0)
+							}
+							mat2.push(temp2)
+						}
+
+						for ( var y = 1, yl = this.numClasses + 1; y < yl; y++) {
+							mat1[0][y] = 1
+							mat2[0][y] = 0
+							for ( var t = 1, tl = this.series.length + 1; t < tl; t++) {
+								mat2[t][y] = Infinity
+							}
+							var v = 0.0
+						}
+
+						for ( var l = 2, ll = this.series.length + 1; l < ll; l++) {
+							var s1 = 0.0
+							var s2 = 0.0
+							var w = 0.0
+							for ( var m = 1, ml = l + 1; m < ml; m++) {
+								var i3 = l - m + 1
+								var val = parseFloat(this.series[i3 - 1])
+								s2 += val * val
+								s1 += val
+								w += 1
+								v = s2 - (s1 * s1) / w
+								var i4 = i3 - 1
+								if (i4 != 0) {
+									for ( var p = 2, pl = this.numClasses + 1; p < pl; p++) {
+										if (mat2[l][p] >= (v + mat2[i4][p - 1])) {
+											mat1[l][p] = i3
+											mat2[l][p] = v + mat2[i4][p - 1]
+										}
+									}
+								}
+							}
+							mat1[l][1] = 1
+							mat2[l][1] = v
+						}
+
+						var k = this.series.length
+						var kclass = []
+
+						for (i = 0, il = this.numClasses + 1; i < il; i++) {
+							kclass.push(0)
+						}
+
+						kclass[this.numClasses] = parseFloat(this.series[this.series.length - 1])
+
+						kclass[0] = parseFloat(this.series[0])
+						var countNum = this.numClasses
+						while (countNum >= 2) {
+							var id = parseInt((mat1[k][countNum]) - 2)
+							kclass[countNum - 1] = this.series[id]
+							k = parseInt((mat1[k][countNum] - 1))
+
+							countNum -= 1
+						}
+
+						if (kclass[0] == kclass[1]) {
+							kclass[0] = 0
+						}
+
+						this.range = kclass;
+						this.range.sort(function (a, b) { return a-b })
+
+						return this.range; //array of breaks
+					};
+
+					/**** End classification methods ****/
+
+					// return array of natural breaks
+					this.classify = function (method, classes) {
+						this.statMethod = (method !== undefined) ? method : this.statMethod;
+						this.numClasses = (classes !== undefined) ? classes : this.numClasses;
+						var breaks = undefined;
+						switch(method) {
+							case 'equal_interval':
+								breaks = this._classifyEqualInterval();
+								break;
+							case 'quantile':
+								breaks = this._classifyQuantile();
+								break;
+							case 'std_deviation':
+								breaks = this._classifyStdDeviation();
+								break;
+							case 'jenks':
+								breaks = this._classifyJenks();
+								break;
+							default:
+								breaks = this._classifyJenks();
+						}
+						this.breaks = breaks;
+						return breaks;
+					};
+
+					// return types of available classification methods
+					this.getClassificationMethods = function () {
+						return ['equal_interval', 'quantile'/*, 'std_deviation'*/, 'jenks'];
+					};
+
+					this.getBreaks = function () {
+						// always re-classify to account for new data
+						return this.breaks ? this.breaks : this.classify();
+					};
+
+					// get colors from data and num classes
+					this.getColors = function () {
+						// return array of colors
+						return this.colorSchemes[this.colorCode][this.numClasses];
+					};
+
+					// get color for a given value
+					this.getColorInRange = function (num) {
+						// return color code for supplied number
+						// [4, 6, 8, 9]
+						// [4-5.99, 6-7.99, 8-9]
+						var i = 0;
+						for(i; i < this.range.length; i++) {
+							//number equal to or greater than current value in range
+							//we havent reached the last value in range
+							if(num >= this.range[i] && i < this.range.length) {
+								if(num <= this.range[i + 1]) {
+									return this.colorSchemes[this.colorCode][this.numClasses][i];
+								}
+							} else if(num == this.range[i]) {
+								return this.colorSchemes[this.colorCode][this.numClasses][i - 1];
+							} else {
+								return false;
+							}
+						}
+					};
+
+					/*** Simple Math Functions ***/
+					this._mean = function (arr) {
+						return parseFloat(this._sum(arr) / arr.length);
+					};
+
+					this._sum = function (arr) {
+						var sum = 0;
+						var i;
+						for(i = 0; i < arr.length; i++) {
+							sum += arr[i];
+						}
+						return sum;
+					};
+
+					this._variance = function (arr) {
+						var tmp = 0;
+						for (var i = 0; i < arr.length; i++) {
+							tmp += Math.pow( (arr[i] - this._mean(arr)), 2 );
+						}
+
+						return (tmp / arr.length);
+					};
+
+					this._stdDev = function (arr) {
+						return Math.sqrt(this._variance(arr));
+					};
+
+					/*** END Simple math Functions ***/
+				}
+
+
+			})();
+
+			// support node module and browser
+			if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+				module.exports = classyBrew;
+			} else {
+				window.classyBrew = classyBrew;
+			}
+
+		})();
+: ['rgb(247,247,247)', 'rgb(204,204,204)', 'rgb(150,150,150)', 'rgb(82,82,82)'], 5: ['rgb(247,247,247)', 'rgb(204,204,204)', 'rgb(150,150,150)', 'rgb(99,99,99)', 'rgb(37,37,37)'], 6: ['rgb(247,247,247)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(99,99,99)', 'rgb(37,37,37)'], 7: ['rgb(247,247,247)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(115,115,115)', 'rgb(82,82,82)', 'rgb(37,37,37)'], 8: ['rgb(255,255,255)', 'rgb(240,240,240)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(115,115,115)', 'rgb(82,82,82)', 'rgb(37,37,37)'], 9: ['rgb(255,255,255)', 'rgb(240,240,240)', 'rgb(217,217,217)', 'rgb(189,189,189)', 'rgb(150,150,150)', 'rgb(115,115,115)', 'rgb(82,82,82)', 'rgb(37,37,37)', 'rgb(0,0,0)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,2,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } ,
 						YlOrRd:  {3: ['rgb(255,237,160)', 'rgb(254,178,76)', 'rgb(240,59,32)'], 4: ['rgb(255,255,178)', 'rgb(254,204,92)', 'rgb(253,141,60)', 'rgb(227,26,28)'], 5: ['rgb(255,255,178)', 'rgb(254,204,92)', 'rgb(253,141,60)', 'rgb(240,59,32)', 'rgb(189,0,38)'], 6: ['rgb(255,255,178)', 'rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(240,59,32)', 'rgb(189,0,38)'], 7: ['rgb(255,255,178)', 'rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(252,78,42)', 'rgb(227,26,28)', 'rgb(177,0,38)'], 8: ['rgb(255,255,204)', 'rgb(255,237,160)', 'rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(252,78,42)', 'rgb(227,26,28)', 'rgb(177,0,38)'], 9:['rgb(255,255,204)','rgb(255,237,160)','rgb(254,217,118)','rgb(254,178,76)','rgb(253,141,60)','rgb(252,78,42)','rgb(227,26,28)','rgb(189,0,38)','rgb(128,0,38)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,2,2,0,0,0],'copy':[1,2,2,0,0,0,0],'screen':[1,2,2,0,0,0,0] } } ,
 						PuRd:  {3: ['rgb(231,225,239)', 'rgb(201,148,199)', 'rgb(221,28,119)'], 4: ['rgb(241,238,246)', 'rgb(215,181,216)', 'rgb(223,101,176)', 'rgb(206,18,86)'], 5: ['rgb(241,238,246)', 'rgb(215,181,216)', 'rgb(223,101,176)', 'rgb(221,28,119)', 'rgb(152,0,67)'], 6: ['rgb(241,238,246)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(221,28,119)', 'rgb(152,0,67)'], 7: ['rgb(241,238,246)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(231,41,138)', 'rgb(206,18,86)', 'rgb(145,0,63)'], 8: ['rgb(247,244,249)', 'rgb(231,225,239)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(231,41,138)', 'rgb(206,18,86)', 'rgb(145,0,63)'], 9: ['rgb(247,244,249)', 'rgb(231,225,239)', 'rgb(212,185,218)', 'rgb(201,148,199)', 'rgb(223,101,176)', 'rgb(231,41,138)', 'rgb(206,18,86)', 'rgb(152,0,67)', 'rgb(103,0,31)'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,1,0,0,0,0],'copy':[1,2,0,0,0,0,0],'screen':[1,1,1,0,0,0,0] } } ,
 						Blues:  {3: ['rgb(222,235,247)', 'rgb(158,202,225)', 'rgb(49,130,189)'], 4: ['rgb(239,243,255)', 'rgb(189,215,231)', 'rgb(107,174,214)', 'rgb(33,113,181)'], 5: ['rgb(239,243,255)', 'rgb(189,215,231)', 'rgb(107,174,214)', 'rgb(49,130,189)', 'rgb(8,81,156)'], 6: ['rgb(239,243,255)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(49,130,189)', 'rgb(8,81,156)'], 7: ['rgb(239,243,255)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,69,148)'], 8: ['rgb(247,251,255)', 'rgb(222,235,247)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,69,148)'], 9: ['rgb(247,251,255)', 'rgb(222,235,247)', 'rgb(198,219,239)', 'rgb(158,202,225)', 'rgb(107,174,214)', 'rgb(66,146,198)', 'rgb(33,113,181)', 'rgb(8,81,156)', 'rgb(8,48,107)'], 'properties':{'type': 'seq','blind':[1],'print':[1,2,0,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } ,
