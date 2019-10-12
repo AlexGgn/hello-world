@@ -1,0 +1,193 @@
+/*Choix des statistiques à afficher*/
+
+#stats_Statistiques_menu
+{
+	position: fixed;
+	top: 205;
+	left: 20;
+	width: 450;
+	height: 505;
+	border: solid black;
+	padding: 20;
+	overflow: auto;
+}
+
+#stats_Statistiques_menu_titre /*titre de la fenêtre*/
+{
+	font-size: 60;
+	font-weight: bold;
+	text-align: center;
+	margin-top: 0;
+	margin-bottom: -30;
+}
+
+.stats_Statistiques_menu_sous_titre /*sous-titres de la fenêtre*/
+{
+	font-size: 20;
+	font-weight: bold;
+	text-decoration: underline;
+	margin-top: 30;
+	margin-bottom: -10;
+	margin-left: 20;
+}
+
+
+
+
+/*Informations concernant la statistique sélectionnée*/
+
+#stats_Statistiques_infos
+{
+	position: fixed;
+	top: 205;
+	left: 560;
+	height: 505;
+	width: 500;
+	padding: 30;
+	padding-top: 10;
+	border: solid black;
+	overflow: auto;
+}
+
+#stats_Statistiques_infos_stat_nom
+{
+	font-size: 22;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+#stats_Statistiques_infos_stat_infos
+{
+	font-size: 20;
+}
+
+
+
+
+/*Carte d'autocorrélation spatiale*/
+
+#stats_Statistiques_section
+{
+	position: fixed;
+	top: 205;
+	left: 1160;
+	height: 485;
+	width: 660;
+	padding: 30;
+	border: solid black;
+}
+
+#stats_Statistiques_section_titre /*titre de la carte*/
+{
+	font-size: 20;
+	font-weight: bold;
+	text-decoration: underline;
+	margin-top: -10;
+	margin-bottom: 15;
+	margin-left: 10;
+}
+
+#stats_Statistiques_section_ville /*choix de la ville de la carte d'autocorrélation spatiale*/
+{
+	position: fixed;
+	top: 210;
+	left: 1600;
+}
+
+#stats_Statistiques_section_ville_label /*label du choix de la ville*/
+{
+	font-size: 20;
+	font-weight: bold;
+}
+
+#stats_Statistiques_section_ville_liste /*liste déroulante pour le choix de la ville*/
+{
+	font-size: 16;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+#stats_Statistiques_section_ville_refresh /*bouton d'actualisation de la carte*/
+{
+	position: fixed;
+	top: 225;
+	left: 1815;
+	height: 25;
+}
+
+#stats_Statistiques_section_mapid /*carte affichée*/
+{
+	height: 460;
+	width: 540;
+	border: 1px solid black;
+	z-index: 0;
+}
+
+
+
+
+/*Légende de la carte*/
+
+#stats_Statistiques_legende
+{
+	position: fixed;
+	top: 266;
+	left: 1735;
+	width: 100;
+	height: 440;
+	padding: 10;
+	border: 1px solid black;
+	background-color: white;
+	overflow: auto;
+	z-index = 0;
+}
+
+#stats_Statistiques_legende_titre /*titre de la légende*/
+{
+	margin-top: 5;
+	margin-bottom: 15;
+	font-size: 18;
+	font-weight: bold;
+	text-align: center;
+}
+
+.stats_Statistiques_legende_ligne /*ligne comprenant couleur ou valeurs associées à cette couleur*/
+{
+	padding:5;
+	margin-bottom: -9;
+}
+
+.stats_Statistiques_legende_valeur /*valeur limite d'un intervalle de couleur*/
+{
+	font-size: 16;
+	margin-left: 40;
+}
+
+.stats_Statistiques_legende_couleur /*carré de couleur*/
+{
+	width: 20;
+	height: 15;
+	margin-left: 10;
+	border: 1px solid black;
+}
+
+#stats_Statistiques_legende_infos /*informations sur l'indice de Moran local*/
+{
+	position: fixed;
+	top: 728;
+	left: 1194;
+	width: 640;
+	padding-left: 10;
+	padding-right: 10;
+	border: 1px solid black;
+	background-color: white;
+	overflow: auto;
+}
+
+#stats_Statistiques_legende_infos_button /*bouton pour afficher/supprimer les informations sur l'indice de Moran local*/
+{
+	position: fixed;
+	top: 690;
+	left: 1810;
+	height: 30;
+}
