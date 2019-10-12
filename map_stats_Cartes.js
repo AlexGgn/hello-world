@@ -1618,7 +1618,7 @@
 			// fonction qui crée sur la carte des carrés dont la couleur dépend de la valeur attribuée au carré
 			function afficherStat_raster(liste, nom) {
 
-				var liste_brew = creerBrew(liste); // crée une liste à une dimension avec le tableau à 2 dimensions de la carte raster (valeur moyenne de chaque carré)
+				var liste_brew = creerBrew_raster(liste); // crée une liste à une dimension avec le tableau à 2 dimensions de la carte raster (valeur moyenne de chaque carré)
 
 				// crée la répartition des couleurs associées à chaque intervalle de valeur
 				var brew = new classyBrew();
@@ -1677,7 +1677,7 @@
 
 
 			// fonction qui crée une liste à une dimension des valeurs moyennes de chaque carré (comprenant seulement les carrés possédant une valeur)
-			function creerBrew(liste) {
+			function creerBrew_raster(liste) {
 
 				var L = [];
 
@@ -1741,6 +1741,8 @@
 			// fonction qui affiche sur la carte les secteurs dont la couleur dépend de la valeur attribuée au carré
 			function afficherStat_secteurs(liste, nom) {
 
+				var liste_brew = creerBrew_secteurs(liste); // crée une liste des valeurs moyennes de chaque secteur
+
 				// crée la répartition des couleurs associées à chaque intervalle de valeur
 				var brew = new classyBrew();
 				brew.setSeries(liste_brew);
@@ -1754,7 +1756,7 @@
 
 				for (var i = 0; i < sec; i++) {
 
-						// valeur de l'élément mesuré dans le secteur
+						// i-ème sous-secteur statistique
 						var secteur = liste[i];
 
 						// couleur du secteur en fonction de sa valeur
@@ -1762,16 +1764,31 @@
 
 						// créer un polygône à partir de ces adresses
 						L.polygon(BDD_secteurs[i],{
-							color: couleur,
+							color: 'black',
 							fillColor: couleur,
 							fillOpacity: 1
 						}).addTo(mapStats);
 				}
-
+ 
 
 				afficherLegende(nom, brew); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte
 
 				infoStat(); // affiche la fenêtre d'informations concernant la statistique
+			}
+
+
+
+			// fonction qui crée une liste des valeurs moyennes de chaque secteur
+			function creerBrew_secteurs(liste) {
+
+				var L = [];
+
+				for (var i = 0; i < sec; i++) {
+					var valeur = liste[i].moyenne;
+					L.push(valeur);
+				}
+
+				return L;
 			}
 
 
@@ -1937,6 +1954,7 @@
 				
 				// affichage d'une carte raster
 				if (type_carte == "raster") {
+					coordLimites(); // récupère les bornes et le pas de la carte raster
 					afficherCarte_raster(); // affiche la ville sélectionnée
 					var L = nombreLettres_raster(); // crée la liste raster
 					afficherStat_raster(L, "Nombre de lettres par adresse"); // affiche la carte raster et sa légende
@@ -1946,7 +1964,7 @@
 				else {
 					afficherCarte_secteurs(); // affiche les sous-secteurs statistiques
 					var L = nombreLettres_secteurs(); // crée la liste des secteurs
-					afficherStat_secteurs(L, "Nombre de lettres par adresse");alert(2); // affiche la carte et sa légende
+					afficherStat_secteurs(L, "Nombre de lettres par adresse"); // affiche la carte et sa légende
 				}
 			}
 
@@ -1958,8 +1976,6 @@
 				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
 				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
 				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
-
-				coordLimites(); // récupère les bornes et le pas de la carte raster
 
 				var L = initialiserListe_raster(); // crée une liste raster vide
 
@@ -2031,6 +2047,7 @@
 				
 				// affichage d'une carte raster
 				if (type_carte == "raster") {
+					coordLimites(); // récupère les bornes et le pas de la carte raster
 					afficherCarte_raster(); // affiche la ville sélectionnée
 					var L = nombreAdresses_raster(); // crée la liste raster
 					afficherStat_raster(L, "Nombre d'adresses"); // affiche la carte raster et sa légende
