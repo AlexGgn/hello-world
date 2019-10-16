@@ -83,41 +83,77 @@
 	font-weight: bold;
 	text-decoration: underline;
 	margin-top: -10;
-	margin-bottom: 15;
-	margin-left: 10;
+	margin-bottom: 5;
 }
 
-#stats_Statistiques_section_ville /*choix de la ville de la carte d'autocorrélation spatiale*/
-{
-	position: fixed;
-	top: 210;
-	left: 1600;
-}
-
-#stats_Statistiques_section_ville_label /*label du choix de la ville*/
+.stats_Statistiques_section_attribut /*label des attributs*/
 {
 	font-size: 20;
 	font-weight: bold;
+	margin-left: 10;
+}
+
+
+#stats_Statistiques_section_attributs /*choix des attributs 'ville' et 'type' de la carte*/
+{
+	display: flex;
+    flex-direction: row;
 }
 
 #stats_Statistiques_section_ville_liste /*liste déroulante pour le choix de la ville*/
 {
 	font-size: 16;
-	margin-top: 0;
-	margin-bottom: 0;
+	margin-left : 5;
+	margin-right: 25;
+	margin-bottom: 10;
 }
 
-#stats_Statistiques_section_ville_refresh /*bouton d'actualisation de la carte*/
+
+.stats_Statistiques_section_type_input /*choix du type de la carter*/
+{
+	margin-left: 15;
+	font-size: 18;
+}
+
+.stats_Statistiques_section_type_input_label /*nom des options du type de carte*/
+{
+	font-size: 18;
+}
+
+
+#stats_Statistiques_section_indice /*indice d'autocorrélation spatiale de la carte*/
 {
 	position: fixed;
-	top: 225;
-	left: 1815;
+	top: 207;
+	left: 1600;
+	border: 1px solid black;
+	padding: 5;
+	padding-right: 15;
+	padding-left: 0;
+}
+
+.stats_Statistiques_section_indice_input /*choix de l'indice d'autocorrélation spatiale de la carte*/
+{
+	margin-left: 10;
+}
+
+.stats_Statistiques_section_indice_input_label /*nom des options de l'indice d'autocorrélation spatiale de la carte*/
+{
+	font-size: 20;
+}
+
+
+#stats_Statistiques_section_carte_refresh /*bouton d'actualisation de la carte*/
+{
+	position: fixed;
+	top: 227;
+	left: 1535;
 	height: 25;
 }
 
 #stats_Statistiques_section_mapid /*carte affichée*/
 {
-	height: 460;
+	height: 410;
 	width: 540;
 	border: 1px solid black;
 	z-index: 0;
@@ -131,10 +167,10 @@
 #stats_Statistiques_legende
 {
 	position: fixed;
-	top: 266;
+	top: 321;
 	left: 1735;
 	width: 100;
-	height: 440;
+	height: 390;
 	padding: 10;
 	border: 1px solid black;
 	background-color: white;
@@ -174,7 +210,7 @@
 #stats_Statistiques_legende_infos /*informations sur l'indice de Moran local*/
 {
 	position: fixed;
-	top: 728;
+	top: 733;
 	left: 1194;
 	width: 640;
 	padding-left: 10;
