@@ -58,11 +58,23 @@
 			<!-- Titre de la carte -->
 			<h2 id="stats_Statistiques_section_titre">Niveau local d'autocorrélation spatiale</h2>
 			
-			<p id="stats_Statistiques_section_ville">
-				<label id="stats_Statistiques_section_ville_label">Ville : </label>
-				<select id="stats_Statistiques_section_ville_liste" name="section_ville_liste" onchange="attribuerVille(); return false;"></select>
-				<a class="stats_a" href="#" onclick="return false;"><img id="stats_Statistiques_section_ville_refresh" src="../images/refresh.png" alt="Rafraîchir la carte d'autocorrélation spatiale" /></a>
+			<div id="stats_Statistiques_section_attributs">
+				<p id="stats_Statistiques_section_ville">
+					<label id="stats_Statistiques_section_ville_label" class="stats_Statistiques_section_attribut">Ville : </label>
+					<select id="stats_Statistiques_section_ville_liste" name="section_ville_liste" onchange="attribuerVille(); return false;"></select>
+				</p>
+				<p id="stats_Statistiques_section_type"></p>
+			</div>
+				
+			<p id="stats_Statistiques_section_indice">
+				<label id="stats_Statistiques_section_indice_label" class="stats_Statistiques_section_attribut">Indice : </label>
+				<input class="stats_Statistiques_section_indice_input" type="radio" name="section_indice_input" value="Moran" onchange="attribuerIndice('Moran'); return false;" checked>
+				<label class="stats_Statistiques_section_indice_input_label">Moran</label>
+				<input class="stats_Statistiques_section_indice_input" type="radio" name="section_indice_input" value="Geary" onchange="attribuerIndice('Geary'); return false;">
+				<label class="stats_Statistiques_section_indice_input_label">Geary</label>
 			</p>
+			
+			<a class="stats_a" href="#" onclick="return false;"><img id="stats_Statistiques_section_carte_refresh" src="../images/refresh.png" alt="Rafraîchir la carte d'autocorrélation spatiale" /></a>
 			
 			<!-- Création de la carte -->
 			<div id="stats_Statistiques_section_mapid"></div>
