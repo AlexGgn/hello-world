@@ -146,15 +146,8 @@
 			
 			// fonction qui ajoute une nouvelle ville à la liste villes[]
 			function ajouterVille(id, nom, debut, fin) {
-				
 				var ville = new Ville(id, nom, debut, fin);
 				villes.push(ville);
-					
-				// ajoute également une option pour afficher les sous-secteurs statistiques de la ville de Lausanne
-				if (nom == "Lausanne") {
-					var ville = new Ville(100+id, nom+" (secteurs statistiques)", debut, fin);
-					villes.push(ville);
-				}
 			}
 			
 			
@@ -188,6 +181,12 @@
 						ville_fin = iville.fin;
 					}
 				}
+				
+				// modifications des éléments affichés dans la fenêtre de la carte d'atocorrélation spatiale en fonction de la ville sélectionnée 
+				if (ville_carte == 0) 
+					choixCarte_lausanne();
+				else
+					choixCarte_autres();
 			}
 			
 		
@@ -649,9 +648,13 @@
 		
 			var BDD_secteurs_adresses = [];
 			
+			var nombre_adresses_secteurs = 0; // nombre d'adresses appartenant à un sous-secteur statistique
+			
 			
 			// fonction qui crée la BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
 			function creerBDD_secteurs_adresses() {
+				
+				nombre_adresses_secteurs = 0;
 				
 				// crée une liste vide des sous-secteurs statistiques
 				for (s = 0; s < sec; s++) {
@@ -661,9 +664,128 @@
 				// remplit chaque sous-secteur statistique avec les indices des adresses qu'il contient
 				for (var i = ville_debut; i <= ville_fin; i++) {
 						var secteur = BDD_adresses_secteurs[i]; // secteur auquel appartient l'adresse
-						if (secteur >= 0)
-							BDD_secteurs_adresses[secteur].push(i); // ajoute l'indice de l'adresse à la liste du sous-secteur auquel elle appartient				
+						if (secteur >= 0) {
+							BDD_secteurs_adresses[secteur].push(i); // ajoute l'indice de l'adresse à la liste du sous-secteur auquel elle appartient
+							nombre_adresses_secteurs ++;
+						}
 				}
+			}
+
+
+
+
+
+
+
+
+// Fenêtre de carte d'autocorrélation spatiale
+
+		
+		// Indice de la carte
+
+			
+			var indice = "Moran"; // indice d'autocorrélation spatiale
+			
+			
+			// fonction qui récupère la ville sélectionnée pour l'affichage de la carte d'autocorrélation spatiale
+			function attribuerIndice(i) {
+				indice = i;
+			}
+			
+			
+		
+		
+		// Type de la carte
+
+			
+			var type_carte = "raster"; // type de carte statistique (initialement raster)
+			
+			
+			// fonction qui récupère la ville sélectionnée pour l'affichage de la carte d'autocorrélation spatiale
+			function attribuerType(type) {
+				type_carte = type;
+			}
+			
+			
+		
+		
+		// Modification de la fenêtre en fonction de la ville sélectionnée
+		
+		
+			// Choix de carte statistique pour la ville de Lausanne
+			function choixCarte_lausanne() {
+				
+				var Type = document.getElementById('stats_Statistiques_section_type');
+				
+				Type.innerHTML = "";
+				
+				
+				var myType = document.createElement('label');
+				myType.setAttribute("class","stats_Statistiques_section_attribut");
+				myType.textContent = "Type de Carte :";
+				Type.appendChild(myType);
+				
+				
+				// type 'raster'
+				
+				var Raster = document.createElement('input');
+				Raster.setAttribute("type","radio");
+				Raster.setAttribute("class","stats_Statistiques_section_type_input");
+				Raster.setAttribute("name","carte_type");
+				Raster.setAttribute("value","raster");
+				Raster.setAttribute("id","stats_Statistiques_section_type_input_raster");
+				Raster.setAttribute("onchange","attribuerType('raster');");
+				Raster.setAttribute("checked","true");
+				Type.appendChild(Raster);
+				
+				var myRaster = document.createElement('label');
+				myRaster.setAttribute("class","stats_Statistiques_section_type_input_label");
+				myRaster.textContent = "Raster";
+				Type.appendChild(myRaster);
+				
+				
+				// type 'secteurs'
+				
+				var Secteurs = document.createElement('input');
+				Secteurs.setAttribute("type","radio");
+				Secteurs.setAttribute("class","stats_Statistiques_section_type_input");
+				Secteurs.setAttribute("name","carte_type");
+				Secteurs.setAttribute("value","secteurs");
+				Secteurs.setAttribute("id","stats_Statistiques_section_type_input_secteurs");
+				Raster.setAttribute("onchange","attribuerType('secteurs');");
+				Type.appendChild(Secteurs);
+				
+				var mySecteurs = document.createElement('label');
+				mySecteurs.setAttribute("class","stats_Statistiques_section_type_input_label");
+				mySecteurs.textContent = "Secteurs statistiques";
+				Type.appendChild(mySecteurs);
+			}
+			
+			
+			
+			// Choix de carte statistique pour une autre ville
+			function choixCarte_autres() {
+				
+				var Type = document.getElementById('stats_Statistiques_section_type');
+				
+				Type.innerHTML = "";
+				
+				
+				var myType = document.createElement('label');
+				myType.setAttribute("class","stats_Statistiques_section_attribut");
+				myType.textContent = "Type de Carte :";
+				Type.appendChild(myType);
+				
+				
+				// type 'raster'
+				
+				var myRaster = document.createElement('label');
+				myRaster.setAttribute("class","stats_Statistiques_section_type_input");
+				myRaster.textContent = "Raster";
+				Type.appendChild(myRaster);
+				
+				
+				attribuerType('raster');
 			}
 			
 			
@@ -680,7 +802,7 @@
 			function infoStat(fonction) {
 				
 				// récupère la fonction de la statistique pour mettre à jour le bouton d'actualisation de la carte d'autocorrélation spatiale
-				var refreshButton = document.getElementById('stats_Statistiques_section_ville_refresh');
+				var refreshButton = document.getElementById('stats_Statistiques_section_carte_refresh');
 				refreshButton.setAttribute("onclick",fonction+"(); return false;");
 				
 				
@@ -722,26 +844,6 @@
 // Affichage des cartes d'autocorrélation spatiale
 
 
-		// Elements des cartes statistiques
-		
-		
-			// classe qui crée pour chaque zone la moyenne des valeurs (de l'élément mesuré) dans le carré
-			class Element {
-
-				constructor(nombre, somme_valeurs) {
-
-					this.nombre = nombre; // nombre d'adresses dans la zone
-					this.somme_valeurs = somme_valeurs; // somme des valeurs (de l'élément mesuré) des différentes adresses dans la zone
-
-					// moyenne des valeurs (de l'élément mesuré) des différentes adresses dans la zone
-					if (nombre > 0) this.moyenne = somme_valeurs / nombre;
-					else this.moyenne = 0;
-				}
-			}
-
-
-
-
 		// Couleurs de la carte d'autocorrélation spatiale
 
 
@@ -769,8 +871,7 @@
 				// ajoute le titre à la case 'légende'
 				var myLegend = document.createElement('h2');
 				myLegend.setAttribute("id","stats_Statistiques_legende_titre");
-				myLegend.textContent = "I de Moran local";
-				//myLegend.textContent = "I de Geary local";
+				myLegend.textContent = "I de " + indice + " local"; // indice = "Moran" ou "Geary"
 				Legend.appendChild(myLegend);
 					
 					
@@ -907,6 +1008,26 @@
 	// Carte raster
 		
 
+		// Elements des cartes raster
+		
+		
+			// classe qui crée pour chaque carré la moyenne des valeurs (de l'élément mesuré) dans le carré
+			class Element {
+
+				constructor(nombre, somme_valeurs) {
+
+					this.nombre = nombre; // nombre d'adresses dans la zone
+					this.somme_valeurs = somme_valeurs; // somme des valeurs (de l'élément mesuré) des différentes adresses dans le carré
+
+					// moyenne des valeurs (de l'élément mesuré) des différentes adresses dans le carré
+					if (nombre > 0) this.moyenne = somme_valeurs / nombre;
+					else this.moyenne = 0;
+				}
+			}
+
+
+
+
 		// Liste raster de la statistique
 			
 			
@@ -947,18 +1068,9 @@
 			
 				var L_corr = initialiserListeCorr_raster();
 				
-				var infos_stats = calculerMoyenne_raster(L);
-				var moyenne = infos_stats[0]; // moyenne de la statistique par carré
-				var nombre_valeurs = infos_stats[1]; // nombre de valeurs de statistique
 				
-				var variance = calculerVariance_raster(L, moyenne, nombre_valeurs); // variance de la statistique multipliée par le nombre de valeurs
-				var ponderation = calculerPonderation_raster(L); // somme de tous les termes de la matrice de pondération
+				var moyenne = calculerMoyenne_raster(L); // moyenne de la statistique pour l'ensemble des carrés raster
 				
-				var Imoran = 0; // indice de Moran global
-				
-				var I = 0; // indice de Moran local (LISA)
-				var valeur = 0; // valeur d'un carré
-				var voisin = 0; // valeur d'un des voisins
 				
 				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
 				
@@ -970,44 +1082,71 @@
 						// prend uniquement en compte ceux possédant une valeur
 						if (carre.nombre > 0) {
 							
-							I = 0;
-							valeur = carre.moyenne;
+							var Imoran = 0; // indice de Moran local (LISA)
+				
+							var valeur = carre.moyenne;; // valeur du carré
+							var voisin = 0; // valeur d'un des voisins
+							
+							var n = 0; // nombre de mesures spatiales avec les voisins du carré
+							var m = 0; // somme des termes de la matrice de pondération pour les voisins du carré
+							var numerateur = 0;
+							var denominateur = (valeur - moyenne) ** 2;
+							
 						
 							for (var k = 1; k <= nombre_voisins_raster; k++) {
+								
+								var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+								
 								
 								for (var x = a-k; x <= a+k; x++) {
 									
 									voisin = L[x][b-k].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - moyenne);
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (voisin - moyenne);
+									}
 									
 									voisin = L[x][b+k].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - moyenne);
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (voisin - moyenne);
+									}
 								}
+								
 								
 								for (var y = b-k+1; y <= b+k-1; y++) {
 									
 									voisin = L[a-k][y].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - moyenne);
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (voisin - moyenne);
+									}
 									
 									voisin = L[a+k][y].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - moyenne);
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (voisin - moyenne);
+									}
 								}
 							}
 							
-							I = (valeur - moyenne) * I / ponderation / variance;
+							numerateur *= (valeur - moyenne);
 							
-							L_corr[a].splice(b, 1, I); // modifie les données du carré raster où se trouve l'adresse
+							if (denominateur != 0)
+								Imoran = n / m * numerateur / denominateur;
+							else
+								Imoran = 0;
 							
-							Imoran += I;
+							
+							L_corr[a].splice(b, 1, Imoran); // modifie les données du carré raster où se trouve l'adresse
 						}
 					}
 				}
 				
-				alert("Indice de Moran global : " + Imoran.toFixed(3));
 				
 				return L_corr;
 			}
@@ -1019,18 +1158,9 @@
 			
 				var L_corr = initialiserListeCorr_raster();
 				
-				var infos_stats = calculerMoyenne_raster(L);
-				var moyenne = infos_stats[0]; // moyenne de la statistique par carré
-				var nombre_valeurs = infos_stats[1]; // nombre de valeurs de statistique
 				
-				var variance = calculerVariance_raster(L, moyenne, nombre_valeurs); // variance de la statistique multipliée par le nombre de valeurs
-				var ponderation = calculerPonderation_raster(L); // somme de tous les termes de la matrice de pondération
+				var moyenne = calculerMoyenne_raster(L);; // moyenne de la statistique pour l'ensemble des carrés raster
 				
-				var Igeary = 0; // indice de Geary global
-				
-				var I = 0; // indice de Geary local (LISA)
-				var valeur = 0; // valeur d'un carré
-				var voisin = 0; // valeur d'un de ses voisins
 				
 				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
 				
@@ -1042,46 +1172,69 @@
 						// prend uniquement en compte ceux possédant une valeur
 						if (carre.nombre > 0) {
 							
-							I = 0;
-							valeur = carre.moyenne;
+							var Igeary = 0; // indice de Geary local (LISA)
+				
+							var valeur = carre.moyenne;; // valeur du carré
+							var voisin = 0; // valeur d'un des voisins
+							
+							var n = 0; // nombre de mesures spatiales avec les voisins du carré
+							var m = 0; // somme des termes de la matrice de pondération pour les voisins du carré
+							var numerateur = 0;
+							var denominateur = (valeur - moyenne) ** 2;
+							
 						
 							for (var k = 1; k <= nombre_voisins_raster; k++) {
+								
+								var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+								
 								
 								for (var x = a-k; x <= a+k; x++) {
 									
 									voisin = L[x][b-k].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (valeur - voisin)**2;
+									}
 									
 									voisin = L[x][b+k].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (valeur - voisin)**2;
+									}
 								}
+								
 								
 								for (var y = b-k+1; y <= b+k-1; y++) {
 									
 									voisin = L[a-k][y].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (valeur - voisin)**2;
+									}
 									
 									voisin = L[a+k][y].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
+									if (voisin > 0) {
+										n += 1;
+										m += ponderation;
+										numerateur += ponderation * (valeur - voisin)**2;
+									}
 								}
 							}
 							
-							I = I / ponderation / variance;
+							if (denominateur != 0)
+								Igeary = (n-1)/2 / m * numerateur / denominateur;
+							else
+								Igeary = 0;
+					
 							
-							L_corr[a].splice(b, 1, I); // modifie les données du carré raster où se trouve l'adresse
-							
-							Igeary += I;
+							L_corr[a].splice(b, 1, Igeary); // modifie les données du carré raster où se trouve l'adresse
 						}
 					}
 				}
 				
-				Igeary = Igeary * (nombre_valeurs - 1) / 2 / nombre_valeurs;
-				
-				alert("Indice de Geary global : " + Igeary.toFixed(3));
 				
 				return L_corr;
 			}
@@ -1112,96 +1265,31 @@
 			// fonction qui calcule la moyenne de la statistique par carré (prend uniquement en compte ceux possédant une valeur)
 			function calculerMoyenne_raster(L) {
 				
-				var ans = [];
-				
-				var moyenne = new Element(0, 0);
+				var nombre = 0; // nombre d'éléments
+				var somme_valeurs = 0; // somme des valeurs des éléments
 				
 				for (var a = 0; a < a_max; a++) {
 				
 					for (var b = 0; b < b_max; b++) {
 						
-						// informations du carré concernant l'élément mesuré
-						var carre = L[a][b];
+						var carre = L[a][b]; // valeur du carré pour l'élément mesuré
 						
 						// prend uniquement en compte ceux possédant une valeur
 						if (carre.nombre > 0) {
-							moyenne.nombre += 1;
-							moyenne.somme_valeurs += carre.moyenne;
+							nombre += 1;
+							somme_valeurs += carre.moyenne;
 						}
 					}
 				}
 				
-				ans.push(moyenne.somme_valeurs / moyenne.nombre);
-				ans.push(moyenne.nombre);
-				
-				return ans;
+				if (nombre > 0)
+					return somme_valeurs / nombre;
+				else
+					return 0;
 			}
 			
 			
-			
-			// fonction qui calcule la variance de la statistique par carré multipliée par le nombre de valeurs
-			function calculerVariance_raster(L, moyenne, nombre_valeurs) {
-			
-				var variance = 0;
-				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
-				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
-						
-						// informations du carré concernant l'élément mesuré
-						var carre = L[a][b];
-						
-						// prend uniquement en compte ceux possédant une valeur
-						if (carre.nombre > 0) {
-							variance += (carre.moyenne - moyenne)**2;
-						}
-					}
-				}
-				
-				variance = variance / nombre_valeurs;
-				
-				return variance;
-			}
-			
-			
-			
-			// fonction qui calcule la somme de tous les termes de la matrice de pondération
-			function calculerPonderation_raster(L) {
-			
-				var ponderation = 0;
-				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
-				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
-						
-						for (var k = 1; k <= nombre_voisins_raster; k++) {
-								
-								for (var x = a-k; x <= a+k; x++) {
-									
-									if (L[x][b-k].moyenne)
-										ponderation += poids_voisins_raster[k];
-									
-									if (L[x][b+k].moyenne > 0)
-										ponderation += poids_voisins_raster[k];
-								}
-								
-								for (var y = b-k+1; y <= b+k-1; y++) {
-									
-									if (L[a-k][y].moyenne > 0)
-										ponderation += poids_voisins_raster[k];
-									
-									if (L[a+k][y].moyenne > 0)
-										ponderation += poids_voisins_raster[k];
-								}
-							}
-					}
-				}
-				
-				return ponderation;
-			}
-			
-			
-			
+		
 			
 		// Affichage de la carte raster
 		
@@ -1224,17 +1312,14 @@
 			// fonction qui crée sur la carte des carrés dont la couleur dépend de la valeur attribuée au carré
 			function afficherStat_raster(liste) {
 				
-				var liste_brew = creerBrew_raster(liste); // crée une liste à une dimension avec le tableau à 2 dimensions de la carte raster (valeur moyenne de chaque carré)
+				var liste_brew = creerBrew(liste); // crée une liste à une dimension avec le tableau à 2 dimensions de la carte raster (valeur moyenne de chaque carré)
 				
 				// crée la répartition des couleurs associées à chaque intervalle de valeur
 				var brew = new classyBrew();
 				brew.setSeries(liste_brew);
 				brew.setNumClasses(nombre_couleurs); // nombre de couleurs différentes
 				brew.setColorCode(gamme_couleurs); // gamme des couleurs
-				brew.classify("jenks"); // méthode de répartition des couleurs : 'jenks' (nombre identique de valeurs dans chaque intervalle de couleur)
-				
-				/* La méthode d'optimisation de Jenks est une méthode de regroupement de données conçue pour déterminer le meilleur agencement des valeurs dans différentes classes, en cherchant à minimiser l’écart moyen de chaque classe
-				par rapport à la moyenne de la classe, tout en maximisant l’écart de chaque classe par rapport à la moyenne des autres groupes (réduire la variance au sein des classes et maximiser la variance entre les classes). */
+				brew.classify("quantile"); // méthode de répartition des couleurs : quantiles
 
 
 				for (var a = 0; a < a_max; a++) {
@@ -1248,7 +1333,6 @@
 						if (I != 0) {
 						
 							// couleur du carré en fonction du nombre de caractères moyens dans le nom de rue des adresses du carré
-							/*var couleur = attribuerCouleurs(I);*/
 							var couleur = brew.getColorInRange(I);
 						
 							// coordonnées du carré
@@ -1278,7 +1362,7 @@
 			
 			
 			// fonction qui crée une liste à une dimension des valeurs moyennes de chaque carré (comprenant seulement les carrés possédant une valeur)
-			function creerBrew_raster(liste) {
+			function creerBrew(liste) {
 				
 				var L = [];
 				
@@ -1302,93 +1386,65 @@
 	// Carte utilisant les sous-secteurs statistiques de Lausanne
 		
 
-		// Liste de la statistique
-			
-			
-			// fonction qui initialise une nouvelle liste de secteurs vide
-			function initialiserListe_secteurs() {
-				
-				var L = [];
-
-				for (var i = 0; i < sec; i++) {
-					var element_nul = new Element(0,0);
-					L.push(element_nul);
-				}
-
-				return L;
-			}
-
-
-			
-			
 		// Liste d'autocorrélation spatiale
 		
 			
 			// fonction qui crée une liste d'autocorrélation spatiale à partir d'une liste de valeurs statistiques (LISA à partir de l'indice de Moran)
 			function autocorrelationMoran_secteurs(L) {
 			
-				var L_corr = initialiserListeCorr_secteurs();
+				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
 				
 				
-				var infos_stats = calculerMoyenne_secteurs(L);
-				var moyenne = infos_stats[0]; // moyenne de la statistique
-				var nombre_valeurs = infos_stats[1]; // nombre de valeurs de statistique
+				var moyenne = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des sous-secteurs statistiques
 				
 				
-				var Imoran_global = 0; // indice de Moran global
+				for (var secteur of L) {
 				
-				var n_global = 0; // nombre d'adresses total appartenant aux différents sous-secteurs
-				var m_global = 0; // nombre total de paires de voisins (car poids des voisins toujours égal à 1)
-				var numerateur_global = 0;
-				var denominateur_global = 0;
-				
-				
-				for (var s = 0; s < sec; s++) {
-				
-					var secteur = BDD_secteurs_adresses[s];
-					
 					var Imoran = 0; // indice de Moran local (LISA) pour le secteur
 					
-					var n = secteur.length; // nombre d'adresses dans le secteur
-					var m = n * (n-1); // nombre de paires de voisins dans le secteur (car poids des voisins toujours égal à 1)
+					var n = 0; // nombre total de mesures spatiales (indexées par a et b) dans le secteur
+					var m = 0; // somme des termes de la matrice de pondération dans le secteur
 					var numerateur = 0;
 					var denominateur = 0;
 					
 					
-					for (var a = 0; a < n-1; a++) {
+					for (var a = 0; a < secteur.length - 1; a++) {
 						
-						id_a = secteur[a]; // id de la a-ième adresse du secteur
-						valeur[a] = L[id_a].moyenne; // valeur statistique de cette adresse
-						
-						denominateur += (valeur[a] - moyenne) ** 2;
-						
-						for (var b = a+1; b < n; b++) {
+						denominateur += (secteur[a] - moyenne) ** 2;
 							
-							id_b = secteur[b]; // id de la b-ième adresse du secteur
-							valeur[b] = L[id_b].moyenne; // valeur statistique de cette adresse
-						
-							numerateur += (valeur[a] - moyenne) * (valeur[b] - moyenne); // car le poids des voisins est toujours considéré comme égal à 1
+						for (var b = a+1; b < secteur.length; b++) {
+							
+							var ponderation = 1; // on considère tous les termes de la matrice de pondération égaux à 1 dans une même secteur (et à 0 pour 2 secteurs distincts)
+							
+							n += 1;
+							m += ponderation;
+							numerateur += ponderation * (secteur[a] - moyenne) * (secteur[b] - moyenne);
 						}
 					}
 					
-					numerateur *= 2; // on doit multiplier le numérateur par 2 car chaque paire de voisin doit être comptée dans les 2 sens
+					// on doit également ajouter au dénominateur la dernière adresse du secteur, qui a déjà été comparée aux autres adresses dans le calcul ci-dessus (qui ne traite les calcul que dans un sens)
+					denominateur += (secteur[secteur.length-1] - moyenne) ** 2;
 					
 					
-					Imoran = n / m * numerateur / denominateur;
+					/*
+					// on doit multiplier toutes ces valeurs par 2 car chaque paire de voisin doit être comptée dans les 2 sens
+					n *= 2;
+					m *= 2;
+					numerateur *= 2;
+					denominateur *= 2;
+					*/
+					// On ne le fait pas car ces multiplications vont s'annuler (voir ci-dessous)
 					
-					L_corr.splice(s, 1, Imoran); // modifie les données du secteur
+					
+					if (denominateur != 0)
+						Imoran = n / m * numerateur / denominateur;
+					else
+						Imoran = 0;
 					
 					
-					n_global += n;
-					m_global += m;
-					numerateur_global += numerateur;
-					denominateur_global += denominateur;
+					L_corr.push(Imoran); // ajoute la donnée du secteur
 				}
 				
-				
-				Imoran_global = n_global / m_global * numerateur_global / denominateur_global;
-				
-				alert("Indice de Moran global : " + Imoran_global.toFixed(2));
 				
 				return L_corr;
 			}
@@ -1398,187 +1454,90 @@
 			// fonction qui crée une liste d'autocorrélation spatiale à partir d'une liste de valeurs statistiques (LISA à partir de l'indice de Geary)
 			function autocorrelationGeary_secteurs(L) {
 			
-				var L_corr = initialiserListeCorr_secteurs();
+				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
 				
-				var infos_stats = calculerMoyenne_secteurs(L);
-				var moyenne = infos_stats[0]; // moyenne de la statistique
-				var nombre_valeurs = infos_stats[1]; // nombre de valeurs de statistique
 				
-				var variance = calculerVariance_secteurs(L, moyenne, nombre_valeurs); // variance de la statistique multipliée par le nombre de valeurs
-				var ponderation = calculerPonderation_secteurs(L); // somme de tous les termes de la matrice de pondération
+				var moyenne = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des sous-secteurs statistiques
 				
-				var Igeary = 0; // indice de Geary global
 				
-				var I = 0; // indice de Geary local (LISA)
-				var valeur = 0; // valeur d'un secteur
-				var voisin = 0; // valeur d'un de ses voisins
-				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
-				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+				for (var secteur of L) {
+					
+					var Igeary = 0; // indice de Geary local (LISA) pour le secteur
+					
+					var n = 0; // nombre total de mesures spatiales (indexées par a et b) dans le secteur (comprend la mesure d'une adresse avec elle-même, même si la matrice de pondération est alors nulle)
+					var m = 0; // somme des termes de la matrice de pondération dans le secteur
+					var numerateur = 0;
+					var denominateur = 0;
+					
+					
+					for (var a = 0; a < secteur.length - 1; a++) {
 						
-						// informations du secteur concernant l'élément mesuré
-						var carre = L[a][b];
+						denominateur += (secteur[a] - moyenne) ** 2;
 						
-						// prend uniquement en compte ceux possédant une valeur
-						if (carre.nombre > 0) {
+						for (var b = a+1; b < secteur.length; b++) {
 							
-							I = 0;
-							valeur = carre.moyenne;
-						
-							for (var k = 1; k <= nombre_voisins_raster; k++) {
-								
-								for (var x = a-k; x <= a+k; x++) {
-									
-									voisin = L[x][b-k].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
-									
-									voisin = L[x][b+k].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
-								}
-								
-								for (var y = b-k+1; y <= b+k-1; y++) {
-									
-									voisin = L[a-k][y].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
-									
-									voisin = L[a+k][y].moyenne;
-									if (voisin > 0)
-										I += poids_voisins_raster[k]*(voisin - valeur)**2;
-								}
-							}
+							var ponderation = 1; // on considère tous les termes de la matrice de pondération égaux à 1 dans une même secteur (et à 0 pour 2 secteurs distincts)
 							
-							I = I / ponderation / variance;
-							
-							L_corr[a].splice(b, 1, I); // modifie les données du carré raster où se trouve l'adresse
-							
-							Igeary += I;
+							n += 1;
+							m += ponderation;
+							numerateur += ponderation * (secteur[a] - secteur[b])**2;
 						}
 					}
+					
+					// on doit également ajouter au dénominateur la dernière adresse du secteur, qui a déjà été comparée aux autres adresses dans le calcul ci-dessus (qui ne traite les calcul que dans un sens)
+					denominateur += (secteur[secteur.length-1] - moyenne) ** 2;
+					
+					
+					/*
+					// on doit multiplier toutes ces valeurs par 2 car chaque paire de voisin doit être comptée dans les 2 sens
+					n *= 2;
+					m *= 2;
+					numerateur *= 2;
+					denominateur *= 2;
+					*/
+					// On ne le fait pas car ces multiplications vont s'annuler (voir ci-dessous)
+					
+					
+					if (denominateur != 0)
+						Igeary = (n-1)/2 / m * numerateur / denominateur;
+					else
+						Igeary = 0;
+					
+					
+					L_corr.push(Igeary); // ajoute la donnée du secteur
 				}
 				
-				Igeary = Igeary * (nombre_valeurs - 1) / 2 / nombre_valeurs;
-				
-				alert("Indice de Geary global : " + Igeary.toFixed(3));
 				
 				return L_corr;
 			}
 			
-				
-				
-			// fonction qui initialise une nouvelle liste vide d'autocorrélation spatiale
-			function initialiserListeCorr_secteurs() {
-				
-				var L = [];
-				
-				for (var a = 0; a < a_max; a++) {
-					
-					var L_a = [];
-					
-					for (var b = 0; b < b_max; b++) {
-						L_a.push(0);
-					}
-					
-					L.push(L_a);
-				}
-				
-				return L;
-			}
 			
 			
-			
-			// fonction qui calcule la moyenne de la statistique par secteur
+			// fonction qui calcule la moyenne de la statistique pour l'ensembles des adresses des différents sous-secteurs statistiques
 			function calculerMoyenne_secteurs(L) {
 				
-				var ans = [];
+				var nombre = 0; // nombre d'éléments
+				var somme_valeurs = 0; // somme des valeurs des éléments
 				
-				var moyenne = new Element(0, 0);
-				
-				for (var a = 0; a < a_max; a++) {
-				
-					for (var b = 0; b < b_max; b++) {
-						
-						// informations du secteur concernant l'élément mesuré
-						var carre = L[a][b];
-						
-						// prend uniquement en compte ceux possédant une valeur
-						if (carre.nombre > 0) {
-							moyenne.nombre += 1;
-							moyenne.somme_valeurs += carre.moyenne;
+				for (var secteur of L) {
+					// si secteur est une valeur
+					if (secteur.length == 0) {
+						nombre += 1;
+						somme_valeurs += secteur;
+					}
+					// si secteur est une liste de valeurs
+					else {
+						for (var valeur of secteur) {
+							nombre += 1;
+							somme_valeurs += valeur;
 						}
 					}
 				}
 				
-				ans.push(moyenne.somme_valeurs / moyenne.nombre);
-				ans.push(moyenne.nombre);
-				
-				return ans;
-			}
-			
-			
-			
-			// fonction qui calcule la variance de la statistique par secteur multipliée par le nombre de valeurs
-			function calculerVariance_secteurs(L, moyenne, nombre_valeurs) {
-			
-				var variance = 0;
-				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
-				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
-						
-						// informations du carré concernant l'élément mesuré
-						var carre = L[a][b];
-						
-						// prend uniquement en compte ceux possédant une valeur
-						if (carre.nombre > 0) {
-							variance += (carre.moyenne - moyenne)**2;
-						}
-					}
-				}
-				
-				variance = variance / nombre_valeurs;
-				
-				return variance;
-			}
-			
-			
-			
-			// fonction qui calcule la somme de tous les termes de la matrice de pondération
-			function calculerPonderation_secteurs(L) {
-			
-				var ponderation = 0;
-				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
-				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
-						
-						for (var k = 1; k <= nombre_voisins_raster; k++) {
-								
-								for (var x = a-k; x <= a+k; x++) {
-									
-									if (L[x][b-k].moyenne)
-										ponderation += poids_voisins_raster[k];
-									
-									if (L[x][b+k].moyenne > 0)
-										ponderation += poids_voisins_raster[k];
-								}
-								
-								for (var y = b-k+1; y <= b+k-1; y++) {
-									
-									if (L[a-k][y].moyenne > 0)
-										ponderation += poids_voisins_raster[k];
-									
-									if (L[a+k][y].moyenne > 0)
-										ponderation += poids_voisins_raster[k];
-								}
-							}
-					}
-				}
-				
-				return ponderation;
+				if (nombre > 0)
+					return somme_valeurs / nombre;
+				else
+					return 0;
 			}
 			
 			
@@ -1605,74 +1564,44 @@
 			// fonction qui crée sur la carte des secteurs dont la couleur dépend de la valeur attribuée au carré
 			function afficherStat_secteurs(liste) {
 				
-				var liste_brew = creerBrew_secteurs(liste); // crée une liste des valeur moyenne de chaque secteur
-				
+				var liste_brew = copie(liste); // nécessité de créer une autre liste, car elle sera automatiquement triée par la fonction brew (une copie "liste_brew = liste" de la 1ère la modifierait également)
+					
 				// crée la répartition des couleurs associées à chaque intervalle de valeur
 				var brew = new classyBrew();
 				brew.setSeries(liste_brew);
 				brew.setNumClasses(nombre_couleurs); // nombre de couleurs différentes
 				brew.setColorCode(gamme_couleurs); // gamme des couleurs
-				brew.classify("jenks"); // méthode de répartition des couleurs : 'jenks' (nombre identique de valeurs dans chaque intervalle de couleur)
-				
-				/* La méthode d'optimisation de Jenks est une méthode de regroupement de données conçue pour déterminer le meilleur agencement des valeurs dans différentes classes, en cherchant à minimiser l’écart moyen de chaque classe
-				par rapport à la moyenne de la classe, tout en maximisant l’écart de chaque classe par rapport à la moyenne des autres groupes (réduire la variance au sein des classes et maximiser la variance entre les classes). */
+				brew.classify("quantile"); // méthode de répartition des couleurs : quantiles
 
 
-				for (var a = 0; a < a_max; a++) {
-				
-					for (var b = 0; b < b_max; b++) {
-						
-						// indice de Moran/Geary local pour le secteur
-						var I = liste[a][b];
-						
-						// crée un secteur coloré uniquement si l'indice est différent de 0 (ATTENTION il peut être < 0 !!!!)
-						if (I != 0) {
-						
-							// couleur du secteur en fonction du nombre de caractères moyens dans le nom de rue des adresses du carré
-							/*var couleur = attribuerCouleurs(I);*/
-							var couleur = brew.getColorInRange(I);
-						
-							// coordonnées du carré
-							var x = lat_minC + a* lat_pasC;
-							var y = lon_minC + b* lon_pasC;
-						
-							// crée les extrémités du carré
-							var c1 = L.latLng(x, y);
-							var c2 = L.latLng(x, y + lon_pasC);
-							var c3 = L.latLng(x + lat_pasC, y + lon_pasC);
-							var c4 = L.latLng(x + lat_pasC, y);
-				
-							// créer un polygône à partir de ces adresses
-							L.polygon([c1,c2,c3,c4],{
-								color: couleur,
-								fillColor: couleur,
-								fillOpacity: 1
-							}).addTo(mapStats);
-						}
-					}
+				for (var secteur = 0; secteur < sec; secteur++) {
+
+					// indice de Moran/Geary local pour le secteur
+					var I = liste[secteur];
+
+					// couleur du secteur en fonction de sa valeur
+					var couleur = brew.getColorInRange(I);
+
+					// créer un polygône à partir de ces adresses
+					L.polygon(BDD_secteurs[secteur],{
+						color: 'black',
+						fillColor: couleur,
+						fillOpacity: 1
+					}).addTo(mapStats);
 				}
 				
 				
 				afficherLegende(brew); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster
 			}
-			
-			
-			
-			// fonction qui crée une liste des valeurs moyennes de chaque secteur
-			function creerBrew_secteurs(liste) {
-				
-				var L = [];
-				
-				for (var x=0; x<liste.length; x++) {
-					var L_x = liste[x];
-					for (var y=0; y<L_x.length ; y++) {
-						var I = L_x[y];
-						if (I != 0)
-							L.push(I);
-					}
-				}
-				
-				return L;
+
+
+
+			// fonction qui copie une liste
+			function copie(L) {
+				var L_bis = [];
+				for (var x of L)
+					L_bis.push(x);
+				return L_bis;
 			}
 			
 			
@@ -1694,54 +1623,107 @@
 				// récupère l'id de la ville sélectionnée
 				var ville_id = document.getElementById("stats_Statistiques_section_ville_liste").value;
 				
-				// si id < 100, affiche une carte raster
-				if (ville_id < 100) {
+				
+				// carte raster
+				if (type_carte == "raster") {
+					
 					coordLimites(); // récupère les coordonnées limites de la carte
 					afficherCarte_raster(); // affiche la carte raster vide, avec zoom adapté la ville sélectionnée
+					
 					var L = nombreLettres_raster(); // crée une carte raster pour la statistique
-					var L_corr = autocorrelationMoran_raster(L); // crée la carte d'autocorrélation qui en découle (indice de Moran local)
-					//var L_corr = autocorrelationGeary_raster(L); // crée la carte d'autocorrélation qui en découle (indice de Geary local)
-					afficherStat_raster(L_corr); // affiche la carte raster
+					
+					// crée la carte d'autocorrélation qui en découle
+					if (indice == "Moran") {
+						var L_corr = autocorrelationMoran_raster(L);  // indice de Moran local
+					else
+						var L_corr = autocorrelationGeary_raster(L); // indice de Geary local
+					
+					afficherStat_raster(L_corr, indice); // affiche la carte raster
 				}
 				
-				// sinon, affiche une carte utilisante les sous-secteurs statistiques de la ville
+				
+				// carte utilisante les sous-secteurs statistiques de la ville
 				else {
-					alert(1);
+					
+					afficherCarte_secteurs(); // affiche la carte des secteurs vide, avec zoom adapté aux secteurs
+					
+					var L = nombreLettres_secteurs(); // crée une carte de secteurs pour la statistique
+					
+					// crée la carte d'autocorrélation qui en découle
+					if (indice == "Moran") {
+						var L_corr = autocorrelationMoran_secteurs(L);  // indice de Moran local
+					else
+						var L_corr = autocorrelationGeary_secteurs(L); // indice de Geary local
+					
+					afficherStat_secteurs(L_corr, indice); // affiche la carte des sous-secteurs statistiques
 				}
 			}
-			
-			
-			
-			// fonction qui renvoie une liste donnant le nombre de lettre par adresse
-			function nombreLettres() {
-				
+
+
+
+			// fonction qui renvoie une liste raster donnant le nombre moyen de lettres par adresse
+			function nombreLettres_raster() {
+
 				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
 				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
 				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
-				
-				var L = initialiserListe(); // crée une liste raster vide
-				
-				
+
+				var L = initialiserListe_raster(); // crée une liste raster vide
+
+
 				for (var i=ville_debut; i<=ville_fin; i++) {
-					
+
 					var latitude = BDD_adresses[i].latitude;
 					var lat_carre = Math.floor((latitude - lat_minC) / lat_pasC); // abscisse du carré raster où se trouve l'adresse
-					
+
 					var longitude = BDD_adresses[i].longitude;
 					var lon_carre = Math.floor((longitude - lon_minC) / lon_pasC); // ordonnée du carré raster où se trouve l'adresse
-					
+
 					rue = BDD_adresses[i].rue;
 					rue_split = rue.split("");
 					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
-				
+
 					// modifie les données du carré raster où se trouve l'adresse
 					var new_nombre = L[lat_carre][lon_carre].nombre + 1;
 					var new_somme_valeurs = L[lat_carre][lon_carre].somme_valeurs + rue_length;
 					var new_carre= new Element(new_nombre, new_somme_valeurs);
 					L[lat_carre].splice(lon_carre, 1, new_carre);
 				}
+
+
+				return L;
+			}
+
+
+
+			// fonction qui renvoie une liste d'adresses dans chaque secteur donnant le nombre moyen de lettres par adresse
+			function nombreLettres_secteurs() {
+
+				var L = []; // crée une liste de sous-secteurs vide
 				
-				
+
+				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
+				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
+				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
+ 
+
+				for (var secteur of BDD_secteurs_adresses) {
+
+					var L_secteur = []; // liste des valeurs du secteur
+					
+					for (var adresse of secteur) {
+						
+						rue = BDD_adresses[adresse].rue;
+						rue_split = rue.split("");
+						rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
+
+						L_secteur.push(rue_length);
+					}
+					
+					L.push(L_secteur);
+				}
+
+
 				return L;
 			}
 			
@@ -1753,20 +1735,53 @@
 		
 			// fonction qui affiche une représentation du nombre d'adresses par carré
 			function stats_nombre() {
-				coordLimites(); // récupère les coordonnées limites de la carte
-				afficherCarte(); // affiche la carte avec le zoom initial
-				effacerLegende(); // supprime la légende existante, s'il y en a une
-				var L = nombreAdresses(); // crée une carte raster pour la statistique
-				//var L_corr = autocorrelationMoran(L); // crée la carte d'autocorrélation qui en découle (indice de Moran local)
-				var L_corr = autocorrelationGeary(L); // crée la carte d'autocorrélation qui en découle (indice de Geary local)
-				afficherStat(L_corr); // affiche la carte raster
+				
+				// récupère l'id de la ville sélectionnée
+				var ville_id = document.getElementById("stats_Statistiques_section_ville_liste").value;
+				
+				
+				// carte raster
+				if (type_carte == "raster") {
+					
+					coordLimites(); // récupère les coordonnées limites de la carte
+					afficherCarte_raster(); // affiche la carte raster vide, avec zoom adapté la ville sélectionnée
+					
+					var L = nombreAdresses_raster(); // crée une carte raster pour la statistique
+					
+					// crée la carte d'autocorrélation qui en découle
+					if (indice == "Moran") {
+						var L_corr = autocorrelationMoran_raster(L);  // indice de Moran local
+					else
+						var L_corr = autocorrelationGeary_raster(L); // indice de Geary local
+					
+					afficherStat_raster(L_corr, indice); // affiche la carte raster
+				}
+				
+				
+				// carte utilisante les sous-secteurs statistiques de la ville
+				else {
+					
+					afficherCarte_secteurs(); // affiche la carte des secteurs vide, avec zoom adapté aux secteurs
+					
+					var L = nombreAdresses_secteurs(); // crée une carte de secteurs pour la statistique
+					
+					// crée la carte d'autocorrélation qui en découle
+					if (indice == "Moran") {
+						var L_corr = autocorrelationMoran_secteurs(L);  // indice de Moran local
+					else
+						var L_corr = autocorrelationGeary_secteurs(L); // indice de Geary local
+					
+					afficherStat_secteurs(L_corr, indice); // affiche la carte des sous-secteurs statistiques
+				}
 			}
 			
 			
+			
 			// fonction qui renvoie une liste donnant le nombre d'adresses par carré
-			function nombreAdresses() {
+			function nombreAdresses_raster() {
 				
-				var L = initialiserListe();
+				var L = initialiserListe_raster();
+				
 				
 				for (var i=ville_debut; i<=ville_fin; i++) {
 					
@@ -1782,6 +1797,28 @@
 					L[lat_carre].splice(lon_carre, 1, new_carre);
 				}
 				
+				
+				return L;
+			}
+
+
+
+			// fonction qui renvoie une liste de secteurs donnant le nombre d'adresses dans chaque sous-secteur statistique
+			function nombreAdresses_secteurs() {
+
+				var L = []; // crée une liste de sous-secteurs vide
+				
+				for (var secteur of BDD_secteurs_adresses) {
+					
+					var L_secteur = []; // liste des valeurs du secteur
+					
+					for (var adresse of secteur) {
+						L_secteur.push(1);
+					}
+					
+					L.push(L_secteur);
+				}
+
 				return L;
 			}
 
