@@ -93,6 +93,7 @@
 				pasMin(); // récupère le pas minimum en latitude et en longitude de la carte raster
 				creerBDD_secteurs(); // crée la BDD locale des sous-secteurs statistiques
 				creerBDD_adresses_secteurs(); // crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel elle apparatient
+				creerBDD_secteurs_adresses(); // crée la BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
 			}
 
 
@@ -805,6 +806,37 @@
 				else
 					return false;
 			}
+			
+			
+
+		
+		// Création d'une BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
+		
+		
+			var BDD_secteurs_adresses = [];
+			
+			var nombre_adresses_secteurs = 0; // nombre d'adresses appartenant à un sous-secteur statistique
+			
+			
+			// fonction qui crée la BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
+			function creerBDD_secteurs_adresses() {
+				
+				nombre_adresses_secteurs = 0;
+				
+				// crée une liste vide des sous-secteurs statistiques
+				for (s = 0; s < sec; s++) {
+					BDD_secteurs_adresses.push([]);
+				}
+				
+				// remplit chaque sous-secteur statistique avec les indices des adresses qu'il contient
+				for (var i = ville_debut; i <= ville_fin; i++) {
+						var secteur = BDD_adresses_secteurs[i]; // secteur auquel appartient l'adresse
+						if (secteur >= 0) {
+							BDD_secteurs_adresses[secteur].push(i); // ajoute l'indice de l'adresse à la liste du sous-secteur auquel elle appartient
+							nombre_adresses_secteurs ++;
+						}
+				}
+			}
 
 
 
@@ -1295,26 +1327,6 @@
 // Affichage des cartes statistiques
 
 
-		// Elements des cartes statistiques
-		
-		
-			// classe qui crée pour chaque zone la moyenne des valeurs (de l'élément mesuré) dans le carré
-			class Element {
-
-				constructor(nombre, somme_valeurs) {
-
-					this.nombre = nombre; // nombre d'adresses dans la zone
-					this.somme_valeurs = somme_valeurs; // somme des valeurs (de l'élément mesuré) des différentes adresses dans la zone
-
-					// moyenne des valeurs (de l'élément mesuré) des différentes adresses dans la zone
-					if (nombre > 0) this.moyenne = somme_valeurs / nombre;
-					else this.moyenne = 0;
-				}
-			}
-
-
-
-
 		// Nombre de classes (couleurs différentes) de la carte
 
 
@@ -1494,6 +1506,26 @@
 	// Carte raster
 
 
+		// Elements des cartes raster
+		
+		
+			// classe qui crée pour chaque carré la moyenne des valeurs (de l'élément mesuré) dans le carré
+			class Element {
+
+				constructor(nombre, somme_valeurs) {
+
+					this.nombre = nombre; // nombre d'adresses dans la zone
+					this.somme_valeurs = somme_valeurs; // somme des valeurs (de l'élément mesuré) des différentes adresses dans le carré
+
+					// moyenne des valeurs (de l'élément mesuré) des différentes adresses dans le carré
+					if (nombre > 0) this.moyenne = somme_valeurs / nombre;
+					else this.moyenne = 0;
+				}
+			}
+
+
+
+
 		// Variables utilisées pour la carte raster (extrémités et pas)
 
 
@@ -1618,7 +1650,7 @@
 			// fonction qui crée sur la carte des carrés dont la couleur dépend de la valeur attribuée au carré
 			function afficherStat_raster(liste, nom) {
 
-				var liste_brew = creerBrew_raster(liste); // crée une liste à une dimension avec le tableau à 2 dimensions de la carte raster (valeur moyenne de chaque carré)
+				var liste_brew = creerBrew(liste); // crée une liste à une dimension avec le tableau à 2 dimensions de la carte raster (valeur moyenne de chaque carré)
 
 				// crée la répartition des couleurs associées à chaque intervalle de valeur
 				var brew = new classyBrew();
@@ -1677,7 +1709,7 @@
 
 
 			// fonction qui crée une liste à une dimension des valeurs moyennes de chaque carré (comprenant seulement les carrés possédant une valeur)
-			function creerBrew_raster(liste) {
+			function creerBrew(liste) {
 
 				var L = [];
 
@@ -1701,25 +1733,6 @@
 	// Carte utilisant les sous-secteurs statistiques de Lausanne
 
 
-		// Liste vide
-
-
-			// fonction qui initialise une nouvelle liste raster vide pour la ville sélectionnée
-			function initialiserListe_secteurs() {
-
-				var L = [];
-
-				for (var i = 0; i < sec; i++) {
-					var element_nul = new Element(0,0);
-					L.push(element_nul);
-				}
-
-				return L;
-			}
-
-
-
-
 		// Affichage de la carte
 
 
@@ -1741,8 +1754,8 @@
 			// fonction qui affiche sur la carte les secteurs dont la couleur dépend de la valeur attribuée au carré
 			function afficherStat_secteurs(liste, nom) {
 
-				var liste_brew = creerBrew_secteurs(liste); // crée une liste des valeurs moyennes de chaque secteur
-
+				var liste_brew = copie(liste); // nécessité de créer une autre liste, car elle sera automatiquement triée par la fonction brew (une copie "liste_brew = liste" de la 1ère la modifierait également)
+					
 				// crée la répartition des couleurs associées à chaque intervalle de valeur
 				var brew = new classyBrew();
 				brew.setSeries(liste_brew);
@@ -1754,20 +1767,20 @@
 				par rapport à la moyenne de la classe, tout en maximisant l’écart de chaque classe par rapport à la moyenne des autres groupes (réduire la variance au sein des classes et maximiser la variance entre les classes). */
 
 
-				for (var i = 0; i < sec; i++) {
+				for (var secteur = 0; secteur < sec; secteur++) {
 
-						// i-ème sous-secteur statistique
-						var secteur = liste[i];
+					// indice de Moran/Geary local pour le secteur
+					var I = liste[secteur];
 
-						// couleur du secteur en fonction de sa valeur
-						var couleur = brew.getColorInRange(secteur.moyenne);
+					// couleur du secteur en fonction de sa valeur
+					var couleur = brew.getColorInRange(I);
 
-						// créer un polygône à partir de ces adresses
-						L.polygon(BDD_secteurs[i],{
-							color: 'black',
-							fillColor: couleur,
-							fillOpacity: 1
-						}).addTo(mapStats);
+					// créer un polygône à partir de ces adresses
+					L.polygon(BDD_secteurs[secteur],{
+						color: 'black',
+						fillColor: couleur,
+						fillOpacity: 1
+					}).addTo(mapStats);
 				}
  
 
@@ -1778,17 +1791,12 @@
 
 
 
-			// fonction qui crée une liste des valeurs moyennes de chaque secteur
-			function creerBrew_secteurs(liste) {
-
-				var L = [];
-
-				for (var i = 0; i < sec; i++) {
-					var valeur = liste[i].moyenne;
-					L.push(valeur);
-				}
-
-				return L;
+			// fonction qui copie une liste
+			function copie(L) {
+				var L_bis = [];
+				for (var x of L)
+					L_bis.push(x);
+				return L_bis;
 			}
 
 
@@ -1872,9 +1880,10 @@
 			// Choix de carte statistique pour la ville de Lausanne
 			function choixCarte_lausanne() {
 				
-				// ajoute le choix du type de carte statistique à afficher
-				
 				var lausanne = document.getElementById('stats_Cartes_carte_lausanne');
+				
+				lausanne.innerHTML = "";
+				
 				
 				var Type = document.createElement('p');
 				
@@ -1928,11 +1937,31 @@
 			// Choix de carte statistique pour une autre ville
 			function choixCarte_autres() {
 				
-				// vide les boutons de choix du type de carte statistique à afficher
-				var Type = document.getElementById('stats_Cartes_carte_lausanne');
-				Type.innerHTML = "";
+				var lausanne = document.getElementById('stats_Cartes_carte_lausanne');
 				
-				// la carte statistique est forcément une carte raster
+				lausanne.innerHTML = "";
+				
+				
+				var Type = document.createElement('p');
+				
+				
+				var myType = document.createElement('label');
+				myType.setAttribute("class","stats_Cartes_carte_attribut");
+				myType.textContent = "Type de Carte :";
+				Type.appendChild(myType);
+				
+				
+				// type 'raster'
+				
+				var myRaster = document.createElement('label');
+				myRaster.setAttribute("class","stats_Cartes_carte_stat_type");
+				myRaster.textContent = "Raster";
+				Type.appendChild(myRaster);
+				
+				
+				lausanne.appendChild(Type);
+				
+				
 				choixCarte_raster();
 			}
 
@@ -2008,28 +2037,33 @@
 			// fonction qui renvoie une liste de secteurs donnant le nombre moyen de lettres par adresse
 			function nombreLettres_secteurs() {
 
+				var L = []; // crée une liste de sous-secteurs vide
+				
+
 				var rue = ""; // nom de la rue de la i-ème adresse de la BDD
 				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
 				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
-
-				var L = initialiserListe_secteurs(); // crée une liste de sous-secteurs vide
  
 
-				for (var i = ville_debut; i <= ville_fin; i++) {
+				for (var secteur of BDD_secteurs_adresses) {
 
-					var secteur = BDD_adresses_secteurs[i]; // sous-secteur statistique auquel appartient l'adresse
+					var nombre = secteur.length; // nombre de valeurs dans le secteur
+					var somme_valeurs = 0; // somme des valeurs
+					var moyenne = 0; // nombre moyen de lettres par adresse dans le secteur
+					
+					for (var adresse of secteur) {
+						
+						rue = BDD_adresses[adresse].rue;
+						rue_split = rue.split("");
+						rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
 
-					rue = BDD_adresses[i].rue;
-					rue_split = rue.split("");
-					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
-
-					// modifie les données du secteur où se trouve l'adresse (si elle appartient à un secteur)
-					if (secteur >= 0) {
-						var new_nombre = L[secteur].nombre + 1;
-						var new_somme_valeurs = L[secteur].somme_valeurs + rue_length;
-						var new_secteur= new Element(new_nombre, new_somme_valeurs);
-						L.splice(secteur, 1, new_secteur);
+						somme_valeurs += rue_length;
 					}
+					
+					if (nombre > 0)
+						moyenne = somme_valeurs / nombre;
+					
+					L.push(moyenne);
 				}
 
 
@@ -2091,28 +2125,14 @@
 
 
 
-			// fonction qui renvoie une liste de secteurs donnant le nombre d'adresses par sous-secteur statistique
+			// fonction qui renvoie une liste de secteurs donnant le nombre d'adresses dans chaque sous-secteur statistique
 			function nombreAdresses_secteurs() {
 
-				var L = initialiserListe_secteurs(); // crée une liste de sous-secteurs vide
-
-
-				for (var i=ville_debut; i<=ville_fin; i++) {
-
-					var secteur = BDD_adresses_secteurs[i]; // sous-secteur statistique auquel appartient l'adresse
-
-					rue = BDD_adresses[i].rue;
-					rue_split = rue.split("");
-					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
-
-					// modifie les données du secteur où se trouve l'adresse (si elle appartient à un secteur)
-					if (secteur >= 0) {
-						var new_somme_valeurs = L[secteur].somme_valeurs + 1;
-						var new_secteur= new Element(1, new_somme_valeurs);
-						L.splice(secteur, 1, new_secteur);
-					}
+				var L = []; // crée une liste de sous-secteurs vide
+				
+				for (var secteur of BDD_secteurs_adresses) {
+					L.push(secteur.length); // ajoute le nombre d'adresses du secteur
 				}
-
 
 				return L;
 			}
