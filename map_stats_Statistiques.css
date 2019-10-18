@@ -181,31 +181,74 @@
 #stats_Statistiques_legende_titre /*titre de la légende*/
 {
 	margin-top: 5;
-	margin-bottom: 15;
+	margin-bottom: 25;
 	font-size: 18;
 	font-weight: bold;
 	text-align: center;
 }
 
+
 .stats_Statistiques_legende_ligne /*ligne comprenant couleur ou valeurs associées à cette couleur*/
 {
 	padding:5;
-	margin-bottom: -5;
+	margin-bottom: -7;
 }
 
 .stats_Statistiques_legende_valeur /*valeur limite d'un intervalle de couleur*/
 {
 	font-size: 16;
-	margin-left: 40;
+	margin-left: 45;
 }
 
 .stats_Statistiques_legende_couleur /*carré de couleur*/
 {
-	width: 25;
+	width: 20;
 	height: 15;
 	margin-left: 10;
 	border: 1px solid black;
 }
+
+
+#stats_Statistiques_legende_nuls /*ligne associant la couleur grise aux valeur non significatives*/
+{
+	margin-top: 30;
+	display: flex;
+    flex-direction: row;
+}
+
+#stats_Statistiques_legende_nuls_couleur /*carré de couleur de la ligne associant la couleur grise aux valeur non significatives*/
+{
+	margin-left: 0;
+}
+
+#stats_Statistiques_legende_nuls_valeur /*texte de la ligne associant la couleur grise aux valeur non significatives*/
+{
+	font-size: 16;
+	margin-left: 7;
+	margin-top: -2;
+	height: 15;
+}
+
+
+#stats_Statistiques_legende_notSignificant /*ligne associant la couleur grise aux valeur non significatives*/
+{
+	margin-top: 20;
+	display: flex;
+    flex-direction: row;
+}
+
+#stats_Statistiques_legende_notSignificant_couleur /*carré de couleur de la ligne associant la couleur grise aux valeur non significatives*/
+{
+	margin-left: 0;
+}
+
+#stats_Statistiques_legende_notSignificant_valeur /*texte de la ligne associant la couleur grise aux valeur non significatives*/
+{
+	font-size: 12;
+	margin-left: 5;
+	height: 15;
+}
+
 
 #stats_Statistiques_legende_infos /*informations sur l'indice de Moran local*/
 {
