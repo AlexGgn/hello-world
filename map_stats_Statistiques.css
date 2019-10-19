@@ -209,6 +209,30 @@
 }
 
 
+.stats_Statistiques_legende_cluster /*lignes associant les couleurs aux clusters*/
+{
+	margin-top: 20;
+	display: flex;
+    flex-direction: row;
+}
+
+.stats_Statistiques_legende_cluster_couleur /*carrés de couleurs des lignes associant les couleurs aux clusters*/
+{
+	width: 20;
+	height: 15;
+	margin-left: 20;
+	border: 1px solid black;
+}
+
+.stats_Statistiques_legende_cluster_valeur /*textes des lignes associant les couleurs aux clusters*/
+{
+	font-size: 16;
+	margin-left: 10;
+	margin-top: -2;
+	height: 15;
+}
+
+
 #stats_Statistiques_legende_nuls /*ligne associant la couleur grise aux valeur non significatives*/
 {
 	margin-top: 30;
