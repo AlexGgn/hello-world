@@ -191,7 +191,7 @@
 .stats_Statistiques_legende_ligne /*ligne comprenant couleur ou valeurs associées à cette couleur*/
 {
 	padding:5;
-	margin-bottom: -7;
+	margin-bottom: -10;
 }
 
 .stats_Statistiques_legende_valeur /*valeur limite d'un intervalle de couleur*/
@@ -235,7 +235,7 @@
 
 #stats_Statistiques_legende_nuls /*ligne associant la couleur grise aux valeur non significatives*/
 {
-	margin-top: 30;
+	margin-top: 40;
 	display: flex;
     flex-direction: row;
 }
@@ -270,6 +270,27 @@
 {
 	font-size: 12;
 	margin-left: 5;
+	height: 15;
+}
+
+
+#stats_Statistiques_legende_noData /*ligne associant la couleur blanche aux secteurs sans indices (manque de valeurs)*/
+{
+	margin-top: 20;
+	display: flex;
+    flex-direction: row;
+}
+
+#stats_Statistiques_legende_noData_couleur /*carré de couleur de la ligne associant la couleur blanche aux secteurs sans indices (manque de valeurs)*/
+{
+	margin-left: 0;
+}
+
+#stats_Statistiques_legende_noData_valeur /*texte de la ligne associant la couleur blanche aux secteurs sans indices (manque de valeurs)*/
+{
+	font-size: 16;
+	margin-left: 7;
+	margin-top: -2;
 	height: 15;
 }
 
