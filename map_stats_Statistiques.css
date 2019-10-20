@@ -300,6 +300,7 @@
 	position: fixed;
 	top: 733;
 	left: 1194;
+	max-height: 210;
 	width: 640;
 	padding-left: 10;
 	padding-right: 10;
