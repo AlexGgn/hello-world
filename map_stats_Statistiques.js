@@ -937,69 +937,8 @@
 			var infos_test = 0; // égal à 1 ssi la fenêtre d'informations est ouverte
 			
 			
-			// fonction qui affiche/efface la fenêtre d'informations sur l'indice local d'autocorrélation spatiale, au clic sur le bouton d'informations
-			function afficherInformations() {
-				
-				if (infos_test == 0) {
-					
-					if (indice_carte == "Moran") {
-						
-						var Infos = document.createElement('div');
-						Infos.setAttribute("id","stats_Statistiques_legende_infos");
-						
-						var InfosTitre = document.createElement('p');
-						var myInfosTitre = document.createElement('strong');
-						myInfosTitre.textContent = "Indice de Moran local :"
-						InfosTitre.appendChild(myInfosTitre);
-						Infos.appendChild(InfosTitre);
-						
-						var myInfos1 = document.createElement('p');
-						myInfos1.textContent = "I > 0 indique un regroupement de valeurs similaires (plus élevées ou plus faibles que la moyenne)."
-						Infos.appendChild(myInfos1);
-						
-						var myInfos2 = document.createElement('p');
-						myInfos2.textContent = "I < 0 indique un regroupement de valeurs dissimilaires (par exemple des valeurs élevées entourées de valeurs faibles)."
-						Infos.appendChild(myInfos2);
-						
-						document.body.appendChild(Infos);
-						
-						infos_test = 1;
-					}
-					
-					else {
-						
-						var Infos = document.createElement('div');
-						Infos.setAttribute("id","stats_Statistiques_legende_infos");
-						
-						var InfosTitre = document.createElement('p');
-						var myInfosTitre = document.createElement('strong');
-						myInfosTitre.textContent = "Indice de Geary local :"
-						InfosTitre.appendChild(myInfosTitre);
-						Infos.appendChild(InfosTitre);
-						
-						var myInfos2 = document.createElement('p');
-						if (type_carte == "raster")
-							myInfos2.textContent = "Plus I est faible, plus les valeurs des adresses du carré et de ses voisins sont similaires."
-						else
-							myInfos2.textContent = "Les valeurs au sein du secteur sont d'autant plus similaires que I est faible."
-						Infos.appendChild(myInfos2);
-						
-						document.body.appendChild(Infos);
-						
-						infos_test = 1;
-					}
-				}
-				
-				else {
-					effacerInformations(); // efface la fenêtre d'informations sur l'indice local d'autocorrélation spatiale
-				}
-			}
-			
-			
-			
-			// fonction qui efface la fenêtre d'informations sur l'indice local d'autocorrélation spatiale
+			// fonction qui supprime la fenêtre d'information, si elle est ouverte
 			function effacerInformations() {
-				
 				if (document.getElementById('stats_Statistiques_legende_infos')) {
 					var Infos = document.getElementById('stats_Statistiques_legende_infos');
 					document.body.removeChild(Infos);
@@ -1157,10 +1096,10 @@
 								
 							
 							var valeur = 0; // valeur du carré
-							var valeur_HighLow = 0; // indique si la valeur du carré est supérieure, inférieure ou égale à la moyenne
+							var valeur_HighLow = -1; // indique si la valeur du carré est supérieure, inférieure ou égale à la moyenne
 							
 							var voisin = 0; // valeur d'un des voisins
-							var voisin_HighLow = 0; // indique si les valeurs des voisins sont majoritairement supérieures, inférieures ou égales à la moyenne (en comptant le poids qui leur est attribué !!)
+							var voisin_HighLow = -1; // indique si les valeurs des voisins sont majoritairement supérieures, inférieures ou égales à la moyenne (en comptant le poids qui leur est attribué !!)
 							
 							
 							// prend uniquement en compte les carrés possédant une valeur
@@ -1221,15 +1160,11 @@
 								
 								
 								if (valeur < moyenne)
-									valeur_HighLow = -1;
-								if (valeur == moyenne)
 									valeur_HighLow = 0;
 								if (valeur > moyenne)
 									valeur_HighLow = 1;
 								
 								if (Imoran < 0)
-									voisin_HighLow = -1;
-								if (Imoran == 0)
 									voisin_HighLow = 0;
 								if (Imoran > 0)
 									voisin_HighLow = 1;
@@ -1267,20 +1202,20 @@
 								}
 							
 							
-								// cluster auquel appartient le carré ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
+								// cluster auquel appartient le carré ("High/High", "Low/Low", "High/Low", "Low/High" ou "non significatif")
 								
 								var cluster = "non significatif";
 								
 								// si l'indice est significatif
 								if (significativite == true) {
-									cluster = "nul";
+									cluster = "noValue";
 									if (valeur_HighLow == 1 && voisin_HighLow == 1)
 										cluster = "H/H";
-									if (valeur_HighLow == 1 && voisin_HighLow == -1)
+									if (valeur_HighLow == 1 && voisin_HighLow == 0)
 										cluster = "H/L";
-									if (valeur_HighLow == -1 && voisin_HighLow == 1)
+									if (valeur_HighLow == 0 && voisin_HighLow == 1)
 										cluster = "L/H";
-									if (valeur_HighLow == -1 && voisin_HighLow == -1)
+									if (valeur_HighLow == 0 && voisin_HighLow == 0)
 										cluster = "L/L";
 								}
 								
@@ -1530,7 +1465,6 @@
 			function afficherRaster_Moran(liste) {
 				
 				var indices_non_significatifs = false; // boolean qui indique si la liste contient des indices non significatifs
-				var indices_nuls = false; // boolean qui indique si la liste contient des indices nuls (cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales)
 				
 				
 				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
@@ -1556,10 +1490,6 @@
 								couleur = "green"; // vert si le cluster est un "Low/High"
 							if (cluster == "L/L")
 								couleur = "blue"; // bleu si le cluster est un "Low/low"
-							if (cluster == "nul") {
-								couleur = "black"; // noir si le cluster est "nul" (la valeur du carré ou la moyenne pondérée des valeurs des voisins est égale à la moyenne statistique)
-								indices_nuls = true;
-							}
 							if (cluster == "non significatif")
 								indices_non_significatifs = true;
 							
@@ -1584,13 +1514,13 @@
 				}
 				
 				
-				afficherLegende_raster_Moran(indices_non_significatifs, indices_nuls); // affiche sur la carte la légende des couleurs associées aux différents clusters
+				afficherLegende_raster_Moran(indices_non_significatifs); // affiche sur la carte la légende des couleurs associées aux différents clusters
 			}
 			
 		
 		
 			// fonction qui affiche sur la carte la légende des couleurs associées aux différents clusters de la carte raster des indices de Moran locaux
-			function afficherLegende_raster_Moran(indices_non_significatifs, indices_nuls) {
+			function afficherLegende_raster_Moran(indices_non_significatifs) {
 				
 				// supprime la légende existante, s'il y en a une
 				effacerLegende();
@@ -1634,28 +1564,6 @@
 				}
 				
 				
-				// ajout de la case des valeurs nulles (si la liste affichée en contient)
-				if (indices_nuls == true) {
-				
-					var Nuls = document.createElement('div');
-					Nuls.setAttribute("class","stats_Statistiques_legende_cluster");
-					
-					var Nuls_color = document.createElement('div');
-					Nuls_color.setAttribute("class","stats_Statistiques_legende_cluster_couleur");
-					Nuls_color.setAttribute("style","background-color: black;");
-					Nuls.appendChild(Nuls_color);
-					
-					var Nuls_value = document.createElement('div');
-					Nuls_value.setAttribute("class","stats_Statistiques_legende_cluster_valeur");
-					var myNuls_value = document.createElement('span');
-					myNuls_value.textContent = "nul";
-					Nuls_value.appendChild(myNuls_value);
-					Nuls.appendChild(Nuls_value);
-					
-					Legend.appendChild(Nuls);
-				}
-				
-				
 				// ajout de la case des valeurs non significatives (si la liste affichée en contient)
 				if (indices_non_significatifs == true) {
 				
@@ -1684,7 +1592,7 @@
 				var Button = document.createElement('a');
 				Button.setAttribute("class","stats_a");
 				Button.setAttribute("href","#");
-				Button.setAttribute("onclick","afficherInformations(); return false;");
+				Button.setAttribute("onclick","afficherInformations_raster_Moran(); return false;");
 				var myButton = document.createElement('img');
 				myButton.setAttribute("id","stats_Statistiques_legende_infos_button");
 				myButton.setAttribute("src","../images/informations.jpg");
@@ -1693,6 +1601,47 @@
 				Legend.appendChild(Button);
 				
 				document.body.appendChild(Legend);
+			}
+			
+			
+			
+			// fonction qui affiche/efface la fenêtre d'informations sur l'indice de Moran local, au clic sur le bouton d'informations
+			function afficherInformations_raster_Moran() {
+				
+				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				if (infos_test == 0) {
+					
+					var Infos = document.createElement('div');
+					Infos.setAttribute("id","stats_Statistiques_legende_infos");
+					
+					var InfosTitre = document.createElement('p');
+					var myInfosTitre = document.createElement('strong');
+					myInfosTitre.textContent = "Indice de Moran local :";
+					InfosTitre.appendChild(myInfosTitre);
+					Infos.appendChild(InfosTitre);
+					
+					var myInfos1 = document.createElement('p');
+					myInfos1.textContent = "Les clusters 'High/High' et 'Low/Low' correspondent à des regroupements significatifs de valeurs similaires (concentration de valeurs respectivement plus élevées et plus faibles que la moyenne).";
+					Infos.appendChild(myInfos1);
+					
+					var myInfos2 = document.createElement('p');
+					myInfos2.textContent = "Les clusters 'High/Low' et 'Low/High' correspondent à des regroupements significatifs de valeurs différentes (dispersion régulière de valeurs faibles autour de valeurs élevées, et inversement).";
+					Infos.appendChild(myInfos2);
+					
+					var myInfos3 = document.createElement('p');
+					myInfos3.textContent = "Les zones de couleur grise ne montrent aucune dépendance spatiale statistiquement significative.";
+					Infos.appendChild(myInfos3);
+					
+					document.body.appendChild(Infos);
+					
+					infos_test = 1;
+				}
+				
+				
+				// efface la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				else {
+					effacerInformations();
+				}
 			}
 			
 			
@@ -1923,7 +1872,7 @@
 				var Button = document.createElement('a');
 				Button.setAttribute("class","stats_a");
 				Button.setAttribute("href","#");
-				Button.setAttribute("onclick","afficherInformations(); return false;");
+				Button.setAttribute("onclick","afficherInformations_raster_Geary("+indices_nuls+"); return false;");
 				var myButton = document.createElement('img');
 				myButton.setAttribute("id","stats_Statistiques_legende_infos_button");
 				myButton.setAttribute("src","../images/informations.jpg");
@@ -1932,6 +1881,49 @@
 				Legend.appendChild(Button);
 				
 				document.body.appendChild(Legend);
+			}
+			
+			
+			
+			// fonction qui affiche/efface la fenêtre d'informations sur l'indice de Geary local, au clic sur le bouton d'informations
+			function afficherInformations_raster_Geary(indices_nuls) {
+				
+				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				if (infos_test == 0) {
+					
+					var Infos = document.createElement('div');
+					Infos.setAttribute("id","stats_Statistiques_legende_infos");
+					
+					var InfosTitre = document.createElement('p');
+					var myInfosTitre = document.createElement('strong');
+					myInfosTitre.textContent = "Indice de Geary local :";
+					InfosTitre.appendChild(myInfosTitre);
+					Infos.appendChild(InfosTitre);
+					
+					var myInfos1 = document.createElement('p');
+					myInfos1.textContent = "I < 1 indique un regroupement de valeurs similaires autour du carré, d'autant plus similaires que I est faible.";
+					Infos.appendChild(myInfos1);
+					
+					var myInfos2 = document.createElement('p');
+					myInfos2.textContent = "I > 1 indique un regroupement de valeurs différentes autour du carré, d'autant plus différentes que I est élevé.";
+					Infos.appendChild(myInfos2);
+					
+					if (indices_nuls == true) {
+						var myInfos3 = document.createElement('p');
+						myInfos3.textContent = "Un carré de couleur marron indique un regroupement de valeurs strictement égales autour du carré (I = 0).";
+						Infos.appendChild(myInfos3);
+					}
+					
+					document.body.appendChild(Infos);
+					
+					infos_test = 1;
+				}
+				
+				
+				// efface la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				else {
+					effacerInformations();
+				}
 			}
 			
 	
@@ -2412,7 +2404,7 @@
 				var Button = document.createElement('a');
 				Button.setAttribute("class","stats_a");
 				Button.setAttribute("href","#");
-				Button.setAttribute("onclick","afficherInformations(); return false;");
+				Button.setAttribute("onclick","afficherInformations_secteurs_Moran("+indices_nuls+","+indices_noData+"); return false;");
 				var myButton = document.createElement('img');
 				myButton.setAttribute("id","stats_Statistiques_legende_infos_button");
 				myButton.setAttribute("src","../images/informations.jpg");
@@ -2421,6 +2413,85 @@
 				Legend.appendChild(Button);
 				
 				document.body.appendChild(Legend);
+			}
+			
+			
+			
+			// fonction qui affiche/efface la fenêtre d'informations sur l'indice de Moran des secteurs, au clic sur le bouton d'informations
+			function afficherInformations_secteurs_Moran(indices_nuls, indices_noData) {
+				
+				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				if (infos_test == 0) {
+					
+					var Infos = document.createElement('div');
+					Infos.setAttribute("id","stats_Statistiques_legende_infos");
+					
+					var InfosTitre = document.createElement('p');
+					var myInfosTitre = document.createElement('strong');
+					myInfosTitre.textContent = "Indice de Moran :";
+					InfosTitre.appendChild(myInfosTitre);
+					Infos.appendChild(InfosTitre);
+					
+					var myInfos1 = document.createElement('p');
+					myInfos1.textContent = "L'indice de Moran est compris entre -1 et +1. Plus cet indice s'éloigne de 0, plus cela témoigne d'un certain arrangement spatial des valeurs dans le secteur.";
+					myInfos1.setAttribute("style","margin-bottom: 10;");
+					Infos.appendChild(myInfos1);
+					
+					var myInfos2 = document.createElement('p');
+					myInfos2.textContent = "  - Un indice avoisinant 0 reflète une répartition aléatoire des valeurs dans le secteur.";
+					myInfos2.setAttribute("style","margin-top: 0; margin-bottom: 10;");
+					Infos.appendChild(myInfos2);
+					
+					var myInfos3 = document.createElement('p');
+					myInfos3.textContent = "  - Un indice se rapprochant de la borne +1 indique une concentration de valeurs similaires dans le secteur.";
+					myInfos3.setAttribute("style","margin-top: 0; margin-bottom: 10;");
+					Infos.appendChild(myInfos3);
+					
+					var myInfos4 = document.createElement('p');
+					myInfos4.textContent = "  - Un indice se rapprochant de la borne -1 indique une dispersion régulière de valeurs différentes dans le secteur.";
+					myInfos4.setAttribute("style","margin-top: 0;");
+					Infos.appendChild(myInfos4);
+					
+					if (indices_nuls == true) {
+						var myInfos5 = document.createElement('p');
+						myInfos5.textContent = "Un secteur de couleur marron ne contient que des valeurs strictement égales.";
+						Infos.appendChild(myInfos5);
+					}
+					
+					/*var myInfos1 = document.createElement('p');
+					myInfos1.textContent = "Les clusters 'High/High' et 'Low/Low' correspondent à des regroupements significatifs de valeurs similaires (concentration de valeurs respectivement plus élevées et plus faibles que la moyenne).";
+					Infos.appendChild(myInfos1);
+					
+					var myInfos2 = document.createElement('p');
+					myInfos2.textContent = "Les clusters 'High/Low' et 'Low/High' correspondent à des regroupements significatifs de valeurs différentes (dispersion régulière de valeurs faibles autour de valeurs élevées, et inversement).";
+					Infos.appendChild(myInfos2);
+					
+					if (indices_nuls == true) {
+						var myInfos3 = document.createElement('p');
+						myInfos3.textContent = "Le cluster 'nul' contient les secteurs dont l'ensemble des valeurs sont égales.";
+						Infos.appendChild(myInfos3);
+					}*/
+					
+					var myInfos6 = document.createElement('p');
+					myInfos6.textContent = "Un secteur de couleur grise ne montre aucune dépendance spatiale statistiquement significative.";
+					Infos.appendChild(myInfos6);
+					
+					if (indices_noData == true) {
+						var myInfos7 = document.createElement('p');
+						myInfos7.textContent = "Un secteur de couleur blanche ne contient pas suffisamment de valeurs pour que son indice de Moran soit calculé.";
+						Infos.appendChild(myInfos7);
+					}
+					
+					document.body.appendChild(Infos);
+					
+					infos_test = 1;
+				}
+				
+				
+				// efface la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				else {
+					effacerInformations();
+				}
 			}
 			
 			
@@ -2654,7 +2725,7 @@
 				var Button = document.createElement('a');
 				Button.setAttribute("class","stats_a");
 				Button.setAttribute("href","#");
-				Button.setAttribute("onclick","afficherInformations(); return false;");
+				Button.setAttribute("onclick","afficherInformations_secteurs_Geary("+indices_nuls+","+indices_noData+"); return false;");
 				var myButton = document.createElement('img');
 				myButton.setAttribute("id","stats_Statistiques_legende_infos_button");
 				myButton.setAttribute("src","../images/informations.jpg");
@@ -2663,6 +2734,55 @@
 				Legend.appendChild(Button);
 				
 				document.body.appendChild(Legend);
+			}
+			
+			
+			
+			// fonction qui affiche/efface la fenêtre d'informations sur l'indice de Geary des secteurs, au clic sur le bouton d'informations
+			function afficherInformations_secteurs_Geary(indices_nuls, indices_noData) {
+				
+				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				if (infos_test == 0) {
+					
+					var Infos = document.createElement('div');
+					Infos.setAttribute("id","stats_Statistiques_legende_infos");
+					
+					var InfosTitre = document.createElement('p');
+					var myInfosTitre = document.createElement('strong');
+					myInfosTitre.textContent = "Indice de Geary :";
+					InfosTitre.appendChild(myInfosTitre);
+					Infos.appendChild(InfosTitre);
+					
+					var myInfos1 = document.createElement('p');
+					myInfos1.textContent = "I < 1 indique une concentration de valeurs similaires dans le secteur, la concentration étant d'autant plus significative que I est faible.";
+					Infos.appendChild(myInfos1);
+					
+					var myInfos2 = document.createElement('p');
+					myInfos2.textContent = "I > 1 indique une dispersion de valeurs différentes dans le secteur, la dispersion étant d'autant plus régulière que I est élevé.";
+					Infos.appendChild(myInfos2);
+					
+					if (indices_nuls == true) {
+						var myInfos3 = document.createElement('p');
+						myInfos3.textContent = "Un secteur de couleur marron ne contient que des valeurs strictement égales (I = 0).";
+						Infos.appendChild(myInfos3);
+					}
+					
+					if (indices_noData == true) {
+						var myInfos4 = document.createElement('p');
+						myInfo4.textContent = "Un secteur de couleur blanche ne contient pas suffisamment de valeurs pour que son indice de Moran soit calculé.";
+						Infos.appendChild(myInfos4);
+					}
+					
+					document.body.appendChild(Infos);
+					
+					infos_test = 1;
+				}
+				
+				
+				// efface la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				else {
+					effacerInformations();
+				}
 			}
 			
 			
