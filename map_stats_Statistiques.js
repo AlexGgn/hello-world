@@ -1188,7 +1188,7 @@
 							
 							
 								// significativité de l'indice de Moran local
-								var significativite = false;
+								var significativite = 0;
 							
 								/*
 								// l'indice est significatif ssi |z_score| > z_score_minimal
@@ -1207,7 +1207,7 @@
 								var cluster = "non significatif";
 								
 								// si l'indice est significatif
-								if (significativite == true) {
+								if (significativite == 1) {
 									cluster = "noValue";
 									if (valeur_HighLow == 1 && voisin_HighLow == 1)
 										cluster = "H/H";
@@ -2000,8 +2000,8 @@
 								
 								if (i != j) {
 									
-									// le poids entre 2 voisins d'un même secteur correspond à l'inverse de la distance qui les sépare
-									var distance = ( (secteur[j].latitude - secteur[i].latitude) ** 2 + ((secteur[j].longitude - secteur[i].longitude) * coeff_longitude) ** 2 ) ** 0.5;
+									// le poids entre 2 voisins d'un même secteur correspond à l'inverse de la distance qui les sépare à laquelle on ajoute 0.001 Nq (~2m) afin de pallier au fait qu'une adresse peut posséder plusieurs personnes (ATTENTION division / 0)
+									var distance = ( (secteur[j].latitude - secteur[i].latitude)**2 + ((secteur[j].longitude - secteur[i].longitude) * coeff_longitude)**2 )**0.5 + 0.001;
 									var ponderation = 1 / distance;
 									
 									W_i += ponderation;
@@ -2061,7 +2061,7 @@
 						
 							// l'indice est significatif ssi |z_score| > z_score_minimal
 							if (Math.abs(z_score) >= z_score_minimal) {
-								significativite = true;
+								significativite = 1;
 							}
 							
 							
@@ -2296,7 +2296,7 @@
 				
 				
 				// couleur pour chaque valeur de l'intervalle de couleurs
-				for (var k = 0; k < nombre_couleurs; k++) {
+				for (var k = 0; k < liste_valeurs.length-1; k++) {
 					
 					// valeur limite d'un intervalle
 					var Value = document.createElement('div');
@@ -2326,7 +2326,7 @@
 				Value.setAttribute("style","margin-bottom: -7;");
 				var myValue = document.createElement('span');
 				myValue.setAttribute("class","stats_Statistiques_legende_valeur");
-				myValue.textContent = liste_valeurs[nombre_couleurs].toFixed(liste_decimales);
+				myValue.textContent = liste_valeurs[liste_valeurs.length-1].toFixed(liste_decimales);
 				Value.appendChild(myValue);
 				Legend.appendChild(Value);
 				
