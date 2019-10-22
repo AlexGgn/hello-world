@@ -955,15 +955,6 @@
 	// Elements des listes d'autocorrélation spatiales
 		
 		
-			// classe qui donne pour chaque zone un indice d'autocorrélation spatiale et indique s'il et significatif
-			class Indice {
-				constructor(indice, significativite) {
-					this.indice = indice; // indice d'autocorrélation spatiale (de Moran ou de Geary) de la zone
-					this.significativite = significativite; // significativite de l'indice observé dans la zone (0 si significatif, 1 sinon) ATTENTION 2 si toutes les valeurs voisines sont égales, cas rare mais possible
-				}
-			}
-			
-			
 			// seuil de significativité en-dessous duquel on peut dire qu'une dépendance spatiale est statistiquement significative (souvent fixée à 0.05)
 			var seuil = 0.05;
 			
@@ -1043,17 +1034,37 @@
 			
 			
 		
-			// classe qui donne pour chaque carré son indice de Moran local, ainsi que son cluster ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
-			class Indice_Moran_local {
-				constructor(indice, cluster) {
-					this.indice = indice; // indice de Moran local
+			// classe qui donne pour chaque zone sa moyenne statistique et son indice d'autocorrélation spatiale
+			class Indice {
+				constructor(moyenne, indice) {
+					this.moyenne = moyenne; // moyenne statistique de la zone
+					this.indice = indice; // indice d'autocorrélation spatiale de la zone
+				}
+			}
+			
+			
+			// classe qui donne pour chaque zone sa moyenne statistique, son indice d'autocorrélation spatiale et indique s'il et significatif
+			class Indice_significativite {
+				constructor(moyenne, indice, significativite) {
+					this.moyenne = moyenne; // moyenne statistique de la zone
+					this.indice = indice; // indice d'autocorrélation spatiale de la zone
+					this.significativite = significativite; // significativite de l'indice observé dans la zone (1 si significatif, 0 sinon) ATTENTION 2 si toutes les valeurs voisines sont égales, cas rare mais possible
+				}
+			}
+			
+			
+			// classe qui donne pour chaque zone sa moyenne statistique, son indice d'autocorrélation spatiale, ainsi que son cluster ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
+			class Indice_cluster {
+				constructor(moyenne, indice, cluster) {
+					this.moyenne = moyenne; // moyenne statistique de la zone
+					this.indice = indice; // indice d'autocorrélation spatiale de la zone
 					this.cluster = cluster; // cluster de l'indice ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
 				}
 			}
 			
 			
 			
-			// fonction qui crée une liste raster d'autocorrélation spatiale (indice de Moran local) à partir d'une liste de valeurs statistiques
+			// fonction qui crée une liste raster de clusters (pour l'indice de Moran local) à partir d'une liste raster de valeurs statistiques
 			function autocorrelationRaster_Moran(L) {
 			
 				var L_corr = []; // ligne de la liste des indices d'autocorrélation spatiale
@@ -1069,13 +1080,20 @@
 								
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
 				if (variance == 0) {
+					
 					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+					
 						var L_a = []; // a-ième ligne de la liste des indices d'autocorrélation spatiale
+						
 						for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+							
+							var valeur = L[a][b].moyenne; // moyenne statistique du carré
+							
 							// ajoute les données du carré raster
-							var indice = new Indice_Moran_local(0, "nul");
+							var indice = new Indice_cluster(valeur, 0, "nul");
 							L_a.push(indice);
 						}
+						
 						L_corr.push(L_a);
 					}
 				}
@@ -1095,10 +1113,10 @@
 							var n = 0; // nombre de mesures spatiales avec les voisins du carré
 								
 							
-							var valeur = 0; // valeur du carré
+							var valeur = 0; // moyenne statistique du carré
 							var valeur_HighLow = -1; // indique si la valeur du carré est supérieure, inférieure ou égale à la moyenne
 							
-							var voisin = 0; // valeur d'un des voisins
+							var voisin = 0; // moyenne statistique d'un des carrés voisins
 							var voisin_HighLow = -1; // indique si les valeurs des voisins sont majoritairement supérieures, inférieures ou égales à la moyenne (en comptant le poids qui leur est attribué !!)
 							
 							
@@ -1208,27 +1226,34 @@
 								
 								// si l'indice est significatif
 								if (significativite == 1) {
+									
 									cluster = "noValue";
-									if (valeur_HighLow == 1 && voisin_HighLow == 1)
-										cluster = "H/H";
-									if (valeur_HighLow == 1 && voisin_HighLow == 0)
-										cluster = "H/L";
-									if (valeur_HighLow == 0 && voisin_HighLow == 1)
-										cluster = "L/H";
-									if (valeur_HighLow == 0 && voisin_HighLow == 0)
-										cluster = "L/L";
+									
+									if (valeur_HighLow == 1) {
+										if (voisin_HighLow == 1)
+											cluster = "H/H";
+										if (voisin_HighLow == 0)
+											cluster = "H/L";
+									}
+									
+									if (valeur_HighLow == 0) {
+										if (voisin_HighLow == 1)
+											cluster = "L/H";
+										if (voisin_HighLow == 0)
+											cluster = "L/L";
+									}
 								}
 								
 								
 								// ajoute les données du carré raster
-								var indice = new Indice_Moran_local(Imoran, cluster);
+								var indice = new Indice_cluster(valeur, Imoran, cluster);
 								L_a.push(indice);
 							}
 							
 							
 							else {
 								// ajoute les données du carré raster
-								var indice = new Indice_Moran_local(0, "noValue");
+								var indice = new Indice_cluster(valeur, 0, "noValue");
 								L_a.push(indice);
 							}
 						}
@@ -1239,12 +1264,12 @@
 				}
 				
 				
-				return L_corr;
+				return [moyenne, L_corr];
 			}
 			
 			
 			
-			// fonction qui crée une liste raster d'autocorrélation spatiale (indice de Geary local) à partir d'une liste de valeurs statistiques
+			// fonction qui crée une liste raster d'indices de Geary locaux à partir d'une liste raster de valeurs statistiques
 			function autocorrelationRaster_Geary(L) {
 			
 				var L_corr = []; // ligne de la liste des indices d'autocorrélation spatiale
@@ -1256,11 +1281,20 @@
 				
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
 				if (variance_geary == 0) {
+					
 					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+					
 						var L_a = []; // a-ième ligne de la liste des indices d'autocorrélation spatiale
+						
 						for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
-							L_a.push(0);
+							
+							var valeur = L[a][b].moyenne; // moyenne statistique du carré
+							
+							// ajoute les données du carré raster
+							var indice = new Indice(valeur, 0);
+							L_a.push(indice);
 						}
+						
 						L_corr.push(L_a);
 					}
 				}
@@ -1285,8 +1319,8 @@
 								
 								var Igeary = 0; // indice de Geary local (LISA)
 					
-								var valeur = carre.moyenne;; // valeur du carré
-								var voisin = 0; // valeur d'un des voisins
+								var valeur = carre.moyenne;; // moyenne statistique du carré
+								var voisin = 0; // moyenne statistique d'un des carrés voisins
 								
 								var W = 0; // somme des termes de la matrice de pondération pour les voisins du carré
 								
@@ -1341,11 +1375,15 @@
 								Igeary = Igeary / variance_geary / W;
 								
 								// ajoute les données du carré raster
-								L_a.push(Igeary);
+								var indice = new Indice(valeur, Igeary);
+								L_a.push(indice);
 							}
 							
+
 							else {
-								L_a.push(-1);
+								// ajoute les données du carré raster
+								var indice = new Indice(valeur, -1);
+								L_a.push(indice);
 							}
 						}
 						
@@ -1355,7 +1393,7 @@
 				}
 				
 				
-				return L_corr;
+				return [moyenne, L_corr];
 			}
 			
 			
@@ -1462,9 +1500,12 @@
 			
 			
 			// fonction qui crée sur la carte des carrés dont la couleur dépend de l'indice de Moran local du carré
-			function afficherRaster_Moran(liste) {
+			function afficherRaster_Moran(L_corr) {
 				
 				var indices_non_significatifs = false; // boolean qui indique si la liste contient des indices non significatifs
+				
+				var moyenne = L_corr[0]; // moyenne statistique des adresses de la ville sélectionnée
+				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
 				
 				
 				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
@@ -1616,7 +1657,7 @@
 					
 					var InfosTitre = document.createElement('p');
 					var myInfosTitre = document.createElement('strong');
-					myInfosTitre.textContent = "Indice de Moran local :";
+					myInfosTitre.textContent = "Indice de Moran local (clusters) :";
 					InfosTitre.appendChild(myInfosTitre);
 					Infos.appendChild(InfosTitre);
 					
@@ -1647,7 +1688,11 @@
 			
 			
 			// fonction qui crée sur la carte des carrés dont la couleur dépend de l'indice de Geary local du carré
-			function afficherRaster_Geary(liste) {
+			function afficherRaster_Geary(L_corr) {
+				
+				var moyenne = L_corr[0]; // moyenne statistique des adresses de la ville sélectionnée
+				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
+				
 				
 				// fonction qui copie une liste d'indices en les répartissant selon leurs valeurs
 				var copie = copieRaster_Geary(liste); // ATTENTION nécessité de créer une autre liste, car elle sera automatiquement triée par la fonction brew (une copie "liste_brew = liste" de la 1ère la modifierait également)
@@ -1675,7 +1720,7 @@
 					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
 						
 						// indice de Geary local pour le carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster];
+						var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].indice;
 						
 						// crée un carré coloré uniquement si l'indice est supérieur à 0 (ATTENTION il peut être = à 0 !!!!)
 						if (I >= 0) {
@@ -1731,7 +1776,7 @@
 					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
 						
 						// indice de Geary local pour le carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster];
+						var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].indice;
 					
 						if (I == 0)
 							indices_nuls = true;
@@ -1957,10 +2002,39 @@
 		
 			
 			
-			// fonction qui crée une liste d'autocorrélation spatiale (indice de Moran) à partir d'une liste de valeurs statistiques
+			// fonction qui modifie les éléments affichés sur la carte des secteurs pour l'indice de Moran : affiche soit leurs indices ('false') ou les clusters auquels ils appartiennent ('true')
+			function changer_autocorrelation_secteurs_Moran(indices_ou_clusters) {
+				
+				afficherCarte_secteurs(); // affiche la carte des secteurs vide, avec zoom adapté aux secteurs
+				
+				effacerInformations(); // efface la fenêtre d'informations actuelle sur l'indice local d'autocorrélation spatiale
+				
+				
+				var L = nombreLettres_secteurs(); // crée une carte de secteurs pour la statistique
+				
+				
+				// crée la carte d'autocorrélation qui en découle
+				
+				if (indices_ou_clusters == "clusters") {
+					var L_corr = autocorrelationSecteurs_Moran_clusters(L); // clusters auquels appartiennent les secteurs (pour l'indice de Moran)
+					afficherSecteurs_Moran_clusters(L_corr); // affiche la carte des clusters des secteurs (pour l'indice de Moran)
+				}
+				
+				else {
+					var L_corr = autocorrelationSecteurs_Moran(L); // indices de Moran des secteurs
+					afficherSecteurs_Moran(L_corr); // affiche la carte des indices de Moran des secteurs
+				}
+			}
+			
+			
+			
+			// fonction qui crée une liste d'indices de Moran des secteurs à partir d'une liste de valeurs statistiques
 			function autocorrelationSecteurs_Moran(L) {
 			
 				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
+				
+				
+				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
 				
 				
 				for (var secteur of L) {
@@ -1970,7 +2044,7 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice_noData = new Indice(0,-1);
+						var indice_noData = new Indice_significativite(0, 0, -1);
 						L_corr.push(indice_noData);
 					}
 						
@@ -2029,7 +2103,7 @@
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
 							// ajoute la donnée du secteur
-							var indice_nul = new Indice(0, 2);
+							var indice_nul = new Indice_significativite(moyenne, 1, 2);
 							L_corr.push(indice_nul);
 						}
 						
@@ -2066,22 +2140,25 @@
 							
 							
 							// ajoute la donnée du secteur
-							var indice = new Indice(Imoran, significativite);
+							var indice = new Indice_significativite(moyenne, Imoran, significativite);
 							L_corr.push(indice);
 						}
 					}
 				}
 				
 				
-				return L_corr;
+				return [moyenne_global, L_corr];
 			}
 			
 			
 			
-			// fonction qui crée une liste d'autocorrélation spatiale (indice de Geary) à partir d'une liste de valeurs statistiques
-			function autocorrelationSecteurs_Geary(L) {
+			// fonction qui crée une liste de clusters auxquels appartiennt les secteurs (pour l'indice de Moran) à partir d'une liste de valeurs statistiques
+			function autocorrelationSecteurs_Moran_clusters(L) {
 			
 				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
+				
+				
+				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
 				
 				
 				for (var secteur of L) {
@@ -2091,7 +2168,156 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						L_corr.push(-1);
+						var indice_noData = new Indice_cluster(0, 0,"noData");
+						L_corr.push(indice_noData);
+					}
+						
+						
+					else {
+						
+						var Imoran = 0; // indice de Moran pour le secteur
+					
+						var moyenne = calculerMoyenne_secteur(secteur); // moyenne de la statistique pour les adresses du secteur
+						
+						var variance = 0; // variance (moment centré d'ordre 2) de la statistique (dans le secteur)
+						var moment = 0; // moment centré d'ordre 4 de la statistique (dans le secteur)
+						
+						var W = 0; // somme des termes de la matrice de pondération (dans le secteur)
+						var W2 = 0; // somme des termes de la matrice de pondération au carré (dans le secteur)
+						var W_2 = 0; // somme des lignes de la matrice de pondération au carré (dans le secteur)
+						
+						
+						for (var i = 0; i < n; i++) {
+							
+							var Imoran_i = 0; // indice de Moran local
+							
+							var W_i = 0; // somme des termes de la i-ème ligne de la matrice de pondération du secteur
+							
+							
+							for (var j = 0; j < n; j++) {
+								
+								if (i != j) {
+									
+									// le poids entre 2 voisins d'un même secteur correspond à l'inverse de la distance qui les sépare à laquelle on ajoute 0.001 Nq (~2m) afin de pallier au fait qu'une adresse peut posséder plusieurs personnes (ATTENTION division / 0)
+									var distance = ( (secteur[j].latitude - secteur[i].latitude)**2 + ((secteur[j].longitude - secteur[i].longitude) * coeff_longitude)**2 )**0.5 + 0.001;
+									var ponderation = 1 / distance;
+									
+									W_i += ponderation;
+									W2 += ponderation ** 2;
+									
+									Imoran_i += ponderation * (secteur[j].valeur - moyenne);
+								}
+							}
+							
+							W += W_i;
+							W_2 += W_i ** 2;
+							
+							Imoran_i *= (secteur[i].valeur - moyenne);
+						
+							
+							Imoran += Imoran_i;
+							variance += (secteur[i].valeur - moyenne) ** 2;
+							moment += (secteur[i].valeur - moyenne) ** 4;
+						}
+						
+						variance = variance / n; 
+						moment = moment / n;
+						
+						
+						// cluster auquel appartient le carré ("High/High", "Low/Low", "High/Low", "Low/High" ou "non significatif")
+						var cluster = "non significatif";
+						
+						
+						var HighLow = 0; // indique si la valeur moyenne du secteur est supérieure (= 1) ou inférieure (= 0) à la moyenne
+						if (moyenne > moyenne_global)
+							HighLow = 1;
+						
+						
+						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
+						if (variance == 0) {
+							
+							Imoran = 0;
+							
+							// cluster auquel appartient le carré
+							if (HighLow == 1)
+								cluster = "H/H";
+							if (HighLow == 0)
+								cluster = "L/L";
+						}
+						
+						
+						else {
+							// normalisation de l'indice de Moran
+							Imoran = Imoran / variance / W;
+							
+							
+							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
+								
+								// calcul de l'espérance
+								var esperance0 = - 1 / (n-1);
+								
+								// calcul des éléments de la variance
+								var s1 = (n**2 - 3*n + 3) * 2 * W2  -  n * W_2  +  3 * W**2
+								var s2 = moment / variance**2;
+								var s3 = (1 - 2*n) * 2 * W2  +  6 * W**2
+								
+								// calcul de la variance
+								var variance0 = ( n * s1 - s2 * s3 )  /  ( (n-1) * (n-2) * (n-3) * W**2 );
+								
+								// calcul du z-score (z-score suit une loi normale centrée réduite)
+								var z_score = (Imoran - esperance0) / variance0**0.5;
+							
+							
+							// l'indice est significatif ssi |z_score| > z_score_minimal
+							if (Math.abs(z_score) >= z_score_minimal) {
+								
+								if (Imoran > 0) {
+									if (HighLow == 1)
+										cluster = "H/H";
+									if (HighLow == 0)
+										cluster = "L/L";
+								}
+								
+								else {
+									if (HighLow == 1)
+										cluster = "H/L";
+									if (HighLow == 0)
+										cluster = "L/H";
+								}
+							}
+						}
+						
+						
+						// ajoute la donnée du secteur
+						var indice = new Indice_cluster(moyenne, Imoran, cluster);
+						L_corr.push(indice);
+					}
+				}
+				
+				
+				return [moyenne_global, L_corr];
+			}
+			
+			
+			
+			// fonction qui crée une liste d'indices de Geary des secteurs à partir d'une liste de valeurs statistiques
+			function autocorrelationSecteurs_Geary(L) {
+			
+				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
+				
+				
+				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
+				
+				
+				for (var secteur of L) {
+				
+					var n = secteur.length; // nombre total de valeurs statistiques dans le secteur
+					
+					
+					// le nombre de valeurs dans le secteur doit être suffisament élevé
+					if (n < nombre_voisins_secteurs_minimum) {
+						var indice = new Indice(0, -1);
+						L_corr.push(indice);
 					}
 						
 						
@@ -2136,23 +2362,24 @@
 						
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
-							// ajoute la donnée du secteur
-							L_corr.push(0);
+							Igeary = 0;
 						}
 						
 						
 						else {
 							//normalisation de l'indice de Moran
 							Igeary = Igeary / variance / W / n * (n-1)/2;
-							
-							// ajoute la donnée du secteur
-							L_corr.push(Igeary);
 						}
+						
+						
+						// ajoute la donnée du secteur
+						var indice = new Indice(moyenne, Igeary);
+						L_corr.push(indice);
 					}
 				}
 				
 				
-				return L_corr;
+				return [moyenne_global, L_corr];
 			}
 			
 			
@@ -2166,6 +2393,27 @@
 				for (var adresse of secteur) {
 					nombre += 1;
 					somme_valeurs += adresse.valeur;
+				}
+				
+				if (nombre > 0)
+					return somme_valeurs / nombre;
+				else
+					return 0;
+			}
+			
+			
+			
+			// fonction qui calcule la moyenne de la statistique pour l'ensemble des adresses des sous-secteurs statistiques
+			function calculerMoyenne_secteurs(L) {
+				
+				var nombre = 0; // nombre d'éléments
+				var somme_valeurs = 0; // somme des valeurs des éléments
+				
+				for (var secteur of L) {
+					for (var adresse of secteur) {
+						nombre += 1;
+						somme_valeurs += adresse.valeur;
+					}
 				}
 				
 				if (nombre > 0)
@@ -2196,34 +2444,62 @@
 			
 			
 			// fonction qui crée sur la carte des secteurs dont la couleur dépend de l'indice de Moran du secteur
-			function afficherSecteurs_Moran(liste) {
+			function afficherSecteurs_Moran(L_corr) {
+				
+				var moyenne = L_corr[0]; // moyenne statistique des adresses de la ville sélectionnée
+				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
+				
 				
 				// copie la liste d'indices en ne conservant que les valeurs significatives
 				var copie = copieSecteurs_Moran(liste); // ATTENTION nécessité de créer une autre liste, car elle sera automatiquement triée par la fonction brew (une copie "liste_brew = liste" de la 1ère la modifierait également)
 				
 				
-				// crée la répartition des couleurs associées à chaque intervalle de valeur
-				var liste_brew = copie[0];
-				var brew = new classyBrew();
-				brew.setSeries(liste_brew);
-				brew.setNumClasses(3); // nombre de couleurs différentes
-				brew.setColorCode("OrRd"); // gamme des couleurs : "Wheat", "Orange", "Red"
-				brew.classify("jenks"); // méthode de répartition des couleurs : jenks
-
+				// crée la répartition des couleurs associées à chaque intervalle de valeur pour les indices >= à 0 de la liste (autocorrélation spatiale positive)
+				var liste_brew_positive = copie[0];
+				var brew_positive = new classyBrew();
+				brew_positive.setSeries(liste_brew_positive);
+				brew_positive.setNumClasses(3); // nombre de couleurs différentes
+				brew_positive.setColorCode("OrRd"); // gamme des couleurs : "Wheat", "Orange", "Red"
+				brew_positive.classify("jenks"); // méthode de répartition des couleurs : "jenks"
+				
+				
+				var indices_negatifs = copie[1]; // boolean qui indique si la liste contient des indices significatifs et < à 0
+				
+				if (indices_negatifs == true) {
+					// crée la répartition des couleurs associées à chaque intervalle de valeur pour les indices < à 0 de la liste (autocorrélation spatiale négative)
+					var liste_brew_negative = copie[2];
+					var brew_negative = new classyBrew();
+					brew_negative.setSeries(liste_brew_negative);
+					brew_negative.setNumClasses(2); // nombre de couleurs différentes
+					brew_negative.setColorCode("Blues2"); // gamme des couleurs : "DarkBlue", "SkyBlue"
+					brew_negative.classify("jenks"); // méthode de répartition des couleurs : "jenks"
+				}
+				
 
 				for (var secteur = 0; secteur < sec; secteur++) {
 
 					// indice de Moran/Geary local pour le secteur
 					var I = liste[secteur].indice;
 
+
 					// couleur du secteur en fonction de sa valeur
+					
 					var couleur = "#FFFFFF"; // "White" si le secteur ne possède aucun indice (manque de données)
+					
 					if (liste[secteur].significativite == 2)
 						couleur = "#8B0000"; // "DarkRed" dans le cas rare mais possible où l'ensemble des valeurs du secteur sont égales
 					if (liste[secteur].significativite == 0)
 						couleur = "#808080"; // "Grey" si l'indice n'est pas significatif
-					if (liste[secteur].significativite == 1)
-						couleur = brew.getColorInRange(I); // coloré si l'indice est significatif
+					
+					// coloré selon la valeur de l'indice s'il est significatif
+					if (liste[secteur].significativite == 1) {
+						if (I >= 0)
+							couleur = brew_positive.getColorInRange(I);
+						else {
+							if (indices_negatifs == true)
+								couleur = brew_negative.getColorInRange(I);
+						}
+					}
 
 					// créer un polygône à partir de ces adresses
 					L.polygon(BDD_secteurs[secteur],{
@@ -2234,12 +2510,15 @@
 				}
 				
 				
-				var indices_non_significatifs = copie[1]; // boolean qui indique si la liste contient des indices non significatifs
-				var indices_nuls = copie[2]; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
-				var indices_noData = copie[3]; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
+				var indices_non_significatifs = copie[3]; // boolean qui indique si la liste contient des indices non significatifs
+				var indices_nuls = copie[4]; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
+				var indices_noData = copie[5]; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
 				
 				
-				afficherLegende_secteurs_Moran(brew, indices_non_significatifs, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte
+				if (indices_negatifs == true)
+					afficherLegende_secteurs_Moran_negatifs(brew_positive, brew_negative, indices_non_significatifs, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte (contenant des valeurs négatives significatives)
+				else
+					afficherLegende_secteurs_Moran(brew_positive, indices_non_significatifs, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte (ne contenant aucune valeur négative significative)
 			}
 
 
@@ -2247,29 +2526,240 @@
 			// fonction qui copie une liste d'indices en ne conservant que les valeurs significatives
 			function copieSecteurs_Moran(L) {
 				
-				var L_significatifs = []; // liste des valeurs des indices significatifs
+				var L_positive = []; // liste des indices de Moran significatifs et >= à 0 (autocorrélation spatiale positive)
+				var L_negative = []; // liste des indices de Moran significatifs et < à 0 (autocorrélation spatiale négative)
 				
+				var indices_negatifs = false; // boolean qui indique si la liste contient des indices significatifs et < à 0
 				var indices_non_significatifs = false; // boolean qui indique si la liste contient des indices non significatifs
 				var indices_nuls = false; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
 				var indices_noData = false; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
 				
 				for (var x of L) {
+					
 					if (x.significativite == 0)
 						indices_non_significatifs = true;
 					if (x.significativite == 2)
 						indices_nuls = true;
 					if (x.significativite == -1)
 						indices_noData = true;
-					if (x.significativite == 1)
-						L_significatifs.push(x.indice);
+					
+					if (x.significativite == 1) {
+						if (x.indice > 0)
+							L_positive.push(x.indice);
+						else {
+							indices_negatifs = true;
+							L_negative.push(x.indice);
+						}
+					}
 				}
 				
-				return [L_significatifs, indices_non_significatifs, indices_nuls, indices_noData];
+				return [L_positive, indices_negatifs, L_negative, indices_non_significatifs, indices_nuls, indices_noData];
 			}
 			
 			
 			
-			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster des indices de Moran des secteurs
+			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster des indices de Moran des secteurs (contenant des valeurs négatives significatives)
+			function afficherLegende_secteurs_Moran_negatifs(brew_positive, brew_negative, indices_non_significatifs, indices_nuls, indices_noData) {
+				
+				// supprime la légende existante, s'il y en a une
+				effacerLegende();
+				
+				// crée la case 'légende'
+				var Legend = document.createElement('div');
+				Legend.setAttribute("id","stats_Statistiques_legende");
+				
+				
+				// ajoute le titre à la case 'légende' (indice d'autocorrélation spatiale de la carte : "Moran" ou "Geary" ; global ou local)
+				var myLegend = document.createElement('h2');
+				myLegend.setAttribute("id","stats_Statistiques_legende_titre");
+				myLegend.textContent = "I de Moran";
+				Legend.appendChild(myLegend);
+				
+				
+				// ajoute le type d'éléments renvoyés par la carte (valeurs des indices de Moran des seceteurs ou clusters auquels ils appartiennent)
+				
+				var LegendType = document.createElement('div');
+				LegendType.setAttribute("id","stats_Statistiques_legende_types");
+				
+				var myLegendType_selec = document.createElement('button');
+				myLegendType_selec.setAttribute("class","stats_Statistiques_legende_type");
+				myLegendType_selec.setAttribute("id","stats_Statistiques_legende_type_selec");
+				myLegendType_selec.textContent = "indices";
+				LegendType.appendChild(myLegendType_selec);
+				
+				var myLegendType_nonSelec = document.createElement('button');
+				myLegendType_nonSelec.setAttribute("class","stats_Statistiques_legende_type");
+				myLegendType_nonSelec.setAttribute("id","stats_Statistiques_legende_type_non_selec");
+				myLegendType_nonSelec.setAttribute("onclick","changer_autocorrelation_secteurs_Moran('clusters'); return false;");
+				myLegendType_nonSelec.textContent = "clusters";
+				LegendType.appendChild(myLegendType_nonSelec);
+				
+				Legend.appendChild(LegendType);
+				
+				
+				// indices de Moran <= à 0 (autocorrélation spatiale négative)
+				
+					// liste des couleurs et de leurs valeurs associées
+					var liste_negative_valeurs = brew_negative.getBreaks();
+					var liste_negative_couleurs = brew_negative.getColors();
+					
+					// définit la dernière décimale importante des valeurs
+					var liste_negative_decimales = calculerDecimale(liste_negative_valeurs);
+					
+					// couleur pour chaque valeur de l'intervalle de couleurs
+					for (var k = 0; k < liste_negative_valeurs.length-1; k++) {
+						
+						// valeur limite d'un intervalle
+						var Value = document.createElement('div');
+						Value.setAttribute("class","stats_Statistiques_legende_ligne");
+						var myValue = document.createElement('span');
+						myValue.setAttribute("class","stats_Statistiques_legende_valeur");
+						myValue.textContent = liste_negative_valeurs[k].toFixed(liste_negative_decimales);
+						Value.appendChild(myValue);
+						Legend.appendChild(Value);
+						
+						// carré de la couleur de l'intervalle
+						var Color = document.createElement('div');
+						Color.setAttribute("class","stats_Statistiques_legende_ligne");
+						var myColor = document.createElement('div');
+						myColor.setAttribute("class","stats_Statistiques_legende_couleur");
+						var couleur = liste_negative_couleurs[k];
+						myColor.setAttribute("style","background-color:"+couleur+";");
+						Color.appendChild(myColor);
+						Legend.appendChild(Color);
+					}
+					
+					
+				// ajout de la valeur intermédiaire (= 0)
+				var Value0 = document.createElement('div');
+				Value0.setAttribute("class","stats_Statistiques_legende_ligne");
+				var myValue0 = document.createElement('span');
+				myValue0.setAttribute("class","stats_Statistiques_legende_valeur");
+				myValue0.textContent = "0";
+				Value0.appendChild(myValue0);
+				Legend.appendChild(Value0);
+				
+				
+				// indices de Moran > à 0 (autocorrélation spatiale positive)
+				
+					// liste des couleurs et de leurs valeurs associées
+					var liste_positive_valeurs = brew_positive.getBreaks();
+					var liste_positive_couleurs = brew_positive.getColors();
+					
+					// définit la dernière décimale importante des valeurs
+					var liste_positive_decimales = calculerDecimale(liste_positive_valeurs);
+					
+					// couleur pour chaque valeur de l'intervalle de couleurs
+					for (var k = 0; k < liste_positive_valeurs.length-1; k++) {
+						
+						// carré de la couleur de l'intervalle
+						var Color = document.createElement('div');
+						Color.setAttribute("class","stats_Statistiques_legende_ligne");
+						var myColor = document.createElement('div');
+						myColor.setAttribute("class","stats_Statistiques_legende_couleur");
+						var couleur = liste_positive_couleurs[k];
+						myColor.setAttribute("style","background-color:"+couleur+";");
+						Color.appendChild(myColor);
+						Legend.appendChild(Color);
+						
+						// valeur limite supérieure d'un intervalle (sauf la première)
+						var Value = document.createElement('div');
+						Value.setAttribute("class","stats_Statistiques_legende_ligne");
+						var myValue = document.createElement('span');
+						myValue.setAttribute("class","stats_Statistiques_legende_valeur");
+						myValue.textContent = liste_positive_valeurs[k+1].toFixed(liste_positive_decimales);
+						Value.appendChild(myValue);
+						Legend.appendChild(Value);
+					}
+				
+				
+				// ajout de la case des valeurs nulles (si la liste affichée en contient)
+				if (indices_nuls == true) {
+				
+					var Nuls = document.createElement('div');
+					Nuls.setAttribute("id","stats_Statistiques_legende_nuls");
+					
+					var Nuls_color = document.createElement('div');
+					Nuls_color.setAttribute("class","stats_Statistiques_legende_couleur");
+					Nuls_color.setAttribute("id","stats_Statistiques_legende_nuls_couleur");
+					Nuls_color.setAttribute("style","background-color: #8B0000;");
+					Nuls.appendChild(Nuls_color);
+					
+					var Nuls_value = document.createElement('div');
+					Nuls_value.setAttribute("id","stats_Statistiques_legende_nuls_valeur");
+					var myNuls_value = document.createElement('span');
+					myNuls_value.textContent = "constante";
+					Nuls_value.appendChild(myNuls_value);
+					Nuls.appendChild(Nuls_value);
+					
+					Legend.appendChild(Nuls);
+				}
+				
+				
+				// ajout de la case des valeurs non significatives (si la liste affichée en contient)
+				if (indices_non_significatifs == true) {
+				
+					var NotSignificant = document.createElement('div');
+					NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+					
+					var NotSignificant_color = document.createElement('div');
+					NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+					NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+					NotSignificant_color.setAttribute("style","background-color: #808080;");
+					NotSignificant.appendChild(NotSignificant_color);
+					
+					var NotSignificant_value = document.createElement('div');
+					NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+					var myNotSignificant_value = document.createElement('span');
+					myNotSignificant_value.textContent = "non significatif";
+					NotSignificant_value.appendChild(myNotSignificant_value);
+					NotSignificant.appendChild(NotSignificant_value);
+					
+					Legend.appendChild(NotSignificant);
+				}
+				
+				
+				// ajout de la case des secteurs sans valeur (si la liste affichée en contient)
+				if (indices_noData == true) {
+				
+					var NoData = document.createElement('div');
+					NoData.setAttribute("id","stats_Statistiques_legende_noData");
+					
+					var NoData_color = document.createElement('div');
+					NoData_color.setAttribute("class","stats_Statistiques_legende_couleur");
+					NoData_color.setAttribute("id","stats_Statistiques_legende_noData_couleur");
+					NoData_color.setAttribute("style","background-color: #FFFFFF;");
+					NoData.appendChild(NoData_color);
+					
+					var NoData_value = document.createElement('div');
+					NoData_value.setAttribute("id","stats_Statistiques_legende_noData_valeur");
+					var myNoData_value = document.createElement('span');
+					myNoData_value.textContent = "no Data";
+					NoData_value.appendChild(myNoData_value);
+					NoData.appendChild(NoData_value);
+					
+					Legend.appendChild(NoData);
+				}
+				
+				
+				// ajout du bouton d'informations
+				var Button = document.createElement('a');
+				Button.setAttribute("class","stats_a");
+				Button.setAttribute("href","#");
+				Button.setAttribute("onclick","afficherInformations_secteurs_Moran("+indices_nuls+","+indices_noData+"); return false;");
+				var myButton = document.createElement('img');
+				myButton.setAttribute("id","stats_Statistiques_legende_infos_button");
+				myButton.setAttribute("src","../images/informations.jpg");
+				myButton.setAttribute("alt","afficher des explications sur l'indice de Moran local");
+				Button.appendChild(myButton);
+				Legend.appendChild(Button);
+				
+				document.body.appendChild(Legend);
+			}
+			
+			
+			
+			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster des indices de Moran des secteurs (ne contenant aucune valeur négative significative)
 			function afficherLegende_secteurs_Moran(brew, indices_non_significatifs, indices_nuls, indices_noData) {
 				
 				// supprime la légende existante, s'il y en a une
@@ -2285,6 +2775,27 @@
 				myLegend.setAttribute("id","stats_Statistiques_legende_titre");
 				myLegend.textContent = "I de Moran";
 				Legend.appendChild(myLegend);
+				
+				
+				// ajoute le type d'éléments renvoyés par la carte (valeurs des indices de Moran des seceteurs ou clusters auquels ils appartiennent)
+				
+				var LegendType = document.createElement('div');
+				LegendType.setAttribute("id","stats_Statistiques_legende_types");
+				
+				var myLegendType_selec = document.createElement('button');
+				myLegendType_selec.setAttribute("class","stats_Statistiques_legende_type");
+				myLegendType_selec.setAttribute("id","stats_Statistiques_legende_type_selec");
+				myLegendType_selec.textContent = "indices";
+				LegendType.appendChild(myLegendType_selec);
+				
+				var myLegendType_nonSelec = document.createElement('button');
+				myLegendType_nonSelec.setAttribute("class","stats_Statistiques_legende_type");
+				myLegendType_nonSelec.setAttribute("id","stats_Statistiques_legende_type_non_selec");
+				myLegendType_nonSelec.setAttribute("onclick","changer_autocorrelation_secteurs_Moran('clusters'); return false;");
+				myLegendType_nonSelec.textContent = "clusters";
+				LegendType.appendChild(myLegendType_nonSelec);
+				
+				Legend.appendChild(LegendType);
 				
 				
 				// liste des couleurs et de leurs valeurs associées
@@ -2458,20 +2969,6 @@
 						Infos.appendChild(myInfos5);
 					}
 					
-					/*var myInfos1 = document.createElement('p');
-					myInfos1.textContent = "Les clusters 'High/High' et 'Low/Low' correspondent à des regroupements significatifs de valeurs similaires (concentration de valeurs respectivement plus élevées et plus faibles que la moyenne).";
-					Infos.appendChild(myInfos1);
-					
-					var myInfos2 = document.createElement('p');
-					myInfos2.textContent = "Les clusters 'High/Low' et 'Low/High' correspondent à des regroupements significatifs de valeurs différentes (dispersion régulière de valeurs faibles autour de valeurs élevées, et inversement).";
-					Infos.appendChild(myInfos2);
-					
-					if (indices_nuls == true) {
-						var myInfos3 = document.createElement('p');
-						myInfos3.textContent = "Le cluster 'nul' contient les secteurs dont l'ensemble des valeurs sont égales.";
-						Infos.appendChild(myInfos3);
-					}*/
-					
 					var myInfos6 = document.createElement('p');
 					myInfos6.textContent = "Un secteur de couleur grise ne montre aucune dépendance spatiale statistiquement significative.";
 					Infos.appendChild(myInfos6);
@@ -2496,34 +2993,286 @@
 			
 			
 			
+			// fonction qui crée sur la carte des secteurs dont la couleur dépend du cluster auquel appartient le secteur
+			function afficherSecteurs_Moran_clusters(L_corr) {
+				
+				var moyenne = L_corr[0]; // moyenne statistique des adresses de la ville sélectionnée
+				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
+				
+				
+				var indices_non_significatifs = false; // boolean qui indique si la liste contient des indices non significatifs
+				var indices_noData = false; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
+				
+				
+				for (var secteur = 0; secteur < sec; secteur++) {
+
+					// couleur du secteur en fonction du cluster auquel il appartient
+					
+					var cluster = liste[secteur].cluster;  // cluster auquel appartient le secteur
+					
+					var couleur = "grey"; // gris si l'indice n'est pas significatif
+					if (cluster == "non significatif")
+						indices_non_significatifs = true;
+					
+					if (cluster == "noData") {
+						couleur = "white"; // "White" si le secteur ne possède aucun indice (manque de données)
+						indices_noData = true;
+					}
+					
+					if (cluster == "H/H")
+						couleur = "red"; // rouge si le cluster est un "High/High"
+					if (cluster == "H/L")
+						couleur = "yellow"; // jaune si le cluster est un "High/Low"
+					if (cluster == "L/H")
+						couleur = "green"; // vert si le cluster est un "Low/High"
+					if (cluster == "L/L")
+						couleur = "blue"; // bleu si le cluster est un "Low/low"
+
+					// créer un polygône à partir de ces adresses
+					L.polygon(BDD_secteurs[secteur],{
+						color: 'black',
+						fillColor: couleur,
+						fillOpacity: 1
+					}).addTo(mapStats);
+				}
+				
+				
+				afficherLegende_secteurs_Moran_clusters(indices_non_significatifs, indices_noData); // affiche sur la carte la légende des valeurs associées aux différents clusters
+			}
+			
+			
+			
+			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes clusters pour les indices de Moran des secteurs
+			function afficherLegende_secteurs_Moran_clusters(indices_non_significatifs, indices_noData) {
+				
+				// supprime la légende existante, s'il y en a une
+				effacerLegende();
+				
+				// crée la case 'légende'
+				var Legend = document.createElement('div');
+				Legend.setAttribute("id","stats_Statistiques_legende");
+				
+				
+				// ajoute le titre à la case 'légende' (indice d'autocorrélation spatiale de la carte : "Moran" ou "Geary" ; global ou local)
+				var myLegend = document.createElement('h2');
+				myLegend.setAttribute("id","stats_Statistiques_legende_titre");
+				myLegend.textContent = "I de Moran";
+				Legend.appendChild(myLegend);
+				
+				
+				// ajoute le type d'éléments renvoyés par la carte (valeurs des indices de Moran des seceteurs ou clusters auquels ils appartiennent)
+				
+				var LegendType = document.createElement('div');
+				LegendType.setAttribute("id","stats_Statistiques_legende_types");
+				LegendType.setAttribute("style","margin-bottom: 40;");
+				
+				var myLegendType_nonSelec = document.createElement('button');
+				myLegendType_nonSelec.setAttribute("class","stats_Statistiques_legende_type");
+				myLegendType_nonSelec.setAttribute("id","stats_Statistiques_legende_type_non_selec");
+				myLegendType_nonSelec.setAttribute("onclick","changer_autocorrelation_secteurs_Moran('indices'); return false;");
+				myLegendType_nonSelec.textContent = "indices";
+				LegendType.appendChild(myLegendType_nonSelec);
+				
+				var myLegendType_selec = document.createElement('button');
+				myLegendType_selec.setAttribute("class","stats_Statistiques_legende_type");
+				myLegendType_selec.setAttribute("id","stats_Statistiques_legende_type_selec");
+				myLegendType_selec.textContent = "clusters";
+				LegendType.appendChild(myLegendType_selec);
+				
+				Legend.appendChild(LegendType);
+				
+				
+				// couleur de chaque cluster
+				
+				var clusters = ["H/H", "H/L", "L/H", "L/L"]; // liste des clusters ("High/High", "High/low", "Low/High", "Low/Low")
+				var clusters_couleurs = ["red", "yellow", "green", "blue"]; // couleurs associées à chacun de ces clusters
+				
+				for (var i = 0; i < 4; i++) {
+					
+					var Cluster = document.createElement('div');
+					Cluster.setAttribute("class","stats_Statistiques_legende_cluster");
+					
+					var Cluster_color = document.createElement('div');
+					Cluster_color.setAttribute("class","stats_Statistiques_legende_cluster_couleur");
+					Cluster_color.setAttribute("style","background-color:" + clusters_couleurs[i] + ";");
+					Cluster.appendChild(Cluster_color);
+					
+					var Cluster_value = document.createElement('div');
+					Cluster_value.setAttribute("class","stats_Statistiques_legende_cluster_valeur");
+					var myCluster_value = document.createElement('span');
+					myCluster_value.textContent = clusters[i];
+					Cluster_value.appendChild(myCluster_value);
+					Cluster.appendChild(Cluster_value);
+					
+					Legend.appendChild(Cluster);
+				}
+				
+				
+				// ajout de la case des valeurs non significatives (si la liste affichée en contient)
+				if (indices_non_significatifs == true) {
+				
+					var NotSignificant = document.createElement('div');
+					NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+					NotSignificant.setAttribute("style","margin-top: 40;");
+					
+					var NotSignificant_color = document.createElement('div');
+					NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+					NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+					NotSignificant_color.setAttribute("style","background-color: grey;");
+					NotSignificant.appendChild(NotSignificant_color);
+					
+					var NotSignificant_value = document.createElement('div');
+					NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+					var myNotSignificant_value = document.createElement('span');
+					myNotSignificant_value.textContent = "non significatif";
+					NotSignificant_value.appendChild(myNotSignificant_value);
+					NotSignificant.appendChild(NotSignificant_value);
+					
+					Legend.appendChild(NotSignificant);
+				}
+				
+				
+				// ajout de la case des secteurs sans valeur (si la liste affichée en contient)
+				if (indices_noData == true) {
+				
+					var NoData = document.createElement('div');
+					NoData.setAttribute("id","stats_Statistiques_legende_noData");
+					
+					var NoData_color = document.createElement('div');
+					NoData_color.setAttribute("class","stats_Statistiques_legende_couleur");
+					NoData_color.setAttribute("id","stats_Statistiques_legende_noData_couleur");
+					NoData_color.setAttribute("style","background-color: white;");
+					NoData.appendChild(NoData_color);
+					
+					var NoData_value = document.createElement('div');
+					NoData_value.setAttribute("id","stats_Statistiques_legende_noData_valeur");
+					var myNoData_value = document.createElement('span');
+					myNoData_value.textContent = "no Data";
+					NoData_value.appendChild(myNoData_value);
+					NoData.appendChild(NoData_value);
+					
+					Legend.appendChild(NoData);
+				}
+				
+				
+				// ajout du bouton d'informations
+				var Button = document.createElement('a');
+				Button.setAttribute("class","stats_a");
+				Button.setAttribute("href","#");
+				Button.setAttribute("onclick","afficherInformations_secteurs_Moran_clusters("+indices_noData+"); return false;");
+				var myButton = document.createElement('img');
+				myButton.setAttribute("id","stats_Statistiques_legende_infos_button");
+				myButton.setAttribute("src","../images/informations.jpg");
+				myButton.setAttribute("alt","afficher des explications sur l'indice de Moran local");
+				Button.appendChild(myButton);
+				Legend.appendChild(Button);
+				
+				document.body.appendChild(Legend);
+			}
+			
+			
+			
+			// fonction qui affiche/efface la fenêtre d'informations sur l'indice de Moran des secteurs, au clic sur le bouton d'informations
+			function afficherInformations_secteurs_Moran_clusters(indices_noData) {
+				
+				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				if (infos_test == 0) {
+					
+					var Infos = document.createElement('div');
+					Infos.setAttribute("id","stats_Statistiques_legende_infos");
+					
+					var InfosTitre = document.createElement('p');
+					var myInfosTitre = document.createElement('strong');
+					myInfosTitre.textContent = "Indice de Moran (clusters) :";
+					InfosTitre.appendChild(myInfosTitre);
+					Infos.appendChild(InfosTitre);
+					
+					var myInfos1 = document.createElement('p');
+					myInfos1.textContent = "Les clusters 'High/High' et 'Low/Low' correspondent à des regroupements significatifs de valeurs similaires (concentration de valeurs respectivement plus élevées et plus faibles que la moyenne globale).";
+					Infos.appendChild(myInfos1);
+					
+					var myInfos2 = document.createElement('p');
+					myInfos2.textContent = "Les clusters 'High/Low' et 'Low/High' correspondent à des regroupements significatifs de valeurs différentes (dispersion régulière de valeurs), et de moyennes respectivement plus élevées et plus faibles que la moyenne globale.";
+					Infos.appendChild(myInfos2);
+					
+					var myInfos3 = document.createElement('p');
+					myInfos3.textContent = "Un secteur de couleur grise ne montre aucune dépendance spatiale statistiquement significative.";
+					Infos.appendChild(myInfos3);
+					
+					if (indices_noData == true) {
+						var myInfos4 = document.createElement('p');
+						myInfos4.textContent = "Un secteur de couleur blanche ne contient pas suffisamment de valeurs pour que son indice de Moran soit calculé.";
+						Infos.appendChild(myInfos4);
+					}
+					
+					document.body.appendChild(Infos);
+					
+					infos_test = 1;
+				}
+				
+				
+				// efface la fenêtre d'informations sur l'indice d'autocorrélation spatiale
+				else {
+					effacerInformations();
+				}
+			}
+			
+			
+			
 			// fonction qui crée sur la carte des secteurs dont la couleur dépend de l'indice de Moran du secteur
-			function afficherSecteurs_Geary(liste) {
+			function afficherSecteurs_Geary(L_corr) {
+				
+				var moyenne = L_corr[0]; // moyenne statistique des adresses de la ville sélectionnée
+				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
+				
 				
 				// copie la liste d'indices en les répartissant selon leurs valeurs
 				var copie = copieSecteurs_Geary(liste); // ATTENTION nécessité de créer une autre liste, car elle sera automatiquement triée par la fonction brew (une copie "liste_brew = liste" de la 1ère la modifierait également)
 				
 				
 				// crée la répartition des couleurs associées à chaque intervalle de valeur pour les indices < à 1 de la liste (autocorrélation spatiale positive)
+				
 				var liste_brew_positive = copie[0];
+				
 				var brew_positive = new classyBrew();
 				brew_positive.setSeries(liste_brew_positive);
 				brew_positive.setNumClasses(3); // nombre de couleurs différentes
 				brew_positive.setColorCode("RdOr"); // gamme des couleurs : "Red", "Orange", "Wheat"
 				brew_positive.classify("jenks"); // méthode de répartition des couleurs : "jenks"
 				
+				var liste_positive_valeurs = brew_positive.getBreaks(); // liste des bornes des intervalles
+				var liste_positive_couleurs = brew_positive.getColors(); // liste des couleurs des intervalles
+				
+				var liste_positive_decimales = calculerDecimale(liste_positive_valeurs); // dernière décimale importante des bornes des intervalles
+				
+				
 				// crée la répartition des couleurs associées à chaque intervalle de valeur pour les indices >= à 1 de la liste (autocorrélation spatiale négative)
+				
 				var liste_brew_negative = copie[1];
+				
 				var brew_negative = new classyBrew();
 				brew_negative.setSeries(liste_brew_negative);
 				brew_negative.setNumClasses(2); // nombre de couleurs différentes
 				brew_negative.setColorCode("Blues"); // gamme des couleurs : "SkyBlue", "DarkBlue"
 				brew_negative.classify("jenks"); // méthode de répartition des couleurs : "jenks"
 				
+				var liste_negative_valeurs = brew_negative.getBreaks(); // liste des bornes des intervalles
+				var liste_negative_couleurs = brew_negative.getColors(); // liste des couleurs des intervalles
+				
+				var liste_negative_decimales = calculerDecimale(liste_negative_valeurs); // dernière décimale importante des bornes des intervalles
+				
+				
+				// définit la dernière décimale importante des valeurs des indices
+				var decimales = Math.max(liste_positive_decimales, liste_negative_decimales);
+
 
 				for (var secteur = 0; secteur < sec; secteur++) {
 
 					// indice de Geary pour le secteur
-					var I = liste[secteur];
+					var I = liste[secteur].indice;
+					
+					// moyenne statistique du secteur
+					var valeur = liste[secteur].moyenne;
 
 					// couleur du secteur en fonction de la valeur de son indice
 					var couleur = "#FFFFFF"; // "White" si le secteur ne possède aucun indice (manque de données)
@@ -2537,18 +3286,22 @@
 					}
 
 					// créer un polygône à partir de ces adresses
-					L.polygon(BDD_secteurs[secteur],{
+					var polygon = L.polygon(BDD_secteurs[secteur],{
 						color: 'black',
 						fillColor: couleur,
 						fillOpacity: 1
 					}).addTo(mapStats);
+					
+					// créer au clic sur le polygône une fenêtre popup contenant le nombre de valeurs du secteur, sa moyenne statistique ainsi que son indice de Geary
+					var popup_text = "<span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong><br/><span>Indice de Geary : </span><strong>" + I.toFixed(decimales) + "</strong>";
+					polygon.bindPopup(popup_text);
 				}
 
 
 				var indices_nuls = copie[2]; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
 				var indices_noData = copie[3]; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
 				
-				afficherLegende_secteurs_Geary(brew_positive, brew_negative, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte
+				afficherLegende_secteurs_Geary(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, liste_negative_valeurs, liste_negative_couleurs, liste_negative_decimales, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte
 			}
 
 
@@ -2556,24 +3309,24 @@
 			// fonction qui copie une liste d'indices en les répartissant selon leurs valeurs
 			function copieSecteurs_Geary(L) {
 				
-				var L_positive = []; // liste des valeurs des indices de Geary < à 1 (autocorrélation spatiale positive)
-				var L_negative = []; // liste des valeurs des indices de Geary >= à 1 (autocorrélation spatiale négative)
+				var L_positive = []; // liste des indices de Geary < à 1 (autocorrélation spatiale positive)
+				var L_negative = []; // liste des indices de Geary >= à 1 (autocorrélation spatiale négative)
 				
 				var indices_nuls = false; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
 				var indices_noData = false; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
 				
-				for (var indice of L) {
+				for (var secteur of L) {
 					
-					if (indice == -1)
+					if (secteur.indice == -1)
 						indices_noData = true;
-					if (indice == 0)
+					if (secteur.indice == 0)
 						indices_nuls = true;
 					
-					if (indice > 0) {
-						if (indice < 1)
-							L_positive.push(indice);
+					if (secteur.indice > 0) {
+						if (secteur.indice < 1)
+							L_positive.push(secteur.indice);
 						else
-							L_negative.push(indice);
+							L_negative.push(secteur.indice);
 					}
 				}
 				
@@ -2583,7 +3336,7 @@
 			
 			
 			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte des indices de Geary des secteurs
-			function afficherLegende_secteurs_Geary(brew_positive, brew_negative, indices_nuls, indices_noData) {
+			function afficherLegende_secteurs_Geary(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, liste_negative_valeurs, liste_negative_couleurs, liste_negative_decimales, indices_nuls, indices_noData) {
 				
 				// supprime la légende existante, s'il y en a une
 				effacerLegende();
@@ -2600,79 +3353,62 @@
 				Legend.appendChild(myLegend);
 				
 				
-				// indices de Geary < à 1 (autocorrélation spatiale positive)
-				
-					// liste des couleurs et de leurs valeurs associées
-					var liste_positive_valeurs = brew_positive.getBreaks();
-					var liste_positive_couleurs = brew_positive.getColors();
+				// couleur et valeurs des intervalle de couleurs pour des indices de Geary < à 1 (autocorrélation spatiale positive)
+				for (var k = 0; k < liste_positive_valeurs.length-1; k++) {
 					
-					// définit la dernière décimale importante des valeurs
-					var liste_positive_decimales = calculerDecimale(liste_positive_valeurs);
+					// valeur limite d'un intervalle
+					var Value = document.createElement('div');
+					Value.setAttribute("class","stats_Statistiques_legende_ligne");
+					var myValue = document.createElement('span');
+					myValue.setAttribute("class","stats_Statistiques_legende_valeur");
+					myValue.textContent = liste_positive_valeurs[k].toFixed(liste_positive_decimales);
+					Value.appendChild(myValue);
+					Legend.appendChild(Value);
 					
-					// couleur pour chaque valeur de l'intervalle de couleurs
-					for (var k = 0; k < liste_positive_valeurs.length-1; k++) {
-						
-						// valeur limite d'un intervalle
-						var Value = document.createElement('div');
-						Value.setAttribute("class","stats_Statistiques_legende_ligne");
-						var myValue = document.createElement('span');
-						myValue.setAttribute("class","stats_Statistiques_legende_valeur");
-						myValue.textContent = liste_positive_valeurs[k].toFixed(liste_positive_decimales);
-						Value.appendChild(myValue);
-						Legend.appendChild(Value);
-						
-						// carré de la couleur de l'intervalle
-						var Color = document.createElement('div');
-						Color.setAttribute("class","stats_Statistiques_legende_ligne");
-						var myColor = document.createElement('div');
-						myColor.setAttribute("class","stats_Statistiques_legende_couleur");
-						var couleur = liste_positive_couleurs[k];
-						myColor.setAttribute("style","background-color:"+couleur+";");
-						Color.appendChild(myColor);
-						Legend.appendChild(Color);
-					}
-					
-					// ajout de la valeur intermédiaire (= 1)
-					var Value1 = document.createElement('div');
-					Value1.setAttribute("class","stats_Statistiques_legende_ligne");
-					var myValue1 = document.createElement('span');
-					myValue1.setAttribute("class","stats_Statistiques_legende_valeur");
-					myValue1.textContent = "1";
-					Value1.appendChild(myValue1);
-					Legend.appendChild(Value1);
+					// carré de la couleur de l'intervalle
+					var Color = document.createElement('div');
+					Color.setAttribute("class","stats_Statistiques_legende_ligne");
+					var myColor = document.createElement('div');
+					myColor.setAttribute("class","stats_Statistiques_legende_couleur");
+					var couleur = liste_positive_couleurs[k];
+					myColor.setAttribute("style","background-color:"+couleur+";");
+					Color.appendChild(myColor);
+					Legend.appendChild(Color);
+				}
 				
 				
-				// indices de Geary >= à 1 (autocorrélation spatiale négative)
+				// ajout de la valeur intermédiaire (= 1)
+				var Value1 = document.createElement('div');
+				Value1.setAttribute("class","stats_Statistiques_legende_ligne");
+				var myValue1 = document.createElement('span');
+				myValue1.setAttribute("class","stats_Statistiques_legende_valeur");
+				myValue1.textContent = "1";
+				Value1.appendChild(myValue1);
+				Legend.appendChild(Value1);
 				
-					// liste des couleurs et de leurs valeurs associées
-					var liste_negative_valeurs = brew_negative.getBreaks();
-					var liste_negative_couleurs = brew_negative.getColors();
+				
+				// couleur et valeurs des intervalle de couleurs pour des indices de Geary >= à 1 (autocorrélation spatiale négative)
+				for (var k = 0; k < liste_negative_valeurs.length-1; k++) {
 					
-					// définit la dernière décimale importante des valeurs
-					var liste_negative_decimales = calculerDecimale(liste_negative_valeurs);
+					// carré de la couleur de l'intervalle
+					var Color = document.createElement('div');
+					Color.setAttribute("class","stats_Statistiques_legende_ligne");
+					var myColor = document.createElement('div');
+					myColor.setAttribute("class","stats_Statistiques_legende_couleur");
+					var couleur = liste_negative_couleurs[k];
+					myColor.setAttribute("style","background-color:"+couleur+";");
+					Color.appendChild(myColor);
+					Legend.appendChild(Color);
 					
-					// couleur pour chaque valeur de l'intervalle de couleurs
-					for (var k = 0; k < liste_negative_valeurs.length-1; k++) {
-						
-						// carré de la couleur de l'intervalle
-						var Color = document.createElement('div');
-						Color.setAttribute("class","stats_Statistiques_legende_ligne");
-						var myColor = document.createElement('div');
-						myColor.setAttribute("class","stats_Statistiques_legende_couleur");
-						var couleur = liste_negative_couleurs[k];
-						myColor.setAttribute("style","background-color:"+couleur+";");
-						Color.appendChild(myColor);
-						Legend.appendChild(Color);
-						
-						// valeur limite supérieure d'un intervalle (sauf la première)
-						var Value = document.createElement('div');
-						Value.setAttribute("class","stats_Statistiques_legende_ligne");
-						var myValue = document.createElement('span');
-						myValue.setAttribute("class","stats_Statistiques_legende_valeur");
-						myValue.textContent = liste_negative_valeurs[k+1].toFixed(liste_negative_decimales);
-						Value.appendChild(myValue);
-						Legend.appendChild(Value);
-					}
+					// valeur limite supérieure d'un intervalle (sauf la première)
+					var Value = document.createElement('div');
+					Value.setAttribute("class","stats_Statistiques_legende_ligne");
+					var myValue = document.createElement('span');
+					myValue.setAttribute("class","stats_Statistiques_legende_valeur");
+					myValue.textContent = liste_negative_valeurs[k+1].toFixed(liste_negative_decimales);
+					Value.appendChild(myValue);
+					Legend.appendChild(Value);
+				}
 				
 				
 				// ajout de la case des valeurs nulles (si la liste affichée en contient)
@@ -2846,12 +3582,12 @@
 					
 					if (indice_carte == "Moran") {
 						var L_corr = autocorrelationSecteurs_Moran(L); // indices de Moran des secteurs
-						afficherSecteurs_Moran(L_corr); // // affiche la carte raster des indices de Moran des secteurs
+						afficherSecteurs_Moran(L_corr); // affiche la carte des indices de Moran des secteurs
 					}
 					
 					else {
 						var L_corr = autocorrelationSecteurs_Geary(L); // indices de Geary des secteurs
-						afficherSecteurs_Geary(L_corr); // // affiche la carte raster des indices de Moran des secteurs
+						afficherSecteurs_Geary(L_corr); // affiche la carte des indices de Geary des secteurs
 					}
 				}
 			}
@@ -2986,12 +3722,13 @@
 					
 					if (indice_carte == "Moran") {
 						var L_corr = autocorrelationSecteurs_Moran(L); // indices de Moran des secteurs
-						afficherSecteurs_Moran(L_corr); // // affiche la carte raster des indices de Moran des secteurs
+						afficherSecteurs_Moran(L_corr); // affiche la carte des indices de Moran des secteurs
+						clusters_secteurs_Moran = false; // boolean qui indique que la carte des secteurs affiche actuellement leurs indices de Moran
 					}
 					
 					else {
 						var L_corr = autocorrelationSecteurs_Geary(L); // indices de Geary des secteurs
-						afficherSecteurs_Geary(L_corr); // // affiche la carte raster des indices de Moran des secteurs
+						afficherSecteurs_Geary(L_corr); // affiche la carte des indices de Geary des secteurs
 					}
 				}
 			}
@@ -3080,7 +3817,8 @@
 					this.colorSchemes = {
 						OrRd: {3: ['#F5DEB3', '#FFA500', '#FF0000'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,0,0,0,0,0],'copy':[1,1,2,0,0,0,0],'screen':[1,1,1,0,0,0,0] } } ,
 						RdOr: {3: ['#FF0000', '#FFA500', '#F5DEB3'], 'properties':{'type': 'seq','blind':[1],'print':[1,1,0,0,0,0,0],'copy':[1,1,2,0,0,0,0],'screen':[1,1,1,0,0,0,0] } } ,
-						Blues:  {2: ['#87CEEB', '#00008B'], 'properties':{'type': 'seq','blind':[1],'print':[1,2,0,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } 					
+						Blues:  {2: ['#87CEEB', '#00008B'], 'properties':{'type': 'seq','blind':[1],'print':[1,2,0,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } ,
+						Blues2:  {2: ['#00008B', '#87CEEB'], 'properties':{'type': 'seq','blind':[1],'print':[1,2,0,0,0,0,0],'copy':[1,0,0,0,0,0,0],'screen':[1,2,0,0,0,0,0] } } 					
 					};
 
 					// define array of values
