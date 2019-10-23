@@ -235,7 +235,7 @@
 
 #stats_Statistiques_legende_nuls /*ligne associant la couleur grise aux valeur non significatives*/
 {
-	margin-top: 40;
+	margin-top: 30;
 	display: flex;
     flex-direction: row;
 }
@@ -292,6 +292,48 @@
 	margin-left: 7;
 	margin-top: -2;
 	height: 15;
+}
+
+
+#stats_Statistiques_legende_types /*types d'éléments renvoyés par la carte (valeurs des indices de Moran des seceteurs ou clusters auquels ils appartiennent) pour les indices de Moran des secteurs*/
+{
+	margin-top: -10;
+	margin-bottom: 20;
+	margin-left: -5;
+	margin-right: 0;
+	padding: 0;
+	display: flex;
+    flex-direction: row;
+}
+
+.stats_Statistiques_legende_type /*bouton pour un type d'éléments renvoyés par la carte pour les indices de Moran des secteurs*/
+{
+	margin-left: 5;
+	padding: 0;
+	width : 50;
+	height: 20;
+	font-size: 11;
+	font-weight: bold;
+	color:black;
+	text-align:center;
+	border: 2px solid black;
+}
+
+#stats_Statistiques_legende_type_selec /*bouton pour le type sélectionné d'éléments renvoyés par la carte pour les indices de Moran des secteurs*/
+{
+	background-color: white;
+}
+
+#stats_Statistiques_legende_type_non_selec /*bouton pour le type non sélectionné d'éléments renvoyés par la carte pour les indices de Moran des secteurs*/
+{
+	background-color: grey;
+}
+
+#stats_Statistiques_legende_type_non_selec:hover /*changement de l'aspect de la souris et du bouton au survol du bouton pour le type non sélectionné*/
+{
+	cursor: pointer;
+	color: red;
+	background-color: blue;
 }
 
 
