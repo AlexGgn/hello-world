@@ -337,7 +337,7 @@
 }
 
 
-#stats_Statistiques_legende_infos /*informations sur l'indice de Moran local*/
+#stats_Statistiques_legende_infos /*informations sur l'utilisation de l'indice d'autocorrélation spatiale*/
 {
 	position: fixed;
 	top: 733;
@@ -349,6 +349,20 @@
 	border: 1px solid black;
 	background-color: white;
 	overflow: auto;
+}
+
+#stats_Statistiques_legende_formule /*formule de calcul de l'indice d'autocorrélation spatiale*/
+{
+	position: fixed;
+	top: 205;
+	left: 560;
+	width: 520;
+	max-height: 720;
+	padding: 10;
+	padding-left: 20;
+	padding-right: 20;
+	background-color: white;
+	border: 5px solid black;
 }
 
 #stats_Statistiques_legende_infos_button /*bouton pour afficher/supprimer les informations sur l'indice de Moran local*/
