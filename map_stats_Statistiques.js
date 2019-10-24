@@ -940,6 +940,14 @@
 			
 			// fonction qui supprime la fenêtre d'information, si elle est ouverte
 			function effacerInformations() {
+				
+				// efface la fenêtre d'informations sur la formule du calcul de l'indice de Moran
+				if (document.getElementById('stats_Statistiques_legende_formule')) {
+					var Formule = document.getElementById('stats_Statistiques_legende_formule');
+					document.body.removeChild(Formule);
+				}
+				
+				// efface la fenêtre d'informations sur l'utilisation de l'indice de Moran local
 				if (document.getElementById('stats_Statistiques_legende_infos')) {
 					var Infos = document.getElementById('stats_Statistiques_legende_infos');
 					document.body.removeChild(Infos);
@@ -1464,6 +1472,18 @@
 				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
 				if (infos_test == 0) {
 					
+					// formule du calcul de l'indice de Moran local
+					
+					var Infos = document.createElement('img');
+					Infos.setAttribute("id","stats_Statistiques_legende_formule");
+					Infos.setAttribute("src","../images/Indice_Moran_local.png");
+					Infos.setAttribute("alt","Formule du calcul de l'indice de Moran local");
+					
+					document.body.appendChild(Infos);
+					
+					
+					// utilisation de l'indice de Moran local
+					
 					var Infos = document.createElement('div');
 					Infos.setAttribute("id","stats_Statistiques_legende_infos");
 					
@@ -1486,6 +1506,7 @@
 					Infos.appendChild(myInfos3);
 					
 					document.body.appendChild(Infos);
+					
 					
 					infos_test = 1;
 				}
@@ -1891,6 +1912,18 @@
 				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
 				if (infos_test == 0) {
 					
+					// formule du calcul de l'indice de Geary local
+					
+					var Infos = document.createElement('img');
+					Infos.setAttribute("id","stats_Statistiques_legende_formule");
+					Infos.setAttribute("src","../images/Indice_Geary_local.png");
+					Infos.setAttribute("alt","Formule du calcul de l'indice de Geary local");
+					
+					document.body.appendChild(Infos);
+					
+					
+					// utilisation de l'indice de Geary local
+					
 					var Infos = document.createElement('div');
 					Infos.setAttribute("id","stats_Statistiques_legende_infos");
 					
@@ -1915,6 +1948,7 @@
 					}
 					
 					document.body.appendChild(Infos);
+					
 					
 					infos_test = 1;
 				}
@@ -2730,6 +2764,18 @@
 				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
 				if (infos_test == 0) {
 					
+					// formule du calcul de l'indice de Moran
+					
+					var Infos = document.createElement('img');
+					Infos.setAttribute("id","stats_Statistiques_legende_formule");
+					Infos.setAttribute("src","../images/Indice_Moran.png");
+					Infos.setAttribute("alt","Formule du calcul de l'indice de Moran");
+					
+					document.body.appendChild(Infos);
+					
+					
+					// utilisation de l'indice de Moran
+					
 					var Infos = document.createElement('div');
 					Infos.setAttribute("id","stats_Statistiques_legende_infos");
 					
@@ -2776,6 +2822,7 @@
 					}
 					
 					document.body.appendChild(Infos);
+					
 					
 					infos_test = 1;
 				}
@@ -2925,6 +2972,18 @@
 				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
 				if (infos_test == 0) {
 					
+					// formule du calcul de l'indice de Moran
+					
+					var Infos = document.createElement('img');
+					Infos.setAttribute("id","stats_Statistiques_legende_formule");
+					Infos.setAttribute("src","../images/Indice_Moran.png");
+					Infos.setAttribute("alt","Formule du calcul de l'indice de Moran");
+					
+					document.body.appendChild(Infos);
+					
+					
+					// utilisation de l'indice de Moran
+					
 					var Infos = document.createElement('div');
 					Infos.setAttribute("id","stats_Statistiques_legende_infos");
 					
@@ -2953,6 +3012,7 @@
 					}
 					
 					document.body.appendChild(Infos);
+					
 					
 					infos_test = 1;
 				}
@@ -3313,6 +3373,18 @@
 				// affiche la fenêtre d'informations sur l'indice d'autocorrélation spatiale
 				if (infos_test == 0) {
 					
+					// formule du calcul de l'indice de Geary
+					
+					var Infos = document.createElement('img');
+					Infos.setAttribute("id","stats_Statistiques_legende_formule");
+					Infos.setAttribute("src","../images/Indice_Geary.png");
+					Infos.setAttribute("alt","Formule du calcul de l'indice de Geary");
+					
+					document.body.appendChild(Infos);
+					
+					
+					// utilisation de l'indice de Geary
+					
 					var Infos = document.createElement('div');
 					Infos.setAttribute("id","stats_Statistiques_legende_infos");
 					
@@ -3343,6 +3415,7 @@
 					}
 					
 					document.body.appendChild(Infos);
+					
 					
 					infos_test = 1;
 				}
