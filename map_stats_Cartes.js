@@ -1,4 +1,4 @@
-
+alert(1);
 // Actions réalisées automatiquement lors de l'ouverture de la page
 
 
