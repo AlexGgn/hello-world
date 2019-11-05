@@ -99,7 +99,6 @@
 				creerBDD_secteurs(); // crée la BDD locale des sous-secteurs statistiques
 				creerBDD_adresses_secteurs(); // crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel elle apparatient
 				creerBDD_secteurs_adresses(); // crée la BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
-				creerMatrice_ponderation(); // crée la matrice de pondération utilisée pour le calcul des indices d'autocorrélation spatiale des secteurs
 			}
 			
 			
@@ -654,21 +653,6 @@
 			
 
 		
-		// Elements des BDD utilisées ci-dessous
-		
-		
-			// classe qui donne pour chaque adresse son indice ainsi que ses coordonnées
-			class Adresse {
-				constructor(id, latitude, longitude) {
-					this.id = id; // indice de l'adresse
-					this.latitude = latitude; // latitude de l'adresse
-					this.longitude = longitude; // longitude de l'adresse
-				}
-			}
-
-
-
-
 		// Création d'une BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
 		
 		
@@ -687,86 +671,13 @@
 					BDD_secteurs_adresses.push([]);
 				}
 				
-				// remplit chaque sous-secteur statistique avec les indices et coordonnées des adresses qu'il contient
+				// remplit chaque sous-secteur statistique avec les indices des adresses qu'il contient
 				for (var i = ville_debut; i <= ville_fin; i++) {
-						
 						var secteur = BDD_adresses_secteurs[i]; // secteur auquel appartient l'adresse
-						
 						if (secteur >= 0) {
-							
-							// coordonnées de l'adresse
-							var latitude = BDD_adresses[i].latitude;
-							var longitude = BDD_adresses[i].longitude;
-					
-							// élément (indice + coordonnées) correspondant à l'adresse
-							var adresse = new Adresse(i, latitude, longitude)
-							
-							BDD_secteurs_adresses[secteur].push(adresse); // ajoute l'indice et les coordonnées de l'adresse à la liste du sous-secteur auquel elle appartient
+							BDD_secteurs_adresses[secteur].push(i); // ajoute l'indice de l'adresse à la liste du sous-secteur auquel elle appartient
 							nombre_adresses_secteurs ++;
 						}
-				}
-			}
-	
-	
-	
-	
-	
-	
-	// Création de la matrice de pondération utilisée pour le calcul des indices d'autocorrélation spatiale des secteurs (standardisée en ligne)
-	
-			
-			var Matrice_ponderation = [];
-			
-			
-			// fonction qui crée la matrice de pondération (standardisée en ligne)
-			function creerMatrice_ponderation() {
-				
-				for (var secteur of BDD_secteurs_adresses) {
-					
-					var Matrice_ponderation_secteur = []; // matrice de pondération du k-ième secteur de la BDD
-					
-					
-					for (var i = 0; i < secteur.length; i++) {
-						
-						// ligne non standardisée
-						
-						var Matrice_ponderation_secteur_ligne = []; // i-ème ligne de la matrice de pondération du secteur, associée aux voisins de la i-ème adresse du secteur
-						
-						var somme_ligne = 0; // somme des termes de la i-ème ligne de la matrice de pondération du secteur
-						
-						for (var j = 0; j < secteur.length; j++) {
-							
-							var ponderation = 0; // si i = j, le poids est nul
-							
-							// sinon, le poids entre 2 voisins d'un même secteur correspond à l'inverse de la distance qui les sépare à laquelle on ajoute 0.001 Nq (~2m) afin de pallier au fait qu'une adresse peut posséder plusieurs personnes (ATTENTION division / 0)
-							if (i != j) {
-								var distance = ( (secteur[j].latitude - secteur[i].latitude)**2 + ((secteur[j].longitude - secteur[i].longitude) * coeff_longitude)**2 )**0.5 + 0.001;
-								ponderation = 1 / distance;
-							}
-							
-							Matrice_ponderation_secteur_ligne.push(ponderation);
-							
-							somme_ligne += ponderation;
-						}
-						
-						
-						// standardisation de la ligne
-						
-						var Matrice_ponderation_secteur_ligne_standardisee = []; // i-ème ligne de la matrice de pondération standardisée du secteur
-						
-						for (var j = 0; j < secteur.length; j++) {
-							
-							var ponderation_standardisee = Matrice_ponderation_secteur_ligne[j] / somme_ligne; // poids standardisé entre les entités i et j
-							
-							Matrice_ponderation_secteur_ligne_standardisee.push(ponderation_standardisee);
-						}
-						
-						
-						Matrice_ponderation_secteur.push(Matrice_ponderation_secteur_ligne_standardisee);
-					}
-					
-					
-					Matrice_ponderation.push(Matrice_ponderation_secteur);
 				}
 			}
 
@@ -1147,7 +1058,7 @@
 			
 			
 			
-		// Indice de Moran local (carte raster)
+		// Indice de Moran local
 		
 		
 			// fonction qui crée une liste raster de clusters (pour l'indice de Moran local) à partir d'une liste raster de valeurs statistiques
@@ -1156,7 +1067,7 @@
 				var L_corr = []; // ligne de la liste des indices d'autocorrélation spatiale
 				
 				
-				var moyenne = calculerMoyenne_raster(L); // moyenne de la statistique pour l'ensemble des carrés raster
+				var [n, moyenne] = calculerMoyenne_raster(L); // nombre d'entités et moyenne de la statistique pour l'ensemble des carrés raster
 				
 				var variance = calculerMoment_raster(L, moyenne, 2); // variance (moment centré d'ordre 2) de la statistique pour l'ensembe des carrés raster
 				
@@ -1201,7 +1112,7 @@
 							var nombre = carre.nombre; // nombre de valeurs statistiques du carré
 							
 							
-							var n = 0; // nombre de mesures spatiales avec les voisins du carré
+							var mesures = 0; // nombre de mesures spatiales avec les voisins du carré
 							
 							var valeur = 0; // moyenne statistique du carré
 							var valeur_HighLow = -1; // indique si la valeur du carré est supérieure, inférieure ou égale à la moyenne
@@ -1218,7 +1129,8 @@
 								valeur = carre.moyenne;
 								
 								var W = 0; // somme des termes de la matrice de pondération pour les voisins du carré
-								var W2 = 0; // somme des termes de la matrice de pondération au carré pour les voisins du carré raster
+								
+								var W2 = 0; // somme des termes de la matrice de pondération standardisée élevés au carré pour les voisins du carré raster
 								
 								
 								for (var k = 1; k <= nombre_voisins_raster; k++) {
@@ -1231,7 +1143,7 @@
 										voisin = L[x][b-k].moyenne;
 										if (voisin > 0) {
 											Imoran += ponderation * (voisin - moyenne);
-											n ++;
+											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
 										}
@@ -1239,7 +1151,7 @@
 										voisin = L[x][b+k].moyenne;
 										if (voisin > 0) {
 											Imoran += ponderation * (voisin - moyenne);
-											n ++;
+											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
 										}
@@ -1251,7 +1163,7 @@
 										voisin = L[a-k][y].moyenne;
 										if (voisin > 0) {
 											Imoran += ponderation * (voisin - moyenne);
-											n ++;
+											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
 										}
@@ -1259,7 +1171,7 @@
 										voisin = L[a+k][y].moyenne;
 										if (voisin > 0) {
 											Imoran += ponderation * (voisin - moyenne);
-											n ++;
+											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
 										}
@@ -1280,33 +1192,25 @@
 								
 								
 							// on prend uniquement en compte les adresses possédant au moins un certain nombre de voisins (pour ne pas fausser les calculs)
-							if (n >= nombre_voisins_raster_minimum) {
+							if (mesures >= nombre_voisins_raster_minimum) {
 								
-								// normalisation de l'indice de Moran local
+								// standardisation de la matrice de pondération
+								
 								Imoran = (valeur - moyenne) * Imoran / variance / W;
 								
+								W2 /= W**2;
 								
-								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
-									// calcul de l'espérance
-									var esperance0 = - W / (n-1);
-									// calcul de la variance
-									var variance0 = (n - r) * W2 / (n-1)  +  (2*r - n) * (W**2 - W2) / (n-1) / (n-2)  -  ( W / (n-1) )**2;
-									// calcul du z-score (z-score suit une loi normale centrée réduite)
-									var z_score = (Imoran - esperance0) / variance0**0.5;
-							
-							
+								
 								// significativité de l'indice de Moran local
+								
 								var significativite = 0;
 							
-								/*
+								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
+								var z_score = calculer_Zscore_local(n, Imoran, r, W2);
+							
 								// l'indice est significatif ssi |z_score| > z_score_minimal
 								if (Math.abs(z_score) >= z_score_minimal) {
 									significativite = true;
-								}
-								*/
-								// On applique un z_socre_minimal test pour vérifier son bon fonctionnement malgré la statistique qui n'est que peu corrélée
-								if (Math.abs(z_score) >= 0.2) {
-									significativite = 1;
 								}
 							
 							
@@ -1584,13 +1488,14 @@
 			
 				var L_corr = []; // ligne de la liste des indices d'autocorrélation spatiale
 				
-				var moyenne = calculerMoyenne_raster(L); // moyenne de la statistique pour l'ensemble des carrés raster
 				
-				var variance_geary = calculerVarianceGeary_raster(L, moyenne); // variance de la statistique pour l'ensemble des carrés raster, multipliée par 2*n/(n-1) (pour la normalisation des indices de Geary locaux)
+				var [n, moyenne] = calculerMoyenne_raster(L); // nombre d'entités et moyenne de la statistique pour l'ensemble des carrés raster
+				
+				var variance = calculerMoment_raster(L, moyenne, 2); // variance (moment centré d'ordre 2) de la statistique pour l'ensembe des carrés raster
 				
 				
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
-				if (variance_geary == 0) {
+				if (variance == 0) {
 					
 					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
 					
@@ -1626,7 +1531,7 @@
 							var nombre = carre.nombre; // nombre de valeurs statistiques du carré
 							
 							
-							var n = 0; // nombre de mesures spatiales avec les voisins du carré
+							var mesures = 0; // nombre de mesures spatiales avec les voisins du carré
 							
 							
 							// prend uniquement en compte ceux possédant une valeur
@@ -1650,14 +1555,14 @@
 										voisin = L[x][b-k].moyenne;
 										if (voisin > 0) {
 											Igeary += ponderation * (voisin - valeur)**2;
-											n ++;
+											mesures ++;
 											W += ponderation;
 										}
 										
 										voisin = L[x][b+k].moyenne;
 										if (voisin > 0) {
 											Igeary += ponderation * (voisin - valeur)**2;
-											n ++;
+											mesures ++;
 											W += ponderation;
 										}
 									}
@@ -1668,14 +1573,14 @@
 										voisin = L[a-k][y].moyenne;
 										if (voisin > 0) {
 											Igeary += ponderation * (voisin - valeur)**2;
-											n ++;
+											mesures ++;
 											W += ponderation;
 										}
 										
 										voisin = L[a+k][y].moyenne;
 										if (voisin > 0) {
 											Igeary += ponderation * (voisin - valeur)**2;
-											n ++;
+											mesures ++;
 											W += ponderation;
 										}
 									}
@@ -1684,10 +1589,10 @@
 								
 								
 							// on prend uniquement en compte les adresses possédant au moins un certain nombre de voisins (pour ne pas fausser les calculs)
-							if (n >= nombre_voisins_raster_minimum) {
+							if (mesures >= nombre_voisins_raster_minimum) {
 								
-								// normalisation de l'indice de Moran local
-								Igeary = Igeary / variance_geary / W;
+								// standardisation de l'indice de Geary local
+								Igeary = Igeary / variance / W * (n-1)/(2*n);
 								
 								// ajoute les données du carré raster
 								var indice = new Indice(nombre, valeur, Igeary);
@@ -2051,9 +1956,9 @@
 				}
 				
 				if (nombre > 0)
-					return somme_valeurs / nombre;
+					return [nombre, somme_valeurs / nombre];
 				else
-					return 0;
+					return [0, 0];
 			}
 		
 		
@@ -2084,29 +1989,33 @@
 			
 			
 			
-			// fonction qui calcule la variance des valeurs de la liste L (dont la moyenne vaut [moyenne]), multipliée par 2*n/(n-1) (pour la normalisation des indices de Geary locaux)
-			function calculerVarianceGeary_raster(L, moyenne) {
+			
+		// Calcul du z-score de l'indice de Moran local
+		
+		
+			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran local (Imoran local suit une loi normale)
+			function calculer_Zscore_local(n, Imoran, r, W2) {
 				
-				var variance_geary = 0;
-				var n = 0; // nombre de valeurs
+				// calcul de l'espérance
 				
-				for (var a = 0; a < a_max; a++) {
+				var esperanceZ = - 1 / (n-1);
 				
-					for (var b = 0; b < b_max; b++) {
-						
-						var carre = L[a][b]; // valeur du carré pour l'élément mesuré
-						
-						// prend uniquement en compte les carrés possédant une valeur
-						if (carre.nombre > 0) {
-							variance_geary += (carre.moyenne - moyenne) ** 2;
-							n ++;
-						}
-					}
-				}
 				
-				variance_geary = variance_geary * 2 / (n-1);
+				// calcul de la variance
 				
-				return variance_geary;
+				var s1 = (n - r) / (n-1) * W2
+				var s2 = (2*r - n) / (n-1) / (n-2) * (1 - W2);
+				var s3 = 1 / (n-1)**2
+				
+				var varianceZ = s1 + s2 - s3;
+				
+				
+				// calcul du z-score (z-score suit une loi normale centrée réduite)
+				
+				var z_score = (Imoran - esperanceZ) / varianceZ**0.5;
+				
+				
+				return z_score;
 			}
 			
 	
@@ -2118,6 +2027,21 @@
 	
 	// Cartes utilisant les sous-secteurs statistiques de Lausanne
 		
+
+		// Elements des cartes de secteurs
+		
+		
+			// classe qui donne pour chaque adresse sa valeur statistique ainsi que ses coordonnées
+			class Element_secteurs {
+				constructor(valeur, latitude, longitude) {
+					this.valeur = valeur; // valeur statistique de l'adresse
+					this.latitude = latitude; // latitude de l'adresse
+					this.longitude = longitude; // longitude de l'adresse
+				}
+			}
+
+
+
 
 		// Liste d'autocorrélation spatiale
 			
@@ -2159,13 +2083,9 @@
 				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
 				
 				
-				for (var k = 0; k < L.length; k++) {
+				for (var secteur of L) {
 				
-					var secteur = L[k]; // liste des valeurs statistiques du k-ième secteur de la BDD
-					
 					var n = secteur.length; // nombre total de valeurs statistiques dans le secteur
-					
-					var Matrice_ponderation_secteur = Matrice_ponderation[k]; // matrice de pondération du secteur
 					
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
@@ -2177,47 +2097,42 @@
 						
 					else {
 						
-						var Imoran = 0; // indice de Moran pour le secteur
+						var Imoran = 0; // indice de Moran du secteur
+					
 					
 						var moyenne = calculerMoyenne_secteur(secteur); // moyenne de la statistique pour les adresses du secteur
 						
-						var variance = 0; // variance (moment centré d'ordre 2) de la statistique (dans le secteur)
-						var moment = 0; // moment centré d'ordre 4 de la statistique (dans le secteur)
+						var variance = 0; // variance (moment centré d'ordre 2) des valeurs statistiques du secteur
+						var moment = 0; // moment centré d'ordre 4 des valeurs statistiques du secteur
 						
-						var W = 0; // somme des termes de la matrice de pondération (dans le secteur)
-						var W2 = 0; // somme des termes de la matrice de pondération au carré (dans le secteur)
-						var W_2 = 0; // somme des lignes de la matrice de pondération au carré (dans le secteur)
 						
+						var Matrice_ponderation_standardisee = creerMatrice_ponderation_standardisee(secteur); // crée la matrice de pondération standardisée du secteur
+					
 						
 						for (var i = 0; i < n; i++) {
 							
-							var Imoran_i = 0; // indice de Moran local
+							var Imoran_i = 0;
 							
-							var W_i = 0; // somme des termes de la i-ème ligne de la matrice de pondération du secteur
+							var Matrice_ponderation_standardisee_i = Matrice_ponderation_standardisee[i]; // i-ème ligne de la matrice de pondération standardisée du secteur
 							
 							
 							for (var j = 0; j < n; j++) {
 								
 								if (i != j) {
 									
-									var ponderation = Matrice_ponderation_secteur[i][j]; // le poids du voisin est donné par la matrice de pondération du secteur étudiée (indépendante de la variable étudiée)
+									var ponderation = Matrice_ponderation_standardisee_i[j];
 									
-									W_i += ponderation;
-									W2 += ponderation ** 2;
-									
-									Imoran_i += ponderation * (secteur[j] - moyenne);
+									Imoran_i += ponderation * (secteur[j].valeur - moyenne);
 								}
 							}
 							
-							W += W_i;
-							W_2 += W_i ** 2;
+							Imoran_i *= (secteur[i].valeur - moyenne);
 							
-							Imoran_i *= (secteur[i] - moyenne);
-						
 							
 							Imoran += Imoran_i;
-							variance += (secteur[i] - moyenne) ** 2;
-							moment += (secteur[i] - moyenne) ** 4;
+							
+							variance += (secteur[i].valeur - moyenne) ** 2;
+							moment += (secteur[i].valeur - moyenne) ** 4;
 						}
 						
 						variance = variance / n; 
@@ -2233,30 +2148,17 @@
 						
 						
 						else {
-							// normalisation de l'indice de Moran
-							Imoran = Imoran / variance / W;
 							
-							
-							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
-								
-								// calcul de l'espérance
-								var esperance0 = - 1 / (n-1);
-								
-								// calcul des éléments de la variance
-								var s1 = (n**2 - 3*n + 3) * 2 * W2  -  n * W_2  +  3 * W**2
-								var s2 = moment / variance**2;
-								var s3 = (1 - 2*n) * 2 * W2  +  6 * W**2
-								
-								// calcul de la variance
-								var variance0 = ( n * s1 - s2 * s3 )  /  ( (n-1) * (n-2) * (n-3) * W**2 );
-								
-								// calcul du z-score (z-score suit une loi normale centrée réduite)
-								var z_score = (Imoran - esperance0) / variance0**0.5;
+							Imoran /= (n * variance);
 							
 							
 							// significativité de l'indice de Moran du secteur
+							
 							var significativite = 0;
 						
+							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
+							var z_score = calculer_Zscore_global(n, Imoran, Matrice_ponderation_standardisee, moment, variance);
+							
 							// l'indice est significatif ssi |z_score| > z_score_minimal
 							if (Math.abs(z_score) >= z_score_minimal) {
 								significativite = 1;
@@ -3091,13 +2993,9 @@
 				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
 				
 				
-				for (var k = 0; k < L.length; k++) {
+				for (var secteur of L) {
 				
-					var secteur = L[k]; // liste des valeurs statistiques du k-ième secteur de la BDD
-					
 					var n = secteur.length; // nombre total de valeurs statistiques dans le secteur
-					
-					var Matrice_ponderation_secteur = Matrice_ponderation[k]; // matrice de pondération du secteur
 					
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
@@ -3109,31 +3007,32 @@
 						
 					else {
 						
-						var Igeary = 0; // indice de Geary pour le secteur
+						var Igeary = 0; // indice de Geary du secteur
+					
 					
 						var moyenne = calculerMoyenne_secteur(secteur); // moyenne de la statistique pour les adresses du secteur
 						
 						var variance = 0; // variance de la statistique dans le secteur
-						var W = 0; // somme des termes de la matrice de pondération dans le secteur
 						
-						var s = 0; // variable utilisée dans le calcul de la variance de la valeur attendue sous l'hypothèse d'indépendance spatiale
 						
+						var Matrice_ponderation_standardisee = creerMatrice_ponderation_standardisee(secteur); // crée la matrice de pondération standardisée du secteur
+					
 						
 						for (var i = 0; i < n; i++) {
+							
+							var Matrice_ponderation_standardisee_i = Matrice_ponderation_standardisee[i]; // i-ème ligne de la matrice de pondération standardisée du secteur
 							
 							for (var j = 0; j < n; j++) {
 								
 								if (i != j) {
 									
-									var ponderation = Matrice_ponderation_secteur[i][j]; // le poids du voisin est donné par la matrice de pondération du secteur étudiée (indépendante de la variable étudiée)
+									var ponderation = Matrice_ponderation_standardisee_i[j];
 									
-									W += ponderation;
-									Igeary += ponderation * (secteur[j] - secteur[i])**2;
+									Igeary += ponderation * (secteur[j].valeur - secteur[i].valeur)**2;
 								}
 							}
 						
-							variance += (secteur[i] - moyenne) ** 2;
-							s += (secteur[i] - moyenne) ** 4;
+							variance += (secteur[i].valeur - moyenne) ** 2;
 						}
 						
 						variance = variance / n; 
@@ -3147,7 +3046,7 @@
 						
 						else {
 							//normalisation de l'indice de Moran
-							Igeary = Igeary / variance / W / n * (n-1)/2;
+							Igeary = Igeary / variance * (n-1) / (2* n**2);
 						}
 						
 						
@@ -3191,11 +3090,7 @@
 				
 				
 				// valeur maximale pour les indices >= à 1 de la liste (autocorrélation spatiale négative)
-				
-				// ATTENTION, il se peut que la liste ne contienne aucune valeur >= 1 (dans ce cas, cette valeur vaut -1)
-				var max_liste_negative = copie[1];
-				
-				var liste_negative_decimales = calculerDecimale([1, max_liste_negative]); // dernière décimale importante de la borne des valeurs négatives
+				var max_liste_negative = copie[1]; // ATTENTION, il se peut que la liste ne contienne aucune valeur >= 1 (dans ce cas, cette valeur vaut -1)
 
 
 				for (var secteur = 0; secteur < sec; secteur++) {
@@ -3238,7 +3133,7 @@
 				
 				
 				// affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte
-				afficherLegende_secteurs_Geary(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, max_liste_negative, liste_negative_decimales, indices_nuls, indices_noData);
+				afficherLegende_secteurs_Geary(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, max_liste_negative, indices_nuls, indices_noData);
 			}
 
 
@@ -3270,7 +3165,7 @@
 				}
 				
 				if (L_negative.length > 0)
-					max_L_negative = Math.max(L_negative);
+					max_L_negative = Math.max(...L_negative);
 				
 				return [L_positive, max_L_negative, indices_nuls, indices_noData];
 			}
@@ -3278,7 +3173,7 @@
 			
 			
 			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte des indices de Geary des secteurs
-			function afficherLegende_secteurs_Geary(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, max_liste_negative, liste_negative_decimales, indices_nuls, indices_noData) {
+			function afficherLegende_secteurs_Geary(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, max_liste_negative, indices_nuls, indices_noData) {
 				
 				// supprime la légende existante, s'il y en a une
 				effacerLegende();
@@ -3347,7 +3242,7 @@
 					Value.setAttribute("class","stats_Statistiques_legende_ligne");
 					var myValue = document.createElement('span');
 					myValue.setAttribute("class","stats_Statistiques_legende_valeur");
-					myValue.textContent = max_liste_negative.toFixed(liste_negative_decimales);
+					myValue.textContent = max_liste_negative.toFixed(2);
 					Value.appendChild(myValue);
 					Legend.appendChild(Value);
 				}
@@ -3488,9 +3383,9 @@
 				var nombre = 0; // nombre d'éléments
 				var somme_valeurs = 0; // somme des valeurs des éléments
 				
-				for (var valeur of secteur) {
+				for (var adresse of secteur) {
 					nombre += 1;
-					somme_valeurs += valeur;
+					somme_valeurs += adresse.valeur;
 				}
 				
 				if (nombre > 0)
@@ -3508,9 +3403,9 @@
 				var somme_valeurs = 0; // somme des valeurs des éléments
 				
 				for (var secteur of L) {
-					for (var valeur of secteur) {
+					for (var adresse of secteur) {
 						nombre += 1;
-						somme_valeurs += valeur;
+						somme_valeurs += adresse.valeur;
 					}
 				}
 				
@@ -3518,6 +3413,115 @@
 					return somme_valeurs / nombre;
 				else
 					return 0;
+			}
+			
+			
+			
+			
+		// Création des matrices de pondération des secteurs
+		
+		
+			// fonction qui crée la matrice de pondération standardisée d'un secteur
+			function creerMatrice_ponderation_standardisee(secteur) {
+			
+				var n = secteur.length; // nombre total de valeurs statistiques dans le secteur
+				
+				var Matrice_ponderation_standardisee = []; // matrice de pondération standardisée du secteur
+				
+				
+				for (var i = 0; i < n; i++) {
+					
+					// ligne non standardisée
+					
+					var Matrice_ponderation_i = []; // i-ème ligne de la matrice de pondération du secteur, associée aux voisins de la i-ème adresse du secteur
+					
+					var W_i = 0; // somme des termes de la i-ème ligne de la matrice de pondération du secteur
+					
+					for (var j = 0; j < n; j++) {
+						
+						var ponderation = 0; // si i = j, le poids est nul
+						
+						// sinon, le poids entre 2 voisins d'un même secteur correspond à l'inverse de la distance qui les sépare à laquelle on ajoute 0.001 Nq (~2m) afin de pallier au fait qu'une adresse peut posséder plusieurs personnes (ATTENTION division / 0)
+						if (i != j) {
+							var distance = ( (secteur[j].latitude - secteur[i].latitude)**2 + ((secteur[j].longitude - secteur[i].longitude) * coeff_longitude)**2 )**0.5 + 0.001;
+							ponderation = 1 / distance;
+						}
+						
+						Matrice_ponderation_i.push(ponderation);
+						
+						W_i += ponderation;
+					}
+					
+					
+					// standardisation de la ligne
+					
+					var Matrice_ponderation_standardisee_i = []; // i-ème ligne de la matrice de pondération standardisée du secteur
+					
+					for (var j = 0; j < n; j++) {
+						
+						var ponderation_standardisee = Matrice_ponderation_i[j] / W_i; // poids standardisé entre les entités i et j
+						
+						Matrice_ponderation_standardisee_i.push(ponderation_standardisee);
+					}
+				
+					
+					// ajout de la i-ème ligne de la matrice de pondération standardisée du secteur
+					
+					Matrice_ponderation_standardisee.push(Matrice_ponderation_standardisee_i);
+				}
+				
+				
+				return Matrice_ponderation_standardisee;
+			}
+		
+		
+		
+		
+		// Calcul du z-score de l'indice de Moran
+		
+		
+			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran global (Imoran suit une loi normale)
+			function calculer_Zscore_global(n, Imoran, Matrice_ponderation, moment, variance) {
+				
+				// calcul de l'espérance
+				
+				var esperanceZ = - 1 / (n-1);
+				
+				
+				// calcul des éléments nécessaires au calcul la variance en lien avec la matrice de pondération
+				
+				var W1 = 0;
+				for (var i = 0; i < n; i++) {
+					for (var j = 0; j < n; j++) {
+						W1 += ( Matrice_ponderation[i][j] + Matrice_ponderation[j][i] )**2;
+					}
+				}
+				
+				var W2 = 0;
+				for (var i = 0; i < n; i++) {
+					var W2_i = 1;
+					for (var j = 0; j < n; j++) {
+						W2_i += Matrice_ponderation[j][i];
+					}
+					W2 += W2_i**2;
+				}
+				
+				
+				// calcul de la variance
+				
+				var s1 = (n**2 - 3*n + 3) / 2 * W1  -  n * W2  +  3 * n**2;
+				var s2 = moment / variance**2;
+				var s3 = (1 - 2*n) / 2 * W1  +  6 * n**2;
+				
+				var varianceZ = ( n * s1 - s2 * s3 )  /  ( (n-1) * (n-2) * (n-3) * n**2 );
+				
+				
+				// calcul du z-score (z-score suit une loi normale centrée réduite)
+				
+				var z_score = (Imoran - esperanceZ) / varianceZ**0.5;
+				
+				
+				return z_score;
 			}
 			
 			
@@ -3639,20 +3643,26 @@
 				var rue_split = ""; // tous les caractères du nom de la i-ème rue sont séparés 1 à 1
 				var rue_length = ""; // nombre de caractères dans le nom de la i-ème rue
 				
-				
+				var latitude = 0; // latitude de la i-ème adresse de la BDD
+				var longitude = 0; // longitude de la i-ème adresse de la BDD
+ 
+
 				for (var secteur of BDD_secteurs_adresses) {
 
 					var L_secteur = []; // liste des valeurs du secteur
 					
 					for (var adresse of secteur) {
 						
-						var id = adresse.id; // indice de l'adresse
-						
-						rue = BDD_adresses[id].rue;
+						rue = BDD_adresses[adresse].rue;
 						rue_split = rue.split("");
 						rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
 
-						L_secteur.push(rue_length);
+						latitude = BDD_adresses[adresse].latitude;
+						longitude = BDD_adresses[adresse].longitude;
+						
+						var new_element = new Element_secteurs(rue_length, latitude, longitude);
+					
+						L_secteur.push(new_element);
 					}
 					
 					L.push(L_secteur);
