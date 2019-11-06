@@ -1070,9 +1070,7 @@
 				var [n, moyenne] = calculerMoyenne_raster(L); // nombre d'entités et moyenne de la statistique pour l'ensemble des carrés raster
 				
 				var variance = calculerMoment_raster(L, moyenne, 2); // variance (moment centré d'ordre 2) de la statistique pour l'ensembe des carrés raster
-				
 				var moment = calculerMoment_raster(L, moyenne, 4); // moment centré d'ordre 4 de la statistique pour l'ensembe des carrés raster
-				var r = moment / variance**2; // variable utilisée dans le calcul de la variance de la valeur attendue sous l'hypothèse d'indépendance spatiale
 				
 				
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
@@ -1195,9 +1193,7 @@
 							if (mesures >= nombre_voisins_raster_minimum) {
 								
 								// standardisation de la matrice de pondération
-								
 								Imoran = (valeur - moyenne) * Imoran / variance / W;
-								
 								W2 /= W**2;
 								
 								
@@ -1206,11 +1202,11 @@
 								var significativite = 0;
 							
 								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
-								var z_score = calculerZscore_local(n, Imoran, r, W2);
+								var z_score = calculerZscore_Imoran_local(n, Imoran, variance, moment, W2);
 							
 								// l'indice est significatif ssi |z_score| > z_score_minimal
 								if (Math.abs(z_score) >= z_score_minimal) {
-									significativite = true;
+									significativite = 1;
 								}
 							
 							
@@ -1267,8 +1263,6 @@
 			// fonction qui crée sur la carte des carrés dont la couleur dépend de l'indice de Moran local du carré
 			function afficher_raster_Moran(L_corr) {
 				
-				var indices_non_significatifs = false; // boolean qui indique si la liste contient des indices non significatifs
-				
 				var moyenne = L_corr[0]; // moyenne statistique des adresses de la ville sélectionnée
 				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
 				
@@ -1303,8 +1297,6 @@
 								couleur = "green"; // vert si le cluster est un "Low/High"
 							if (cluster == "L/L")
 								couleur = "blue"; // bleu si le cluster est un "Low/low"
-							if (cluster == "non significatif")
-								indices_non_significatifs = true;
 							
 							
 							// coordonnées du carré (ATTENTION au décalage pris dans les fonctions d'autocorrélation raster)
@@ -1334,13 +1326,13 @@
 				
 				
 				// affiche sur la carte la légende des couleurs associées aux différents clusters
-				afficherLegende_raster_Moran(indices_non_significatifs);
+				afficherLegende_raster_Moran();
 			}
 			
 		
 		
 			// fonction qui affiche sur la carte la légende des couleurs associées aux différents clusters de la carte raster des indices de Moran locaux
-			function afficherLegende_raster_Moran(indices_non_significatifs) {
+			function afficherLegende_raster_Moran() {
 				
 				// supprime la légende existante, s'il y en a une
 				effacerLegende();
@@ -1384,28 +1376,25 @@
 				}
 				
 				
-				// ajout de la case des valeurs non significatives (si la liste affichée en contient)
-				if (indices_non_significatifs == true) {
+				// ajout de la case des valeurs non significatives (même si la liste affichée n'en contient pas)
 				
-					var NotSignificant = document.createElement('div');
-					NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
-					NotSignificant.setAttribute("style","margin-top: 40;");
-					
-					var NotSignificant_color = document.createElement('div');
-					NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
-					NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
-					NotSignificant_color.setAttribute("style","background-color: grey;");
-					NotSignificant.appendChild(NotSignificant_color);
-					
-					var NotSignificant_value = document.createElement('div');
-					NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
-					var myNotSignificant_value = document.createElement('span');
-					myNotSignificant_value.textContent = "non significatif";
-					NotSignificant_value.appendChild(myNotSignificant_value);
-					NotSignificant.appendChild(NotSignificant_value);
-					
-					Legend.appendChild(NotSignificant);
-				}
+				var NotSignificant = document.createElement('div');
+				NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+				
+				var NotSignificant_color = document.createElement('div');
+				NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+				NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+				NotSignificant_color.setAttribute("style","background-color: grey;");
+				NotSignificant.appendChild(NotSignificant_color);
+				
+				var NotSignificant_value = document.createElement('div');
+				NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+				var myNotSignificant_value = document.createElement('span');
+				myNotSignificant_value.textContent = "non significatif";
+				NotSignificant_value.appendChild(myNotSignificant_value);
+				NotSignificant.appendChild(NotSignificant_value);
+				
+				Legend.appendChild(NotSignificant);
 				
 				
 				// ajout du bouton d'informations
@@ -1492,6 +1481,7 @@
 				var [n, moyenne] = calculerMoyenne_raster(L); // nombre d'entités et moyenne de la statistique pour l'ensemble des carrés raster
 				
 				var variance = calculerMoment_raster(L, moyenne, 2); // variance (moment centré d'ordre 2) de la statistique pour l'ensembe des carrés raster
+				/* var moment = calculerMoment_raster(L, moyenne, 4); // moment centré d'ordre 4 de la statistique pour l'ensembe des carrés raster */
 				
 				
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
@@ -1508,8 +1498,8 @@
 							var valeur = L[a][b].moyenne; // moyenne statistique du carré
 							
 							// ajoute les données du carré raster
-							var indice = new Indice(nombre, valeur, 0);
-							L_a.push(indice);
+							var indice_nul = new Indice_significativite(nombre, valeur, 0, 2);
+							L_a.push(indice_nul);
 						}
 						
 						L_corr.push(L_a);
@@ -1544,6 +1534,8 @@
 								
 								var W = 0; // somme des termes de la matrice de pondération pour les voisins du carré
 								
+								/* var W2 = 0; // somme des termes de la matrice de pondération standardisée élevés au carré pour les voisins du carré raster */
+								
 							
 								for (var k = 1; k <= nombre_voisins_raster; k++) {
 									
@@ -1557,6 +1549,7 @@
 											Igeary += ponderation * (voisin - valeur)**2;
 											mesures ++;
 											W += ponderation;
+											/* W2 += ponderation**2; */
 										}
 										
 										voisin = L[x][b+k].moyenne;
@@ -1564,6 +1557,7 @@
 											Igeary += ponderation * (voisin - valeur)**2;
 											mesures ++;
 											W += ponderation;
+											/* W2 += ponderation**2; */
 										}
 									}
 									
@@ -1575,6 +1569,7 @@
 											Igeary += ponderation * (voisin - valeur)**2;
 											mesures ++;
 											W += ponderation;
+											/* W2 += ponderation**2; */
 										}
 										
 										voisin = L[a+k][y].moyenne;
@@ -1582,6 +1577,7 @@
 											Igeary += ponderation * (voisin - valeur)**2;
 											mesures ++;
 											W += ponderation;
+											/* W2 += ponderation**2; */
 										}
 									}
 								}
@@ -1593,17 +1589,37 @@
 								
 								// standardisation de l'indice de Geary local
 								Igeary = Igeary / variance / W * (n-1)/(2*n);
+								/* W2 /= W**2; */
 								
+								
+								/*
+								// significativité de l'indice de Geary local
+								
+								var significativite = 0;
+							
+								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary local suit une loi normale)
+								var z_score = calculerZscore_Igeary_local(n, Igeary, variance, moment, W2);
+							
+								// l'indice est significatif ssi |z_score| > z_score_minimal
+								if (Math.abs(z_score) >= z_score_minimal) {
+									significativite = 1;
+								}
+								*/
+								// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
+								// On considerera donc que toutes les valeurs sont significatives.
+								var significativite = 1;
+							
+							
 								// ajoute les données du carré raster
-								var indice = new Indice(nombre, valeur, Igeary);
+								var indice = new Indice_significativite(nombre, valeur, Igeary, significativite);
 								L_a.push(indice);
 							}
 							
 
 							else {
 								// ajoute les données du carré raster
-								var indice = new Indice(nombre, valeur, -1);
-								L_a.push(indice);
+								var indice_noData = new Indice_significativite(nombre, valeur, -1, -1);
+								L_a.push(indice_noData);
 							}
 						}
 						
@@ -1665,26 +1681,33 @@
 				
 					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
 						
-						// indice de Geary local pour le carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].indice;
-					
-						// nombre de valeurs statistique du carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var nombre = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].nombre;
-					
-						// moyenne statistique du carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var valeur = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].moyenne;
+						var element_raster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
 						
 						
-						// crée un carré coloré uniquement si l'indice est supérieur à 0 (ATTENTION il peut être = à 0 !!!!)
-						if (I >= 0) {
+						var I = element_raster.indice; // indice de Geary du carré
+						
+						var nombre = element_raster.nombre; // nombre de valeurs statistiques du carré
+						
+						var valeur = element_raster.moyenne; // moyenne statistique du carré
+						
+						var significativite = element_raster.significativite; // significativité du carré
+
+						
+						// crée un carré coloré uniquement s'il possède un indice
+						if (significativite >= 0) {
 						
 							// couleur du carré raster en fonction de la valeur de son indice
-							var couleur = "#8B0000"; // "DarkRed" si l'indice est nul
-							if (I > 0) {
+							
+							var couleur = "grey"; // "Grey" si l'indice n'est pas significatif
+						
+							if (significativite == 2)
+								couleur = "#8B0000"; // "DarkRed" dans le cas rare mais possible où l'ensemble des moyennes du carré et de ses voisins sont égales
+							
+							if (significativite == 1) {
 								if (I < 1)
-									couleur = brew_positive.getColorInRange(I);
+									couleur = brew_positive.getColorInRange(I); // indices < à 1 de la liste (autocorrélation spatiale positive)
 								else
-									couleur = brew_negative.getColorInRange(I);
+									couleur = brew_negative.getColorInRange(I); // indices >= à 1 de la liste (autocorrélation spatiale négative)
 							}
 
 
@@ -1736,13 +1759,15 @@
 					
 					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
 						
-						// indice de Geary local pour le carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].indice;
+						var element_raster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
+						
+						var I = element_raster.indice; // indice de Geary du carré
+						var significativite = element_raster.significativite; // significativité du carré
 					
-						if (I == 0)
+						if (significativite == 2)
 							indices_nuls = true;
 						
-						if (I > 0) {
+						if (significativite == 1) {
 							if (I < 1)
 								L_positive.push(I);
 							else
@@ -1857,6 +1882,31 @@
 				}
 				
 				
+				/*
+				// ajout de la case des valeurs non significatives (même si la liste affichée n'en contient pas)
+				
+				var NotSignificant = document.createElement('div');
+				NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+				
+				var NotSignificant_color = document.createElement('div');
+				NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+				NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+				NotSignificant_color.setAttribute("style","background-color: grey;");
+				NotSignificant.appendChild(NotSignificant_color);
+				
+				var NotSignificant_value = document.createElement('div');
+				NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+				var myNotSignificant_value = document.createElement('span');
+				myNotSignificant_value.textContent = "non significatif";
+				NotSignificant_value.appendChild(myNotSignificant_value);
+				NotSignificant.appendChild(NotSignificant_value);
+				
+				Legend.appendChild(NotSignificant);
+				*/
+				// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
+				// On considerera donc que toutes les valeurs sont significatives.
+				
+				
 				// ajout du bouton d'informations
 				var Button = document.createElement('a');
 				Button.setAttribute("class","stats_a");
@@ -1914,6 +1964,14 @@
 						myInfos3.textContent = "Un carré de couleur marron indique un regroupement de valeurs strictement égales autour du carré (I = 0).";
 						Infos.appendChild(myInfos3);
 					}
+					
+					/*
+					var myInfos4 = document.createElement('p');
+					myInfos4.textContent = "Les zones de couleur grise ne montrent aucune dépendance spatiale statistiquement significative.";
+					Infos.appendChild(myInfos4);
+					*/
+					// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
+					// On considerera donc que toutes les valeurs sont significatives.
 					
 					document.body.appendChild(Infos);
 					
@@ -1990,11 +2048,11 @@
 			
 			
 			
-		// Calcul du z-score de l'indice de Moran local
+		// Calcul du z-score des indices locaux
 		
 		
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran local (Imoran local suit une loi normale)
-			function calculerZscore_local(n, Imoran, r, W2) {
+			function calculerZscore_Imoran_local(n, Imoran, variance, moment, W2) {
 				
 				// calcul de l'espérance
 				
@@ -2003,8 +2061,10 @@
 				
 				// calcul de la variance
 				
-				var s1 = (n - r) / (n-1) * W2
-				var s2 = (2*r - n) / (n-1) / (n-2) * (1 - W2);
+				var k = moment / variance**2;
+				
+				var s1 = (n - k) / (n-1) * W2
+				var s2 = (2*k - n) / (n-1) / (n-2) * (1 - W2);
 				var s3 = 1 / (n-1)**2
 				
 				var varianceZ = s1 + s2 - s3;
@@ -2017,6 +2077,26 @@
 				
 				return z_score;
 			}
+			
+			
+			/*
+			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Geary local (Igeary local suit une loi normale)
+			function calculerZscore_Igeary_local(n, Igeary, variance, moment, W2) {
+				
+				// calcul de l'espérance
+				var esperanceZ = - 1 / (n-1);
+				
+				// calcul de la variance
+				var varianceZ = 1; // ATTENTION ! Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes)
+				
+				// calcul du z-score (z-score suit une loi normale centrée réduite)
+				var z_score = (Igeary - esperanceZ) / varianceZ**0.5;
+				
+				return z_score;
+			}
+			*/
+			// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
+			// On considerera donc le z_score comme nul (toutes les valeurs sont significatives).
 			
 	
 	
@@ -2999,7 +3079,7 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice_noData = new Indice_significativite(n, 0, 0, -1);
+						var indice_noData = new Indice_significativite(n, 0, -1, -1);
 						L_corr.push(indice_noData);
 					}
 						
@@ -3043,7 +3123,7 @@
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
 							// ajoute la donnée du secteur
-							var indice_nul = new Indice_significativite(n, moyenne, 1, 2);
+							var indice_nul = new Indice_significativite(n, moyenne, 0, 2);
 							L_corr.push(indice_nul);
 						}
 						
