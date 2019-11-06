@@ -1206,7 +1206,7 @@
 								var significativite = 0;
 							
 								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
-								var z_score = calculer_Zscore_local(n, Imoran, r, W2);
+								var z_score = calculerZscore_local(n, Imoran, r, W2);
 							
 								// l'indice est significatif ssi |z_score| > z_score_minimal
 								if (Math.abs(z_score) >= z_score_minimal) {
@@ -1994,7 +1994,7 @@
 		
 		
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran local (Imoran local suit une loi normale)
-			function calculer_Zscore_local(n, Imoran, r, W2) {
+			function calculerZscore_local(n, Imoran, r, W2) {
 				
 				// calcul de l'espérance
 				
@@ -2157,7 +2157,7 @@
 							var significativite = 0;
 						
 							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
-							var z_score = calculer_Zscore_global(n, Imoran, Matrice_ponderation_standardisee, moment, variance);
+							var z_score = calculerZscore_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, moment, variance);
 							
 							// l'indice est significatif ssi |z_score| > z_score_minimal
 							if (Math.abs(z_score) >= z_score_minimal) {
@@ -2241,34 +2241,39 @@
 
 				for (var secteur = 0; secteur < sec; secteur++) {
 
-					var I = liste[secteur].indice; // indice de Moran du secteur
+					var element_secteur = liste[secteur]; // élément correspondant au secteur
 					
-					var nombre = liste[secteur].nombre; // nombre de valeurs statistiques du secteur
 					
-					var valeur = liste[secteur].moyenne; // moyenne statistique du secteur
+					var I = element_secteur.indice; // indice de Moran du secteur
+					
+					var nombre = element_secteur.nombre; // nombre de valeurs statistiques du secteur
+					
+					var valeur = element_secteur.moyenne; // moyenne statistique du secteur
+					
+					var significativite = element_secteur.significativite; // significativité du secteur
 
 					
 					var couleur = "white"; // couleur du secteur ("White" si le secteur ne possède aucun indice (manque de données))
 					
 					
-					if (liste[secteur].significativite == 0)
+					if (significativite == 0)
 						couleur = "grey"; // "Grey" si l'indice n'est pas significatif
 					
 					
-					if (liste[secteur].significativite > 0) {
+					if (significativite > 0) {
 
 						if (indices_ou_clusters == "indices") {
 					
-							if (liste[secteur].significativite == 2)
+							if (significativite == 2)
 								couleur = "#8B0000"; // "DarkRed" dans le cas rare mais possible où l'ensemble des valeurs du secteur sont égales
 							
 							// la couleur du secteur dépend de son indice de Moran s'il est significatif
-							if (liste[secteur].significativite == 1) {
+							if (significativite == 1) {
 								if (I >= 0)
-									couleur = brew_positive.getColorInRange(I);
+									couleur = brew_positive.getColorInRange(I); // indices >= à 0 de la liste (autocorrélation spatiale positive)
 								else {
 									if (indices_negatifs == true)
-										couleur = brew_negative.getColorInRange(I);
+										couleur = brew_negative.getColorInRange(I); // indices < à 0 de la liste (autocorrélation spatiale négative)
 								}
 							}
 						}
@@ -2314,20 +2319,19 @@
 				}
 				
 				
-				var indices_non_significatifs = copie[3]; // boolean qui indique si la liste contient des indices non significatifs
-				var indices_nuls = copie[4]; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
-				var indices_noData = copie[5]; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
+				var indices_nuls = copie[3]; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
+				var indices_noData = copie[4]; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
 				
 				
 				// affichage de la légende de la carte
 				if (indices_ou_clusters == "indices") {
 					if (indices_negatifs == true)
-						afficherLegende_secteurs_Moran_negatifs(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, liste_negative_valeurs, liste_negative_couleurs, liste_negative_decimales, indices_non_significatifs, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte (contenant des valeurs négatives significatives)
+						afficherLegende_secteurs_Moran_negatifs(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, liste_negative_valeurs, liste_negative_couleurs, liste_negative_decimales, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte (contenant des valeurs négatives significatives)
 					else
-						afficherLegende_secteurs_Moran(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, indices_non_significatifs, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte (ne contenant aucune valeur négative significative)
+						afficherLegende_secteurs_Moran(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, indices_nuls, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte (ne contenant aucune valeur négative significative)
 				}
 				else {
-					afficherLegende_secteurs_Moran_clusters(indices_non_significatifs, indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes clusters pour les indices de Moran des secteurs
+					afficherLegende_secteurs_Moran_clusters(indices_noData); // affiche sur la carte la légende des valeurs associées aux différentes clusters pour les indices de Moran des secteurs
 				}
 			}
 
@@ -2340,7 +2344,6 @@
 				var L_negative = []; // liste des indices de Moran significatifs et < à 0 (autocorrélation spatiale négative)
 				
 				var indices_negatifs = false; // boolean qui indique si la liste contient des indices significatifs et < à 0
-				var indices_non_significatifs = false; // boolean qui indique si la liste contient des indices non significatifs
 				var indices_nuls = false; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
 				var indices_noData = false; // boolean qui indique si la liste contient des secteurs qui ne possède aucun indice (manque de données)
 				
@@ -2363,13 +2366,13 @@
 					}
 				}
 				
-				return [L_positive, indices_negatifs, L_negative, indices_non_significatifs, indices_nuls, indices_noData];
+				return [L_positive, indices_negatifs, L_negative, indices_nuls, indices_noData];
 			}
 			
 			
 			
 			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster des indices de Moran des secteurs (contenant des valeurs négatives significatives)
-			function afficherLegende_secteurs_Moran_negatifs(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, liste_negative_valeurs, liste_negative_couleurs, liste_negative_decimales, indices_non_significatifs, indices_nuls, indices_noData) {
+			function afficherLegende_secteurs_Moran_negatifs(liste_positive_valeurs, liste_positive_couleurs, liste_positive_decimales, liste_negative_valeurs, liste_negative_couleurs, liste_negative_decimales, indices_nuls, indices_noData) {
 				
 				// supprime la légende existante, s'il y en a une
 				effacerLegende();
@@ -2488,27 +2491,25 @@
 				}
 				
 				
-				// ajout de la case des valeurs non significatives (si la liste affichée en contient)
-				if (indices_non_significatifs == true) {
+				// ajout de la case des valeurs non significatives (même si la liste affichée n'en contient pas)
 				
-					var NotSignificant = document.createElement('div');
-					NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
-					
-					var NotSignificant_color = document.createElement('div');
-					NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
-					NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
-					NotSignificant_color.setAttribute("style","background-color: #808080;");
-					NotSignificant.appendChild(NotSignificant_color);
-					
-					var NotSignificant_value = document.createElement('div');
-					NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
-					var myNotSignificant_value = document.createElement('span');
-					myNotSignificant_value.textContent = "non significatif";
-					NotSignificant_value.appendChild(myNotSignificant_value);
-					NotSignificant.appendChild(NotSignificant_value);
-					
-					Legend.appendChild(NotSignificant);
-				}
+				var NotSignificant = document.createElement('div');
+				NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+				
+				var NotSignificant_color = document.createElement('div');
+				NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+				NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+				NotSignificant_color.setAttribute("style","background-color: #808080;");
+				NotSignificant.appendChild(NotSignificant_color);
+				
+				var NotSignificant_value = document.createElement('div');
+				NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+				var myNotSignificant_value = document.createElement('span');
+				myNotSignificant_value.textContent = "non significatif";
+				NotSignificant_value.appendChild(myNotSignificant_value);
+				NotSignificant.appendChild(NotSignificant_value);
+				
+				Legend.appendChild(NotSignificant);
 				
 				
 				// ajout de la case des secteurs sans valeur (si la liste affichée en contient)
@@ -2552,7 +2553,7 @@
 			
 			
 			// fonction qui affiche sur la carte la légende des valeurs associées aux différentes couleurs de la carte raster des indices de Moran des secteurs (ne contenant aucune valeur négative significative)
-			function afficherLegende_secteurs_Moran(liste_valeurs, liste_couleurs, liste_decimales, indices_non_significatifs, indices_nuls, indices_noData) {
+			function afficherLegende_secteurs_Moran(liste_valeurs, liste_couleurs, liste_decimales, indices_nuls, indices_noData) {
 				
 				// supprime la légende existante, s'il y en a une
 				effacerLegende();
@@ -2649,27 +2650,25 @@
 				}
 				
 				
-				// ajout de la case des valeurs non significatives (si la liste affichée en contient)
-				if (indices_non_significatifs == true) {
+				// ajout de la case des valeurs non significatives (même si la liste affichée n'en contient pas)
 				
-					var NotSignificant = document.createElement('div');
-					NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
-					
-					var NotSignificant_color = document.createElement('div');
-					NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
-					NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
-					NotSignificant_color.setAttribute("style","background-color: #808080;");
-					NotSignificant.appendChild(NotSignificant_color);
-					
-					var NotSignificant_value = document.createElement('div');
-					NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
-					var myNotSignificant_value = document.createElement('span');
-					myNotSignificant_value.textContent = "non significatif";
-					NotSignificant_value.appendChild(myNotSignificant_value);
-					NotSignificant.appendChild(NotSignificant_value);
-					
-					Legend.appendChild(NotSignificant);
-				}
+				var NotSignificant = document.createElement('div');
+				NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+				
+				var NotSignificant_color = document.createElement('div');
+				NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+				NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+				NotSignificant_color.setAttribute("style","background-color: #808080;");
+				NotSignificant.appendChild(NotSignificant_color);
+				
+				var NotSignificant_value = document.createElement('div');
+				NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+				var myNotSignificant_value = document.createElement('span');
+				myNotSignificant_value.textContent = "non significatif";
+				NotSignificant_value.appendChild(myNotSignificant_value);
+				NotSignificant.appendChild(NotSignificant_value);
+				
+				Legend.appendChild(NotSignificant);
 				
 				
 				// ajout de la case des secteurs sans valeur (si la liste affichée en contient)
@@ -3000,8 +2999,8 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice = new Indice(n, 0, -1);
-						L_corr.push(indice);
+						var indice_noData = new Indice_significativite(n, 0, 0, -1);
+						L_corr.push(indice_noData);
 					}
 						
 						
@@ -3012,7 +3011,8 @@
 					
 						var moyenne = calculerMoyenne_secteur(secteur); // moyenne de la statistique pour les adresses du secteur
 						
-						var variance = 0; // variance de la statistique dans le secteur
+						var variance = 0; // variance (moment centré d'ordre 2) des valeurs statistique du secteur
+						var moment = 0; // moment centré d'ordre 4 des valeurs statistiques du secteur
 						
 						
 						var Matrice_ponderation_standardisee = creerMatrice_ponderation_standardisee(secteur); // crée la matrice de pondération standardisée du secteur
@@ -3033,26 +3033,43 @@
 							}
 						
 							variance += (secteur[i].valeur - moyenne) ** 2;
+							moment += (secteur[i].valeur - moyenne) ** 4;
 						}
 						
 						variance = variance / n; 
+						moment = moment / n; 
 						
 						
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
-							Igeary = 0;
+							// ajoute la donnée du secteur
+							var indice_nul = new Indice_significativite(n, moyenne, 1, 2);
+							L_corr.push(indice_nul);
 						}
 						
 						
 						else {
-							//normalisation de l'indice de Moran
+							
 							Igeary = Igeary / variance * (n-1) / (2* n**2);
+							
+							
+							// significativité de l'indice de Geary du secteur
+							
+							var significativite = 0;
+						
+							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary suit une loi normale)
+							var z_score = calculerZscore_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, moment, variance);
+							
+							// l'indice est significatif ssi |z_score| > z_score_minimal
+							if (Math.abs(z_score) >= z_score_minimal) {
+								significativite = 1;
+							}
+							
+							
+							// ajoute la donnée du secteur
+							var indice = new Indice_significativite(n, moyenne, Igeary, significativite);
+							L_corr.push(indice);
 						}
-						
-						
-						// ajoute la donnée du secteur
-						var indice = new Indice(n, moyenne, Igeary);
-						L_corr.push(indice);
 					}
 				}
 				
@@ -3095,26 +3112,38 @@
 
 				for (var secteur = 0; secteur < sec; secteur++) {
 
-					// indice de Geary du secteur
-					var I = liste[secteur].indice;
+					var element_secteur = liste[secteur]; // élément correspondant au secteur
 					
-					// nombre de valeurs statistiques du secteur
-					var nombre = liste[secteur].nombre;
 					
-					// moyenne statistique du secteur
-					var valeur = liste[secteur].moyenne;
+					var I = element_secteur.indice; // indice de Geary du secteur
+					
+					var nombre = element_secteur.nombre; // nombre de valeurs statistiques du secteur
+					
+					var valeur = element_secteur.moyenne; // moyenne statistique du secteur
+					
+					var significativite = element_secteur.significativite; // significativité du secteur
 
-					// couleur du secteur en fonction de la valeur de son indice
-					var couleur = "#FFFFFF"; // "White" si le secteur ne possède aucun indice (manque de données)
-					if (I == 0)
-						couleur = "#8B0000"; // "DarkRed" dans le cas rare mais possible où l'ensemble des valeurs du secteur sont égales
-					if (I > 0) {
-						if (I < 1)
-							couleur = brew_positive.getColorInRange(I); // indices < à 1 de la liste (autocorrélation spatiale positive)
-						else
-							couleur = "blue"; // couleur bleu pour les indices >= à 1 de la liste (autocorrélation spatiale négative)
+					
+					var couleur = "white"; // couleur du secteur ("White" si le secteur ne possède aucun indice (manque de données))
+					
+					if (significativite >= 0) {
+						
+						if (significativite == 0)
+							couleur = "grey"; // "Grey" si l'indice n'est pas significatif
+					
+						if (significativite == 2)
+							couleur = "#8B0000"; // "DarkRed" dans le cas rare mais possible où l'ensemble des valeurs du secteur sont égales
+						
+						// la couleur du secteur dépend de son indice de Moran s'il est significatif
+						if (significativite == 1) {
+							if (I < 1)
+								couleur = brew_positive.getColorInRange(I); // indices < à 1 de la liste (autocorrélation spatiale positive)
+							else
+								couleur = "blue"; // couleur bleu pour les indices >= à 1 de la liste (autocorrélation spatiale négative)
+						}
 					}
-
+					
+					
 					// créer un polygône à partir de ces adresses
 					var polygon = L.polygon(BDD_secteurs[secteur],{
 						color: 'black',
@@ -3151,12 +3180,16 @@
 				
 				for (var secteur of L) {
 					
-					if (secteur.indice == -1)
-						indices_noData = true;
-					if (secteur.indice == 0)
-						indices_nuls = true;
+					var significativite = secteur.significativite; // significativité du secteur
 					
-					if (secteur.indice > 0) {
+					if (significativite == 0)
+						indices_non_significatifs = true;
+					if (significativite == 2)
+						indices_nuls = true;
+					if (significativite == -1)
+						indices_noData = true;
+					
+					if (significativite == 1) {
 						if (secteur.indice < 1)
 							L_positive.push(secteur.indice);
 						else
@@ -3226,7 +3259,7 @@
 				
 				// ajout de la couleur bleue pour les indices >= à 1 (autocorrélation spatiale négative)
 				// ATTENTION, il se peut que la liste ne contienne aucune valeur >= 1
-				if (max_liste_negative != 1) {
+				if (max_liste_negative != -1) {
 					
 					// carré de la couleur de l'intervalle
 					var Color = document.createElement('div');
@@ -3257,7 +3290,7 @@
 					var Nuls_color = document.createElement('div');
 					Nuls_color.setAttribute("class","stats_Statistiques_legende_couleur");
 					Nuls_color.setAttribute("id","stats_Statistiques_legende_nuls_couleur");
-					Nuls_color.setAttribute("style","background-color: #8B0000; margin-left: 5;");
+					Nuls_color.setAttribute("style","background-color: #8B0000;");
 					Nuls.appendChild(Nuls_color);
 					
 					var Nuls_value = document.createElement('div');
@@ -3271,6 +3304,27 @@
 				}
 				
 				
+				// ajout de la case des valeurs non significatives (même si la liste affichée n'en contient pas)
+				
+				var NotSignificant = document.createElement('div');
+				NotSignificant.setAttribute("id","stats_Statistiques_legende_notSignificant");
+				
+				var NotSignificant_color = document.createElement('div');
+				NotSignificant_color.setAttribute("class","stats_Statistiques_legende_couleur");
+				NotSignificant_color.setAttribute("id","stats_Statistiques_legende_notSignificant_couleur");
+				NotSignificant_color.setAttribute("style","background-color: #808080;");
+				NotSignificant.appendChild(NotSignificant_color);
+				
+				var NotSignificant_value = document.createElement('div');
+				NotSignificant_value.setAttribute("id","stats_Statistiques_legende_notSignificant_valeur");
+				var myNotSignificant_value = document.createElement('span');
+				myNotSignificant_value.textContent = "non significatif";
+				NotSignificant_value.appendChild(myNotSignificant_value);
+				NotSignificant.appendChild(NotSignificant_value);
+				
+				Legend.appendChild(NotSignificant);
+			
+			
 				// ajout de la case des secteurs sans valeur (si la liste affichée en contient)
 				if (indices_noData == true) {
 				
@@ -3351,6 +3405,10 @@
 						myInfos3.textContent = "Un secteur de couleur marron ne contient que des valeurs strictement égales (I = 0).";
 						Infos.appendChild(myInfos3);
 					}
+					
+					var myInfos6 = document.createElement('p');
+					myInfos6.textContent = "Un secteur de couleur grise ne montre aucune dépendance spatiale statistiquement significative.";
+					Infos.appendChild(myInfos6);
 					
 					if (indices_noData == true) {
 						var myInfos4 = document.createElement('p');
@@ -3477,11 +3535,11 @@
 		
 		
 		
-		// Calcul du z-score de l'indice de Moran
+		// Calcul du z-score des indices globaux
 		
 		
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran global (Imoran suit une loi normale)
-			function calculer_Zscore_global(n, Imoran, Matrice_ponderation, moment, variance) {
+			function calculerZscore_Imoran_global(n, Imoran, Matrice_ponderation, moment, variance) {
 				
 				// calcul de l'espérance
 				
@@ -3489,6 +3547,8 @@
 				
 				
 				// calcul des éléments nécessaires au calcul la variance en lien avec la matrice de pondération
+				
+				var k = moment / variance**2;
 				
 				var W1 = 0;
 				for (var i = 0; i < n; i++) {
@@ -3510,15 +3570,66 @@
 				// calcul de la variance
 				
 				var s1 = (n**2 - 3*n + 3) / 2 * W1  -  n * W2  +  3 * n**2;
-				var s2 = moment / variance**2;
-				var s3 = (1 - 2*n) / 2 * W1  +  6 * n**2;
+				var s2 = (1 - 2*n) / 2 * W1  +  6 * n**2;
 				
-				var varianceZ = ( n * s1 - s2 * s3 )  /  ( (n-1) * (n-2) * (n-3) * n**2 );
+				var d = (n-1) * (n-2) * (n-3) * n**2;
+				
+				var varianceZ = ( n * s1 - k * s2 )  /  d;
 				
 				
 				// calcul du z-score (z-score suit une loi normale centrée réduite)
 				
 				var z_score = (Imoran - esperanceZ) / varianceZ**0.5;
+				
+				
+				return z_score;
+			}
+			
+		
+		
+			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Geary global (Igeary suit une loi normale)
+			function calculerZscore_Igeary_global(n, Igeary, Matrice_ponderation, moment, variance) {
+				
+				// calcul de l'espérance
+				
+				var esperanceZ = - 1 / (n-1);
+				
+				
+				// calcul des éléments nécessaires au calcul la variance en lien avec la matrice de pondération
+				
+				var k = moment / variance**2;
+				
+				var W1 = 0;
+				for (var i = 0; i < n; i++) {
+					for (var j = 0; j < n; j++) {
+						W1 += ( Matrice_ponderation[i][j] + Matrice_ponderation[j][i] )**2;
+					}
+				}
+				
+				var W2 = 0;
+				for (var i = 0; i < n; i++) {
+					var W2_i = 1;
+					for (var j = 0; j < n; j++) {
+						W2_i += Matrice_ponderation[j][i];
+					}
+					W2 += W2_i**2;
+				}
+				
+				
+				// calcul de la variance
+				
+				var s1 = (n-1) * (n**2 - 3*n + 3 - (n-1) * k) / 2 * W1;
+				var s2 = (n-1) / 4 * (n**2 + 3*n - 6 - (n**2-n+2) * k) * W2;
+				var s3 = (n**2 - 3 - (n-1)**2 * k) * n**2;
+				
+				var d = n * (n-2) * (n-3) * n**2;
+				
+				var varianceZ = ( s1 - s2 + s3 )  /  d;
+				
+				
+				// calcul du z-score (z-score suit une loi normale centrée réduite)
+				
+				var z_score = (Igeary - esperanceZ) / varianceZ**0.5;
 				
 				
 				return z_score;
