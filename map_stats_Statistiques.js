@@ -32,7 +32,7 @@
 		
 
 
-	// Ouvre l'accès à la BDD des adresses et récupère les villes de la BDD, et le pas et les coordonnées limites de la carte raster
+	// Ouvre l'accès à la BDD des adresses et récupère les villes de la BDD, qinsi que les coordonnées et dimensions de la carte raster
 			
 			
 		// Villes
@@ -94,11 +94,12 @@
 				creerBDD_adresses(adresses); // crée la base de données des adresses en local
 				recupVilles(); // remplit la liste villes[] et la liste déroulante de la carte d'autocorrélation spatiale
 				pasMin(); // récupère le pas minimum en latitude et en longitude de la carte ratser
-				coordLimites(); // récupère les coordonnées limites de la carte pour la ville sélectionnée
+				coordLimites(); // récupère les coordonnées limites de la carte pour la ville sélectionnée et actualise les dimensions de la carte raster
 				ajusterCarte(); // ajuste le zoom de la carte à l'ensemble des adresses de la ville sélectionnée
 				creerBDD_secteurs(); // crée la BDD locale des sous-secteurs statistiques
 				creerBDD_adresses_secteurs(); // crée la BDD associant pour chaque adresse de Lausanne le sous-secteur statistique auquel elle apparatient
 				creerBDD_secteurs_adresses(); // crée la BDD associant pour chaque secteur de Lausanne les adresses qu'il contient
+				remplirStats(); // remplit la fenêtre de choix des statistiques à afficher
 			}
 			
 			
@@ -288,92 +289,61 @@
 		
 	
 		
-	// Ouvre l'accès à la BDD des statistiques et récupère les statistiques et leurs informations
+	// Base de données (BDD) des statistiques
 			
 			
-			class Stat {
-				constructor(nom, fonction, affichage, infos) {
-					this.nom = nom; // nom de la statistique
-					this.fonction = fonction; // fonction associée à la statistique
-					this.affichage = affichage; // variable indiquant si la statistiques doit apparaître dans le menus des cartes
-					this.infos = infos; // informations concernant la statistique
-				}
-			}
+			var BDD_statistiques =
+			[
+				{"affichage":2,"fonction":"DOMAINE","informations":"","nom":"Généralités"},
+				{"affichage":1,"fonction":"stats_lettres","informations":"Nombre moyen de caractères dans le nom de rue des adresses à l'intérieur de la zone","nom":"Nombre moyen de lettres par adresse"},
+				{"affichage":1,"fonction":"stats_nombre","informations":"Nombre d'adresses à l'intérieur de la zone","nom":"Nombre d'adresses"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Nombre d'habitants"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Taux de réponse au questionnaire"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Satisfaction du lieu de résidence"},
+				{"affichage":2,"fonction":"DOMAINE","informations":"","nom":"Démographie"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Nombre moyen d'habitants par adresse"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Pourçentage d'hommes"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Pourçentage d'enfants"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Âge moyen"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Taux de célibataires"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Nombre de langues maternelles"},
+				{"affichage":2,"fonction":"DOMAINE","informations":"","nom":"Situation sociale"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Niveau de formation moyen"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Nombre d'étudiants"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Taux d'étudiants"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Nombre de chômeurs"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Taux de chômage"},
+				{"affichage":2,"fonction":"DOMAINE","informations":"","nom":"Disposition à une activité physique"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Distance aux équipements locaux"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Infrastructures pédetres et cyclistes"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Equipements domestiques disposant à une activité physique"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Sécurité au sein du quartier"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Intégration sociale"},
+				{"affichage":2,"fonction":"DOMAINE","informations":"","nom":"Santé"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"IMC moyen"},
+				{"affichage":1,"fonction":"test","informations":"","nom":"Niveau moyen d'activité physique"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Etat de santé perçu"},
+				{"affichage":0,"fonction":"test","informations":"","nom":"Somnolence diurne"}
+			]
 			
 			
-			var stats = []; // liste des statistiques dans la BDD
-			
-			
-		
-		
-		// Ouverture de l'accès à la base de données (BDD) des statistiques
-			
-			
-			var request_statsURL = 'https://raw.githubusercontent.com/AlexGgn/hello-world/master/statistiques.json';
-			var request_stats = new XMLHttpRequest();
-			request_stats.open('GET', request_statsURL);
-			request_stats.responseType = 'json';
-			request_stats.send();
-			request_stats.onload = function() {
-				var statistiques = request_stats.response;
-				creerBDD_statistiques(statistiques) // crée la base de données des statistiques en local
-				recupStats(); // récupère les statistiques de la BDD
-			}
-			
-			
-			var BDD_statistiques = []; // base de données des statistiques en local
-			var st = 0; // nombre de statistiques dans la base de données
-			
-			
-			// fonction qui remplit la base de données des statistiques en local
-			function creerBDD_statistiques(jsonObj) {
-				BDD_statistiques = jsonObj;
-				st = BDD_statistiques.length;
-			}
-			
-			
-
-
-		// Récupération des statistiques de la BDD
-		
-		
-			// fonction qui récupère les statistiques de la BDD
-			function recupStats() {
-				
-				for (var k=0; k<st; k++) {
-					var nom = BDD_statistiques[k].nom;
-					var fonction = BDD_statistiques[k].fonction;
-					var affichage = BDD_statistiques[k].affichage;
-					var infos = BDD_statistiques[k].informations;
-					ajouterStat(nom, fonction, affichage, infos);
-				}
-				
-				remplirStats(); // remplit la fenêtre de choix des statistiques à afficher
-			}
+			var st = BDD_statistiques.length; // nombre de statistiques dans la base de données
 			
 			
 			
-			// fonction qui ajoute une nouvelle stat à la liste stats[]
-			function ajouterStat(nom, fonction, affichage, infos) {
-				var stat = new Stat(nom, fonction, affichage, infos);
-				stats.push(stat);
-			}
-			
-
-
 			// fonction qui remplit la fenêtre de choix des statistiques à afficher à partir de la liste villes[]
 			function remplirStats() {
 				
 				var statistiques = document.getElementById('stats_Statistiques_menu_statistiques'); // liste des statistiques de la carte
 				
-				for (var stat of stats) {
+				for (var stat of BDD_statistiques) {
 					
 					var nom = stat.nom; // nom de la statistique
 					var fonction = stat.fonction; // fonction associée à la statistique
 					var affichage = stat.affichage; // variable indiquant si la statistiques doit apparaître dans le menus des cartes
 					
 					// si fonction == "", l'élément est un domaine de statistiques
-					if (fonction == "") {
+					if (fonction == "DOMAINE") {
 						
 						var newGroup = document.createElement('br');
 						statistiques.appendChild(newGroup);
@@ -822,10 +792,10 @@
 				var nom = ""; // nom de la statistique
 				var informations = ""; // informations concernant la statistique
 				
-				for (istat of stats){
+				for (istat of BDD_statistiques){
 					if (fonction == istat.fonction) {
 						nom = istat.nom;
-						informations = istat.infos;
+						informations = istat.informations;
 					}
 				}
 				
@@ -920,32 +890,18 @@
 	// Elements des listes d'autocorrélation spatiales
 		
 		
-		// Indice de Geary
-		
-		
-			// classe qui donne pour chaque zone son nombre de valeurs, sa moyenne statistique et son indice d'autocorrélation spatiale
+		// Indices d'autocorrélation spatiale	
+			
+			
+			// classe qui donne pour chaque zone son nombre de valeurs, sa moyenne statistique, son indice d'autocorrélation spatiale et indique s'il et significatif
 			class Indice {
-				constructor(nombre, moyenne, indice) {
+				constructor(nombre, moyenne, indice, significativite) {
 					this.nombre = nombre; // nombre de valeurs statistiques de la zone
 					this.moyenne = moyenne; // moyenne statistique de la zone
 					this.indice = indice; // indice d'autocorrélation spatiale de la zone
+					this.significativite = significativite; // significativite de l'indice observé dans la zone (1 si significatif, 0 sinon) ATTENTION 2 si toutes les valeurs voisines sont égales, cas rare mais possible
 				}
-			}
-			
-		
-		
-			
-		// Indice de Moran
-		
-			
-			// seuil de significativité en-dessous duquel on peut dire qu'une dépendance spatiale est statistiquement significative (souvent fixée à 0.05)
-			var seuil = 0.05;
-			
-			// z-score minimal à partir duquel on peut dire qu'une dépendance spatiale est statistiquement significative (souvent fixée à 0.05)
-			// calculé à partir des tables de la loi normale centrée réduite
-			// seuil = P(-|z_score| <= -z_score_minimal) + P(|z_score| >= z_score_minimal) = 2 * P(-|z_score| <= -z_score_minimal)
-			var z_score_minimal = 1.92;
-			
+			}		
 			
 			
 			// classe qui donne pour chaque zone son nombre de valeurs, sa moyenne statistique, son indice d'autocorrélation spatiale, ainsi que son cluster ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
@@ -958,16 +914,28 @@
 				}
 			}
 			
+		
 			
-			// classe qui donne pour chaque zone son nombre de valeurs, sa moyenne statistique, son indice d'autocorrélation spatiale et indique s'il et significatif
-			class Indice_significativite {
-				constructor(nombre, moyenne, indice, significativite) {
-					this.nombre = nombre; // nombre de valeurs statistiques de la zone
-					this.moyenne = moyenne; // moyenne statistique de la zone
-					this.indice = indice; // indice d'autocorrélation spatiale de la zone
-					this.significativite = significativite; // significativite de l'indice observé dans la zone (1 si significatif, 0 sinon) ATTENTION 2 si toutes les valeurs voisines sont égales, cas rare mais possible
-				}
-			}
+			
+		// Significativité des indices
+			
+			
+			// seuil de significativité en-dessous duquel on peut dire qu'une dépendance spatiale est statistiquement significative (souvent fixée à 0.05)
+			var seuil = 0.05;
+			
+			// z-score minimal à partir duquel on peut dire qu'une dépendance spatiale est statistiquement significative (souvent fixée à 0.05)
+			// calculé à partir des tables de la loi normale centrée réduite
+			// seuil = P(-|z_score| <= -z_score_minimal) + P(|z_score| >= z_score_minimal) = 2 * P(-|z_score| <= -z_score_minimal)
+			var z_score_minimal = 1.96;
+			
+			
+			
+			// choix de la méthode de calcul de la significativité à utiliser : "z_score" ou "valeur_p" (excepté pour l'indice de Geary local qui utilisera toujours la méthode itérative)
+			var methode_significativite = "z_score";
+			
+			
+			// nombre de permutations à réaliser avec la méthode itérative (pour les indices globaux des secteurs)
+			var nombre_permutations = 1000;
 
 
 
@@ -1130,10 +1098,14 @@
 								
 								var W2 = 0; // somme des termes de la matrice de pondération standardisée élevés au carré pour les voisins du carré raster
 								
+								var couches = [0]; // nombre de voisins (avec une valeur statistiques) appartenant à chaque couche
+								
 								
 								for (var k = 1; k <= nombre_voisins_raster; k++) {
 									
 									var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+									
+									var couche_k = 0; // nombre de voisins (avec une valeur statistiques) appartenant à la couche k
 									
 									
 									for (var x = a-k; x <= a+k; x++) {
@@ -1144,6 +1116,7 @@
 											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
+											couche_k ++;
 										}
 										
 										voisin = L[x][b+k].moyenne;
@@ -1152,6 +1125,7 @@
 											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
+											couche_k ++;
 										}
 									}
 									
@@ -1164,6 +1138,7 @@
 											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
+											couche_k ++;
 										}
 										
 										voisin = L[a+k][y].moyenne;
@@ -1172,8 +1147,12 @@
 											mesures ++;
 											W += ponderation;
 											W2 += ponderation**2;
+											couche_k ++;
 										}
 									}
+									
+									
+									couches.push(couche_k);
 								}
 								
 								
@@ -1201,12 +1180,26 @@
 								
 								var significativite = 0;
 							
-								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
-								var z_score = calculerZscore_Imoran_local(n, Imoran, variance, moment, W2);
-							
-								// l'indice est significatif ssi |z_score| > z_score_minimal
-								if (Math.abs(z_score) >= z_score_minimal) {
-									significativite = 1;
+								// Première méthode : calcul du z-score par estimation asymptotique
+								if (methode_significativite == "z_score") {
+									// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
+									var z_score = calculerZscore_asymptotique_Imoran_local(n, Imoran, variance, moment, W2);
+									
+									// l'indice est significatif ssi |z_score| > z_score_minimal
+									if (Math.abs(z_score) >= z_score_minimal) {
+										significativite = 1;
+									}
+								}
+								
+								// Seconde méthode : calcul de la valeur-p par l'approche itérative
+								else {
+									// calcul de la valeur-p de l'indice de Moran local avec la méthode itérative
+									var valeur_p = calculerPvalue_iterative_Igeary_local(Imoran, valeur, couches, W, moyenne, variance);
+									
+									// l'indice est significatif ssi |z_score| > z_score_minimal
+									if (Math.abs(valeur_p) <= seuil) {
+										significativite = 1;
+									}
 								}
 							
 							
@@ -1498,7 +1491,7 @@
 							var valeur = L[a][b].moyenne; // moyenne statistique du carré
 							
 							// ajoute les données du carré raster
-							var indice_nul = new Indice_significativite(nombre, valeur, 0, 2);
+							var indice_nul = new Indice(nombre, valeur, 0, 2);
 							L_a.push(indice_nul);
 						}
 						
@@ -1536,10 +1529,14 @@
 								
 								/* var W2 = 0; // somme des termes de la matrice de pondération standardisée élevés au carré pour les voisins du carré raster */
 								
+								var couches = [0]; // nombre de voisins (avec une valeur statistiques) appartenant à chaque couche
+								
 							
 								for (var k = 1; k <= nombre_voisins_raster; k++) {
 									
 									var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+									
+									var couche_k = 0; // nombre de voisins (avec une valeur statistiques) appartenant à la couche k
 									
 									
 									for (var x = a-k; x <= a+k; x++) {
@@ -1550,6 +1547,7 @@
 											mesures ++;
 											W += ponderation;
 											/* W2 += ponderation**2; */
+											couche_k ++;
 										}
 										
 										voisin = L[x][b+k].moyenne;
@@ -1558,6 +1556,7 @@
 											mesures ++;
 											W += ponderation;
 											/* W2 += ponderation**2; */
+											couche_k ++;
 										}
 									}
 									
@@ -1570,6 +1569,7 @@
 											mesures ++;
 											W += ponderation;
 											/* W2 += ponderation**2; */
+											couche_k ++;
 										}
 										
 										voisin = L[a+k][y].moyenne;
@@ -1578,8 +1578,12 @@
 											mesures ++;
 											W += ponderation;
 											/* W2 += ponderation**2; */
+											couche_k ++;
 										}
 									}
+									
+									
+									couches.push(couche_k);
 								}
 							}
 								
@@ -1592,33 +1596,45 @@
 								/* W2 /= W**2; */
 								
 								
-								/*
 								// significativité de l'indice de Geary local
 								
 								var significativite = 0;
-							
-								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary local suit une loi normale)
-								var z_score = calculerZscore_Igeary_local(n, Igeary, variance, moment, W2);
-							
-								// l'indice est significatif ssi |z_score| > z_score_minimal
-								if (Math.abs(z_score) >= z_score_minimal) {
-									significativite = 1;
+								
+								// Première méthode : calcul du z-score par estimation asymptotique
+								/*
+								if (methode_significativite == "z_score") {
+									// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary local suit une loi normale)
+									var z_score = calculerZscore_asymptotique_Igeary_local(n, Igeary, variance, moment, W2);
+									
+									// l'indice est significatif ssi |z_score| > z_score_minimal
+									if (Math.abs(z_score) >= z_score_minimal) {
+										significativite = 1;
+									}
 								}
 								*/
 								// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
-								// On considerera donc que toutes les valeurs sont significatives.
-								var significativite = 1;
+								// On utilisera donc seulement la seconde méthode.
+								
+								// Seconde méthode : calcul de la valeur-p par l'approche itérative
+								
+									// calcul de la valeur-p de l'indice de Geary local avec la méthode itérative
+									var valeur_p = calculerPvalue_iterative_Igeary_local(Igeary, valeur, couches, W, moyenne, variance);
+									
+									// l'indice est significatif ssi |z_score| > z_score_minimal
+									if (Math.abs(valeur_p) <= seuil) {
+										significativite = 1;
+									}
 							
 							
 								// ajoute les données du carré raster
-								var indice = new Indice_significativite(nombre, valeur, Igeary, significativite);
+								var indice = new Indice(nombre, valeur, Igeary, significativite);
 								L_a.push(indice);
 							}
 							
 
 							else {
 								// ajoute les données du carré raster
-								var indice_noData = new Indice_significativite(nombre, valeur, -1, -1);
+								var indice_noData = new Indice(nombre, valeur, -1, -1);
 								L_a.push(indice_noData);
 							}
 						}
@@ -2048,11 +2064,16 @@
 			
 			
 			
-		// Calcul du z-score des indices locaux
+			
+			
+	// Calcul du z-score des indices locaux
 		
 		
+		// Indice de Moran local
+		
+			
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran local (Imoran local suit une loi normale)
-			function calculerZscore_Imoran_local(n, Imoran, variance, moment, W2) {
+			function calculerZscore_asymptotique_Imoran_local(n, Imoran, variance, moment, W2) {
 				
 				// calcul de l'espérance
 				
@@ -2079,12 +2100,16 @@
 			}
 			
 			
+			
+		
+		// Indice de Geary local
+		
 			/*
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Geary local (Igeary local suit une loi normale)
-			function calculerZscore_Igeary_local(n, Igeary, variance, moment, W2) {
+			function calculerZscore_asymptotique_Igeary_local(n, Igeary, variance, moment, W2) {
 				
 				// calcul de l'espérance
-				var esperanceZ = - 1 / (n-1);
+				var esperanceZ = 1;
 				
 				// calcul de la variance
 				var varianceZ = 1; // ATTENTION ! Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes)
@@ -2097,6 +2122,153 @@
 			*/
 			// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
 			// On considerera donc le z_score comme nul (toutes les valeurs sont significatives).
+			
+		
+		
+		
+	// Calcul de la valeur-p des indices locaux (méthode de l'approche itérative)
+		
+		
+		// Indice de Moran local
+		
+		
+			// fonction qui calcule la valeur-p de l'indice de Moran local avec la méthode itérative
+			function calculerPvalue_iterative_Imoran_local(Imoran, valeur_centrale, couches, W, moyenne, variance) {
+				
+				var Ik = 0; // indices de Moran locaux généré itérativement
+				
+				var m = 0; // nombre d'indices de Moran locaux générés itérativement supérieurs (respectivement inférieurs) ou égaux à l'Indice de Moran local mesuré
+				
+				for (var k = 0; k < nombre_permutations; k++) {
+					
+					Ik = calculerImoran_local_iterative(valeur_centrale, couches, W, moyenne, variance); // calcule l'indice de Moran local pour des valeurs générées itérativement
+					
+					// cas d'autocorrélation spatiale positive (I > 0)
+					if (Imoran > 0) {
+						if (Ik >= Imoran)
+							m ++;
+					}
+					// cas d'autocorrélation spatiale négative (I <= 0)
+					else {
+						if (Ik <= Imoran)
+							m ++;
+					}
+				}
+				
+				return (m + 1) / (nombre_permutations + 1);
+			}
+			
+			
+			
+			// fonction qui calcule l'indice de Moran local pour des valeurs générées itérativement
+			function calculerImoran_local_iterative(valeur_centrale, couches, W, moyenne, variance) {
+				
+				var I = 0; // indice de Moran local des valeurs générées aléatoirement
+				
+				
+				var j = 0; // j-ème voisin du carré raster étudié
+				
+				for (var k = 1; k <= nombre_voisins_raster; k++) {
+						
+						var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+						
+						// le carré raster étudié possède couches[k] voisins dans la k-ième couche
+						for (var i = 0; i < couches[k]; i++) {
+							
+							// génère itérativement la nouvelle valeur statistique du j-ème voisin du carré (distribution approximativement gaussienne)
+							var x_j = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
+							var y_j = (15*variance)**0.5 * x_j + moyenne; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_globale, variance_globale)
+					
+							I += ponderation * (y_j - moyenne);
+							j ++;
+						}
+					}
+				}
+				
+				I *= (valeur_centrale - moyenne) / W;
+				
+				
+				// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs de la carte sont égales
+				if (variance == 0)
+					I = 1;
+				else
+					I /= variance;
+				
+				
+				return I;
+			}
+			
+			
+			
+			
+		// Indice de Geary local
+		
+		
+			// fonction qui calcule la valeur-p de l'indice de Geary local avec la méthode itérative
+			function calculerPvalue_iterative_Igeary_local(Igeary, valeur_centrale, couches, W, moyenne, variance) {
+				
+				var Ik = 0; // indices de Geary locaux généré itérativement
+				
+				var m = 0; // nombre d'indices de Geary locaux générés itérativement supérieurs (respectivement inférieurs) ou égaux à l'Indice de Geary local mesuré
+				
+				for (var k = 0; k < nombre_permutations; k++) {
+					
+					Ik = calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance); // calcule l'indice de Geary local pour des valeurs générées itérativement
+					
+					// cas d'autocorrélation spatiale positive (I < 1)
+					if (Igeary > 0) {
+						if (Ik <= Igeary)
+							m ++;
+					}
+					// cas d'autocorrélation spatiale négative (I >= 1)
+					else {
+						if (Ik >= Igeary)
+							m ++;
+					}
+				}
+				
+				return (m + 1) / (nombre_permutations + 1);
+			}
+			
+			
+			
+			// fonction qui calcule l'indice de Geary local pour des valeurs générées itérativement
+			function calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance) {
+				
+				var I = 0; // indice de Geary local des valeurs générées aléatoirement
+				
+				
+				var j = 0; // j-ème voisin du carré raster étudié
+				
+				for (var k = 1; k <= nombre_voisins_raster; k++) {
+						
+						var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+						
+						// le carré raster étudié possède couches[k] voisins dans la k-ième couche
+						for (var i = 0; i < couches[k]; i++) {
+							
+							// génère itérativement la nouvelle valeur statistique du j-ème voisin du carré (distribution approximativement gaussienne)
+							var x_j = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
+							var y_j = (15*variance)**0.5 * x_j + moyenne; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_globale, variance_globale)
+					
+							I += ponderation * (y_j - valeur_centrale);
+							j ++;
+						}
+					}
+				}
+				
+				I /= W;
+				
+				
+				// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs de la carte sont égales
+				if (variance == 0)
+					I = 1;
+				else
+					I *= (n-1) / (2 * n * variance);
+				
+				
+				return I;
+			}
 			
 	
 	
@@ -2160,7 +2332,7 @@
 				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
 				
 				
-				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
+				var [moyenne_global, variance_global] = calculerMoyenne_secteurs(L); // moyenne et variance de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
 				
 				
 				for (var secteur of L) {
@@ -2170,7 +2342,7 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice_noData = new Indice_significativite(n, 0, 0, -1);
+						var indice_noData = new Indice(n, 0, 0, -1);
 						L_corr.push(indice_noData);
 					}
 						
@@ -2222,7 +2394,7 @@
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
 							// ajoute la donnée du secteur
-							var indice_nul = new Indice_significativite(n, moyenne, 1, 2);
+							var indice_nul = new Indice(n, moyenne, 1, 2);
 							L_corr.push(indice_nul);
 						}
 						
@@ -2236,17 +2408,31 @@
 							
 							var significativite = 0;
 						
-							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
-							var z_score = calculerZscore_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, moment, variance);
+							// Première méthode : calcul du z-score par estimation asymptotique
+							if (methode_significativite == "z_score") {
+								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
+								var z_score = calculerZscore_asymptotique_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, variance, moment);
+								
+								// l'indice est significatif ssi |z_score| > z_score_minimal
+								if (Math.abs(z_score) >= z_score_minimal) {
+									significativite = 1;
+								}
+							}
 							
-							// l'indice est significatif ssi |z_score| > z_score_minimal
-							if (Math.abs(z_score) >= z_score_minimal) {
-								significativite = 1;
+							// Seconde méthode : calcul de la valeur-p par l'approche itérative
+							else {
+								// calcul de la valeur-p de l'indice de Moran avec la méthode itérative
+								var valeur_p = calculerPvalue_iterative_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, moyenne_global, variance_global);
+								
+								// l'indice est significatif ssi |z_score| > z_score_minimal
+								if (Math.abs(valeur_p) <= seuil) {
+									significativite = 1;
+								}
 							}
 							
 							
 							// ajoute la donnée du secteur
-							var indice = new Indice_significativite(n, moyenne, Imoran, significativite);
+							var indice = new Indice(n, moyenne, Imoran, significativite);
 							L_corr.push(indice);
 						}
 					}
@@ -3069,7 +3255,7 @@
 				var L_corr = []; // crée une nouvelle liste des secteurs vide d'autocorrélation spatiale
 				
 				
-				var moyenne_global = calculerMoyenne_secteurs(L); // moyenne de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
+				var [moyenne_global, variance_global] = calculerMoyenne_secteurs(L); // moyenne et variance de la statistique pour l'ensemble des adresses des différents sous-secteurs statistiques
 				
 				
 				for (var secteur of L) {
@@ -3079,7 +3265,7 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice_noData = new Indice_significativite(n, 0, -1, -1);
+						var indice_noData = new Indice(n, 0, -1, -1);
 						L_corr.push(indice_noData);
 					}
 						
@@ -3123,7 +3309,7 @@
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
 							// ajoute la donnée du secteur
-							var indice_nul = new Indice_significativite(n, moyenne, 0, 2);
+							var indice_nul = new Indice(n, moyenne, 0, 2);
 							L_corr.push(indice_nul);
 						}
 						
@@ -3137,17 +3323,31 @@
 							
 							var significativite = 0;
 						
-							// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary suit une loi normale)
-							var z_score = calculerZscore_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, moment, variance);
+							// Première méthode : calcul du z-score par estimation asymptotique
+							if (methode_significativite == "z_score") {
+								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary suit une loi normale)
+								var z_score = calculerZscore_asymptotique_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, variance, moment);
+								
+								// l'indice est significatif ssi |z_score| > z_score_minimal
+								if (Math.abs(z_score) >= z_score_minimal) {
+									significativite = 1;
+								}
+							}
 							
-							// l'indice est significatif ssi |z_score| > z_score_minimal
-							if (Math.abs(z_score) >= z_score_minimal) {
-								significativite = 1;
+							// Seconde méthode : calcul de la valeur-p par l'approche itérative
+							else {
+								// calcul de la valeur-p de l'indice de Geary avec la méthode itérative
+								var valeur_p = calculerPvalue_iterative_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, moyenne_global, variance_global);
+								
+								// l'indice est significatif ssi |z_score| > z_score_minimal
+								if (Math.abs(valeur_p) <= seuil) {
+									significativite = 1;
+								}
 							}
 							
 							
 							// ajoute la donnée du secteur
-							var indice = new Indice_significativite(n, moyenne, Igeary, significativite);
+							var indice = new Indice(n, moyenne, Igeary, significativite);
 							L_corr.push(indice);
 						}
 					}
@@ -3534,23 +3734,25 @@
 			
 			
 			
-			// fonction qui calcule la moyenne de la statistique pour l'ensemble des adresses des sous-secteurs statistiques
+			// fonction qui calcule la moyenne et la variance de la statistique pour l'ensemble des adresses des sous-secteurs statistiques
 			function calculerMoyenne_secteurs(L) {
 				
 				var nombre = 0; // nombre d'éléments
 				var somme_valeurs = 0; // somme des valeurs des éléments
+				var somme_valeurs_2 = 0; // somme des carrés des valeurs des éléments
 				
 				for (var secteur of L) {
 					for (var adresse of secteur) {
 						nombre += 1;
 						somme_valeurs += adresse.valeur;
+						somme_valeurs_2 += adresse.valeur ** 2;
 					}
 				}
 				
-				if (nombre > 0)
-					return somme_valeurs / nombre;
+				if (nombre > 0) {
+					return [somme_valeurs / nombre, somme_valeurs_2 / nombre];
 				else
-					return 0;
+					return [0, 0];
 			}
 			
 			
@@ -3615,11 +3817,14 @@
 		
 		
 		
-		// Calcul du z-score des indices globaux
+	// Calcul du z-score des indices globaux (méthode de l'estimation asymptotique)
+		
+		
+		// Indice de Moran
 		
 		
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Moran global (Imoran suit une loi normale)
-			function calculerZscore_Imoran_global(n, Imoran, Matrice_ponderation, moment, variance) {
+			function calculerZscore_asymptotique_Imoran_global(n, Imoran, Matrice_ponderation, variance, moment) {
 				
 				// calcul de l'espérance
 				
@@ -3667,12 +3872,16 @@
 			
 		
 		
+		
+		// Indice de Geary
+		
+		
 			// fonction qui calcule le z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale pour l'indice de Geary global (Igeary suit une loi normale)
-			function calculerZscore_Igeary_global(n, Igeary, Matrice_ponderation, moment, variance) {
+			function calculerZscore_asymptotique_Igeary_global(n, Igeary, Matrice_ponderation, variance, moment) {
 				
 				// calcul de l'espérance
 				
-				var esperanceZ = - 1 / (n-1);
+				var esperanceZ = 1;
 				
 				
 				// calcul des éléments nécessaires au calcul la variance en lien avec la matrice de pondération
@@ -3714,7 +3923,182 @@
 				
 				return z_score;
 			}
+		
+		
+		
+		
+	// Calcul de la valeur-p des indices globaux (méthode de l'approche itérative)
+		
+		
+		// Indice de Moran
+		
+		
+			// fonction qui calcule la valeur-p de l'indice de Moran avec la méthode itérative
+			function calculerPvalue_iterative_Imoran_global(n, Imoran, Matrice_ponderation, moyenne_global, variance_global) {
+				
+				var Ik = 0; // indices de Moran généré itérativement
+				
+				var m = 0; // nombre d'indices de Moran générés itérativement supérieurs (respectivement inférieurs) ou égaux à l'Indice de Moran mesuré
+				
+				for (var k = 0; k < nombre_permutations; k++) {
+					
+					Ik = calculerImoran_global_iterative(n, Matrice_ponderation, moyenne_global, variance_global); // calcule l'indice de Moran pour des valeurs générées itérativement
+					
+					// cas d'autocorrélation spatiale positive (I > 0)
+					if (Imoran > 0) {
+						if (Ik >= Imoran)
+							m ++;
+					}
+					// cas d'autocorrélation spatiale négative (I <= 0)
+					else {
+						if (Ik <= Imoran)
+							m ++;
+					}
+				}
+				
+				return (m + 1) / (nombre_permutations + 1);
+			}
 			
+			
+			
+			// fonction qui calcule l'indice de Moran pour des valeurs générées itérativement
+			function calculerImoran_global_iterative(n, Matrice_ponderation, moyenne_global, variance_global) {
+				
+				var L = creerListe_iterative_secteurs(n, moyenne_global, variance_global); // génère itérativement des nouvelles valeurs statistiques dans le secteur (distribution approximativement gaussienne)
+				
+				var valeurs = L[1]; // liste des valeurs générées aléatoirement
+				var moyenne = L[0]; // moyenne des valeurs générées aléatoirement
+				
+				var I = 0; // indice de Moran des valeurs générées aléatoirement
+				
+				var variance = 0; // variance des valeurs générées aléatoirement
+				
+				
+				for (var i = 0; i < n; i++) {
+					
+					var I_i = 0;
+					
+					var Matrice_ponderation_i = Matrice_ponderation[i]; // i-ème ligne de la matrice de pondération standardisée du secteur
+					
+					for (var j = 0; j < n; j++) {
+						var ponderation = Matrice_ponderation_i[j];
+						I_i += ponderation * (valeurs[j] - moyenne);
+					}
+					I_i *= (valeurs[i] - moyenne);
+					
+					I += I_i;
+					variance += (valeurs[i] - moyenne) ** 2;
+				}
+				
+				variance /= n;
+				
+				
+				// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs générées sont égales
+				if (variance == 0)
+					I = 1;
+				else
+					I /= (n * variance);
+				
+				
+				return I;
+			}
+			
+			
+			
+			// fonction qui génère itérativement des nouvelles valeurs statistiques dans le secteur (distribution approximativement gaussienne)
+			function creerListe_iterative_secteurs(n, moyenne_global, variance_global) {
+				
+				var L = []; // liste des valeurs générées aléatoirement
+				
+				var moyenne = 0; // moyenne des valeurs générées aléatoirement
+				
+				
+				for (var i = 0; i < n; i++) {
+					
+					var x_i = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
+					var y_i = (15*variance_global)**0.5 * x_i + moyenne_global; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_globale, variance_globale)
+					
+					L.push(y_i);
+					moyenne += y_i;
+				}
+				
+				moyenne /= n;
+				
+				
+				return [moyenne, L];
+			}
+			
+			
+			
+			
+		// Indice de Geary
+		
+		
+			// fonction qui calcule la valeur-p de l'indice de Geary avec la méthode itérative
+			function calculerPvalue_iterative_Igeary_global(n, Igeary, Matrice_ponderation, moyenne_global, variance_global) {
+				
+				var Ik = 0; // indices de Geary généré itérativement
+				
+				var m = 0; // nombre d'indices de Geary générés itérativement supérieurs (respectivement inférieurs) ou égaux à l'Indice de Geary mesuré
+				
+				for (var k = 0; k < nombre_permutations; k++) {
+					
+					Ik = calculerIgeary_global_iterative(n, Matrice_ponderation, moyenne_global, variance_global); // calcule l'indice de Geary pour des valeurs générées itérativement
+					
+					// cas d'autocorrélation spatiale positive (I < 1)
+					if (Igeary < 1) {
+						if (Ik <= Igeary)
+							m ++;
+					}
+					// cas d'autocorrélation spatiale négative (I >= 1)
+					else {
+						if (Ik >= Igeary)
+							m ++;
+					}
+				}
+				
+				return (m + 1) / (nombre_permutations + 1);
+			}
+			
+			
+			
+			// fonction qui calcule l'indice de Geary pour des valeurs générées itérativement
+			function calculerIgeary_global_iterative(n, Matrice_ponderation, moyenne_global, variance_global) {
+				
+				var L = creerListe_iterative_secteurs(n, moyenne_global, variance_global); // génère itérativement des nouvelles valeurs statistiques dans le secteur (distribution approximativement gaussienne)
+				
+				var valeurs = L[1]; // liste des valeurs générées aléatoirement
+				var moyenne = L[0]; // moyenne des valeurs générées aléatoirement
+				
+				var I = 0; // indice de Geary des valeurs générées aléatoirement
+				
+				var variance = 0; // variance des valeurs générées aléatoirement
+				
+				
+				for (var i = 0; i < n; i++) {
+					
+					var Matrice_ponderation_i = Matrice_ponderation[i]; // i-ème ligne de la matrice de pondération standardisée du secteur
+					
+					for (var j = 0; j < n; j++) {
+						var ponderation = Matrice_ponderation_i[j];
+						I += ponderation * (valeurs[i] - valeurs[j]) ** 2;
+					}
+					
+					variance += (valeurs[i] - moyenne) ** 2;
+				}
+				
+				variance /= n;
+				
+				
+				// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs générées sont égales
+				if (variance == 0)
+					I = 0;
+				else
+					I *= (n-1) / (2 * n**2 * variance);
+				
+				
+				return I;
+			}
 			
 			
 			
@@ -3738,7 +4122,7 @@
 				// carte raster
 				if (type_carte == "raster") {
 					
-					coordLimites(); // récupère les coordonnées limites de la carte
+					coordLimites(); // récupère les coordonnées limites de la carte et actualise les dimensions de la carte raster
 					afficherCarte_raster(); // affiche la carte raster vide, avec zoom adapté la ville sélectionnée
 					
 					effacerInformations(); // efface la fenêtre d'informations actuelle sur l'indice local d'autocorrélation spatiale
@@ -3861,6 +4245,90 @@
 
 
 				return L;
+			}
+		
+		
+		
+		
+		
+		
+		// Fonction associée à la statistique 'Nombre d'adresses'
+
+
+			// fonction qui affiche une représentation du nombre d'adresses dans chaque zone
+			function stats_nombre() {
+				
+				// affichage d'une carte raster
+				if (type_carte == "raster") {
+					coordLimites(); // récupère les bornes et le pas de la carte raster
+					afficherCarte_raster(); // affiche la ville sélectionnée
+					var L = nombreAdresses_raster(); // crée la liste raster
+					afficherStat_raster(L, "Nombre d'adresses"); // affiche la carte raster et sa légende
+				}
+				
+				// affichage d'une carte utilisant les sous-secteurs statistiques de Lausanne
+				else {
+					afficherCarte_secteurs(); // affiche les sous-secteurs statistiques
+					var L = nombreAdresses_secteurs(); // crée la liste des secteurs
+					afficherStat_secteurs(L, "Nombre d'adresses"); // affiche la carte et sa légende
+				}
+			}
+
+
+
+			// fonction qui renvoie une liste raster donnant le nombre d'adresses dans chaque zone
+			function nombreAdresses_raster() {
+
+				var L = initialiserListe_raster(); // crée une liste raster vide
+
+
+				for (var i=ville_debut; i<=ville_fin; i++) {
+
+					var latitude = BDD_adresses[i].latitude;
+					var lat_carre = Math.floor((latitude - lat_minC) / lat_pasC); // abscisse du carré raster où se trouve l'adresse
+
+					var longitude = BDD_adresses[i].longitude;
+					var lon_carre = Math.floor((longitude - lon_minC) / lon_pasC); // ordonnée du carré raster où se trouve l'adresse
+
+					rue = BDD_adresses[i].rue;
+					rue_split = rue.split("");
+					rue_length = rue_split.length; // nombre de caractères dans le nom de rue de l'adresse
+
+					// modifie les données du carré raster où se trouve l'adresse
+					var new_somme_valeurs = L[lat_carre][lon_carre].somme_valeurs + rue_length;
+					var new_carre= new Element(1, new_somme_valeurs);
+					L[lat_carre].splice(lon_carre, 1, new_carre);
+				}
+
+
+				return L;
+			}
+
+
+
+			// fonction qui renvoie une liste de secteurs donnant le nombre d'adresses dans chaque zone
+			function nombreAdresses_secteurs() {
+
+				var L = []; // crée une liste de sous-secteurs vide
+				
+				for (var secteur of BDD_secteurs_adresses) {
+					L.push([1, secteur.length]);
+				}
+
+				return L;
+			}
+			
+		
+		
+		
+		
+		
+		// Fonction 'test' associée aux statistiques non développées pour le moment
+
+
+			// fonction qui affiche une représentation du nombre de lettres dans chaque adresse
+			function test() {
+				alert("Cette fonction statistique n'a pas encore été développée");
 			}
 
 
