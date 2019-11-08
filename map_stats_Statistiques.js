@@ -895,22 +895,24 @@
 			
 			// classe qui donne pour chaque zone son nombre de valeurs, sa moyenne statistique, son indice d'autocorrélation spatiale et indique s'il et significatif
 			class Indice {
-				constructor(nombre, moyenne, indice, significativite) {
+				constructor(nombre, moyenne, indice, significativite, Zscore_Pvalue) {
 					this.nombre = nombre; // nombre de valeurs statistiques de la zone
 					this.moyenne = moyenne; // moyenne statistique de la zone
 					this.indice = indice; // indice d'autocorrélation spatiale de la zone
 					this.significativite = significativite; // significativite de l'indice observé dans la zone (1 si significatif, 0 sinon) ATTENTION 2 si toutes les valeurs voisines sont égales, cas rare mais possible
+					this.Zscore_Pvalue = Zscore_Pvalue; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
 				}
 			}		
 			
 			
 			// classe qui donne pour chaque zone son nombre de valeurs, sa moyenne statistique, son indice d'autocorrélation spatiale, ainsi que son cluster ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
 			class Indice_cluster {
-				constructor(nombre, moyenne, indice, cluster) {
+				constructor(nombre, moyenne, indice, cluster, Zscore_Pvalue) {
 					this.nombre = nombre; // nombre de valeurs statistiques de la zone
 					this.moyenne = moyenne; // moyenne statistique de la zone
 					this.indice = indice; // indice d'autocorrélation spatiale de la zone
 					this.cluster = cluster; // cluster de l'indice ("High/High", "Low/Low", "High/Low", "Low/High", "nul" ou "non significatif")
+					this.Zscore_Pvalue = Zscore_Pvalue; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
 				}
 			}
 			
@@ -935,7 +937,7 @@
 			
 			
 			// nombre de permutations à réaliser avec la méthode itérative (pour les indices globaux des secteurs)
-			var nombre_permutations = 1000;
+			var nombre_permutations = 100;
 
 
 
@@ -1055,7 +1057,7 @@
 							var valeur = L[a][b].moyenne; // moyenne statistique du carré
 							
 							// ajoute les données du carré raster
-							var indice = new Indice_cluster(nombre, valeur, 0, "nul");
+							var indice = new Indice_cluster(nombre, valeur, 0, "nul", -1);
 							L_a.push(indice);
 						}
 						
@@ -1178,15 +1180,16 @@
 								
 								// significativité de l'indice de Moran local
 								
-								var significativite = 0;
+								var significativite = 0; // indique si l'indice est significatif ou non
+								var Zscore_Pvalue = -1; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
 							
 								// Première méthode : calcul du z-score par estimation asymptotique
 								if (methode_significativite == "z_score") {
 									// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran local suit une loi normale)
-									var z_score = calculerZscore_asymptotique_Imoran_local(n, Imoran, variance, moment, W2);
+									Zscore_Pvalue = calculerZscore_asymptotique_Imoran_local(n, Imoran, variance, moment, W2);
 									
 									// l'indice est significatif ssi |z_score| > z_score_minimal
-									if (Math.abs(z_score) >= z_score_minimal) {
+									if (Math.abs(Zscore_Pvalue) >= z_score_minimal) {
 										significativite = 1;
 									}
 								}
@@ -1194,10 +1197,10 @@
 								// Seconde méthode : calcul de la valeur-p par l'approche itérative
 								else {
 									// calcul de la valeur-p de l'indice de Moran local avec la méthode itérative
-									var valeur_p = calculerPvalue_iterative_Igeary_local(Imoran, valeur, couches, W, moyenne, variance);
+									Zscore_Pvalue = calculerPvalue_iterative_Imoran_local(Imoran, valeur, couches, W, moyenne, variance);
 									
 									// l'indice est significatif ssi |z_score| > z_score_minimal
-									if (Math.abs(valeur_p) <= seuil) {
+									if (Math.abs(Zscore_Pvalue) <= seuil) {
 										significativite = 1;
 									}
 								}
@@ -1229,14 +1232,14 @@
 								
 								
 								// ajoute les données du carré raster
-								var indice = new Indice_cluster(nombre, valeur, Imoran, cluster);
+								var indice = new Indice_cluster(nombre, valeur, Imoran, cluster, Zscore_Pvalue);
 								L_a.push(indice);
 							}
 							
 							
 							else {
 								// ajoute les données du carré raster
-								var indice = new Indice_cluster(nombre, valeur, 0, "noValue");
+								var indice = new Indice_cluster(nombre, valeur, 0, "noValue", -1);
 								L_a.push(indice);
 							}
 						}
@@ -1264,20 +1267,26 @@
 				
 					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
 						
-						// cluster auquel appartient le carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-						var cluster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].cluster;
+						var element_raster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
+						
+						var cluster = element_raster.cluster; // cluster auquel appartient le carré
+						
 						
 						// seuls les carrés raster possédant une valeur statistqique et suffisamment de voisins sont affichés
 						if (cluster != "noValue") {
 								
-							// indice de Moran local du carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-							var I = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].indice;
-					
-							// nombre de valeurs statistique du carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-							var nombre = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].nombre;
+							var I = element_raster.indice; // indice de Geary du carré
 							
-							// moyenne statistique du carré (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
-							var valeur = liste[a - nombre_voisins_raster][b - nombre_voisins_raster].moyenne;
+							var nombre = element_raster.nombre; // nombre de valeurs statistiques du carré
+							
+							var valeur = element_raster.moyenne; // moyenne statistique du carré
+							
+							var Zscore_Pvalue = element_raster.Zscore_Pvalue; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
+							var Zscore_Pvalue_text = ""; // texte associé à cette valeur
+							if (methode_significativite == "z_score")
+								Zscore_Pvalue_text = "<span>z-score : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
+							else
+								Zscore_Pvalue_text = "<span>valeur-p : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
 							
 							
 							// couleur du carré en fonction du cluster auquel il appartient
@@ -1311,7 +1320,7 @@
 							}).addTo(mapStats);
 					
 							// créer au clic sur le polygône une fenêtre popup contenant le nombre de valeurs statistiques du carré, sa moyenne, ainsi que son indice de Moran local
-							var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Moran local : </span><strong>" + I.toFixed(2) + "</strong>";
+							var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Moran local : </span><strong>" + I.toFixed(2) + "</strong><br/>" + Zscore_Pvalue_text;
 							polygon.bindPopup(popup_text);
 						}
 					}
@@ -1491,7 +1500,7 @@
 							var valeur = L[a][b].moyenne; // moyenne statistique du carré
 							
 							// ajoute les données du carré raster
-							var indice_nul = new Indice(nombre, valeur, 0, 2);
+							var indice_nul = new Indice(nombre, valeur, 0, 2, -1);
 							L_a.push(indice_nul);
 						}
 						
@@ -1598,16 +1607,17 @@
 								
 								// significativité de l'indice de Geary local
 								
-								var significativite = 0;
+								var significativite = 0; // indique si l'indice est significatif ou non
+								var Zscore_Pvalue = -1; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
 								
 								// Première méthode : calcul du z-score par estimation asymptotique
 								/*
 								if (methode_significativite == "z_score") {
 									// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary local suit une loi normale)
-									var z_score = calculerZscore_asymptotique_Igeary_local(n, Igeary, variance, moment, W2);
+									Zscore_Pvalue = calculerZscore_asymptotique_Igeary_local(n, Igeary, variance, moment, W2);
 									
 									// l'indice est significatif ssi |z_score| > z_score_minimal
-									if (Math.abs(z_score) >= z_score_minimal) {
+									if (Math.abs(Zscore_Pvalue) >= z_score_minimal) {
 										significativite = 1;
 									}
 								}
@@ -1618,23 +1628,23 @@
 								// Seconde méthode : calcul de la valeur-p par l'approche itérative
 								
 									// calcul de la valeur-p de l'indice de Geary local avec la méthode itérative
-									var valeur_p = calculerPvalue_iterative_Igeary_local(Igeary, valeur, couches, W, moyenne, variance);
+									Zscore_Pvalue = calculerPvalue_iterative_Igeary_local(Igeary, valeur, couches, W, moyenne, variance, n);
 									
 									// l'indice est significatif ssi |z_score| > z_score_minimal
-									if (Math.abs(valeur_p) <= seuil) {
+									if (Math.abs(Zscore_Pvalue) <= seuil) {
 										significativite = 1;
 									}
 							
 							
 								// ajoute les données du carré raster
-								var indice = new Indice(nombre, valeur, Igeary, significativite);
+								var indice = new Indice(nombre, valeur, Igeary, significativite, Zscore_Pvalue);
 								L_a.push(indice);
 							}
 							
 
 							else {
 								// ajoute les données du carré raster
-								var indice_noData = new Indice(nombre, valeur, -1, -1);
+								var indice_noData = new Indice(nombre, valeur, -1, -1, -1);
 								L_a.push(indice_noData);
 							}
 						}
@@ -1707,6 +1717,13 @@
 						var valeur = element_raster.moyenne; // moyenne statistique du carré
 						
 						var significativite = element_raster.significativite; // significativité du carré
+						
+						var Zscore_Pvalue = element_raster.Zscore_Pvalue; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
+						var Zscore_Pvalue_text = ""; // texte associé à cette valeur
+						if (methode_significativite == "z_score")
+							Zscore_Pvalue_text = "<span>z-score : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
+						else
+							Zscore_Pvalue_text = "<span>valeur-p : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
 
 						
 						// crée un carré coloré uniquement s'il possède un indice
@@ -1746,7 +1763,7 @@
 							}).addTo(mapStats);
 					
 							// créer au clic sur le polygône une fenêtre popup contenant le nombre de valeurs du carré, sa moyenne, ainsi que son indice de Geary local
-							var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Geary local : </span><strong>" + I.toFixed(2) + "</strong>";
+							var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Geary local : </span><strong>" + I.toFixed(2) + "</strong><br/>" + Zscore_Pvalue_text;
 							polygon.bindPopup(popup_text);
 						}
 					}
@@ -1898,7 +1915,6 @@
 				}
 				
 				
-				/*
 				// ajout de la case des valeurs non significatives (même si la liste affichée n'en contient pas)
 				
 				var NotSignificant = document.createElement('div');
@@ -1918,9 +1934,6 @@
 				NotSignificant.appendChild(NotSignificant_value);
 				
 				Legend.appendChild(NotSignificant);
-				*/
-				// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
-				// On considerera donc que toutes les valeurs sont significatives.
 				
 				
 				// ajout du bouton d'informations
@@ -1981,13 +1994,9 @@
 						Infos.appendChild(myInfos3);
 					}
 					
-					/*
 					var myInfos4 = document.createElement('p');
 					myInfos4.textContent = "Les zones de couleur grise ne montrent aucune dépendance spatiale statistiquement significative.";
 					Infos.appendChild(myInfos4);
-					*/
-					// Aucune formule de calcul de la variance pour cet indice n'a été trouvée (cet indice a été créé par nous-mêmes).
-					// On considerera donc que toutes les valeurs sont significatives.
 					
 					document.body.appendChild(Infos);
 					
@@ -2170,18 +2179,17 @@
 				
 				for (var k = 1; k <= nombre_voisins_raster; k++) {
 						
-						var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
-						
-						// le carré raster étudié possède couches[k] voisins dans la k-ième couche
-						for (var i = 0; i < couches[k]; i++) {
-							
-							// génère itérativement la nouvelle valeur statistique du j-ème voisin du carré (distribution approximativement gaussienne)
-							var x_j = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
-							var y_j = (15*variance)**0.5 * x_j + moyenne; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_globale, variance_globale)
+					var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
 					
-							I += ponderation * (y_j - moyenne);
-							j ++;
-						}
+					// le carré raster étudié possède couches[k] voisins dans la k-ième couche
+					for (var i = 0; i < couches[k]; i++) {
+						
+						// génère itérativement la nouvelle valeur statistique du j-ème voisin du carré (distribution approximativement gaussienne)
+						var x_j = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
+						var y_j = (15*variance)**0.5 * x_j + moyenne; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_global, variance_global)
+					
+						I += ponderation * (y_j - moyenne);
+						j ++;
 					}
 				}
 				
@@ -2205,7 +2213,7 @@
 		
 		
 			// fonction qui calcule la valeur-p de l'indice de Geary local avec la méthode itérative
-			function calculerPvalue_iterative_Igeary_local(Igeary, valeur_centrale, couches, W, moyenne, variance) {
+			function calculerPvalue_iterative_Igeary_local(Igeary, valeur_centrale, couches, W, moyenne, variance, n) {
 				
 				var Ik = 0; // indices de Geary locaux généré itérativement
 				
@@ -2213,7 +2221,7 @@
 				
 				for (var k = 0; k < nombre_permutations; k++) {
 					
-					Ik = calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance); // calcule l'indice de Geary local pour des valeurs générées itérativement
+					Ik = calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance, n); // calcule l'indice de Geary local pour des valeurs générées itérativement
 					
 					// cas d'autocorrélation spatiale positive (I < 1)
 					if (Igeary > 0) {
@@ -2233,7 +2241,7 @@
 			
 			
 			// fonction qui calcule l'indice de Geary local pour des valeurs générées itérativement
-			function calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance) {
+			function calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance, n) {
 				
 				var I = 0; // indice de Geary local des valeurs générées aléatoirement
 				
@@ -2241,19 +2249,18 @@
 				var j = 0; // j-ème voisin du carré raster étudié
 				
 				for (var k = 1; k <= nombre_voisins_raster; k++) {
-						
-						var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
-						
-						// le carré raster étudié possède couches[k] voisins dans la k-ième couche
-						for (var i = 0; i < couches[k]; i++) {
-							
-							// génère itérativement la nouvelle valeur statistique du j-ème voisin du carré (distribution approximativement gaussienne)
-							var x_j = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
-							var y_j = (15*variance)**0.5 * x_j + moyenne; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_globale, variance_globale)
 					
-							I += ponderation * (y_j - valeur_centrale);
-							j ++;
-						}
+					var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
+					
+					// le carré raster étudié possède couches[k] voisins dans la k-ième couche
+					for (var i = 0; i < couches[k]; i++) {
+						
+						// génère itérativement la nouvelle valeur statistique du j-ème voisin du carré (distribution approximativement gaussienne)
+						var x_j = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
+						var y_j = (15*variance)**0.5 * x_j + moyenne; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_global, variance_global)
+
+						I += ponderation * (y_j - valeur_centrale);
+						j ++;
 					}
 				}
 				
@@ -2342,7 +2349,7 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice_noData = new Indice(n, 0, 0, -1);
+						var indice_noData = new Indice(n, 0, 0, -1, -1);
 						L_corr.push(indice_noData);
 					}
 						
@@ -2394,7 +2401,7 @@
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
 							// ajoute la donnée du secteur
-							var indice_nul = new Indice(n, moyenne, 1, 2);
+							var indice_nul = new Indice(n, moyenne, 1, 2, -1);
 							L_corr.push(indice_nul);
 						}
 						
@@ -2406,15 +2413,16 @@
 							
 							// significativité de l'indice de Moran du secteur
 							
-							var significativite = 0;
+							var significativite = 0; // indique si l'indice est significatif ou non
+							var Zscore_Pvalue = -1; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
 						
 							// Première méthode : calcul du z-score par estimation asymptotique
 							if (methode_significativite == "z_score") {
 								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Imoran suit une loi normale)
-								var z_score = calculerZscore_asymptotique_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, variance, moment);
+								var Zscore_Pvalue = calculerZscore_asymptotique_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, variance, moment);
 								
 								// l'indice est significatif ssi |z_score| > z_score_minimal
-								if (Math.abs(z_score) >= z_score_minimal) {
+								if (Math.abs(Zscore_Pvalue) >= z_score_minimal) {
 									significativite = 1;
 								}
 							}
@@ -2422,17 +2430,17 @@
 							// Seconde méthode : calcul de la valeur-p par l'approche itérative
 							else {
 								// calcul de la valeur-p de l'indice de Moran avec la méthode itérative
-								var valeur_p = calculerPvalue_iterative_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, moyenne_global, variance_global);
+								var Zscore_Pvalue = calculerPvalue_iterative_Imoran_global(n, Imoran, Matrice_ponderation_standardisee, moyenne_global, variance_global);
 								
 								// l'indice est significatif ssi |z_score| > z_score_minimal
-								if (Math.abs(valeur_p) <= seuil) {
+								if (Math.abs(Zscore_Pvalue) <= seuil) {
 									significativite = 1;
 								}
 							}
 							
 							
 							// ajoute la donnée du secteur
-							var indice = new Indice(n, moyenne, Imoran, significativite);
+							var indice = new Indice(n, moyenne, Imoran, significativite, Zscore_Pvalue);
 							L_corr.push(indice);
 						}
 					}
@@ -2517,6 +2525,13 @@
 					var valeur = element_secteur.moyenne; // moyenne statistique du secteur
 					
 					var significativite = element_secteur.significativite; // significativité du secteur
+					
+					var Zscore_Pvalue = element_secteur.Zscore_Pvalue; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
+					var Zscore_Pvalue_text = ""; // texte associé à cette valeur
+					if (methode_significativite == "z_score")
+						Zscore_Pvalue_text = "<span>z-score : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
+					else
+						Zscore_Pvalue_text = "<span>valeur-p : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
 
 					
 					var couleur = "white"; // couleur du secteur ("White" si le secteur ne possède aucun indice (manque de données))
@@ -2580,7 +2595,7 @@
 					}).addTo(mapStats);
 					
 					// créer au clic sur le polygône une fenêtre popup contenant le nombre de valeurs du secteur, sa moyenne statistique, ainsi que son indice de Moran
-					var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Moran : </span><strong>" + I.toFixed(2) + "</strong>";
+					var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Moran : </span><strong>" + I.toFixed(2) + "</strong><br/>" + Zscore_Pvalue_text;
 					polygon.bindPopup(popup_text);
 				}
 				
@@ -3265,7 +3280,7 @@
 					
 					// le nombre de valeurs dans le secteur doit être suffisament élevé
 					if (n < nombre_voisins_secteurs_minimum) {
-						var indice_noData = new Indice(n, 0, -1, -1);
+						var indice_noData = new Indice(n, 0, -1, -1, -1);
 						L_corr.push(indice_noData);
 					}
 						
@@ -3309,7 +3324,7 @@
 						// ATTENTION au cas (rare mais possible !) où l'ensemble des valeurs dans le secteur sont égales
 						if (variance == 0) {
 							// ajoute la donnée du secteur
-							var indice_nul = new Indice(n, moyenne, 0, 2);
+							var indice_nul = new Indice(n, moyenne, 0, 2, -1);
 							L_corr.push(indice_nul);
 						}
 						
@@ -3321,15 +3336,16 @@
 							
 							// significativité de l'indice de Geary du secteur
 							
-							var significativite = 0;
+							var significativite = 0; // indique si l'indice est significatif ou non
+							var Zscore_Pvalue = -1; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
 						
 							// Première méthode : calcul du z-score par estimation asymptotique
 							if (methode_significativite == "z_score") {
 								// calcul du z-score de la valeur attendue sous l'hypothèse d'indépendance spatiale (Igeary suit une loi normale)
-								var z_score = calculerZscore_asymptotique_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, variance, moment);
+								var Zscore_Pvalue = calculerZscore_asymptotique_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, variance, moment);
 								
 								// l'indice est significatif ssi |z_score| > z_score_minimal
-								if (Math.abs(z_score) >= z_score_minimal) {
+								if (Math.abs(Zscore_Pvalue) >= z_score_minimal) {
 									significativite = 1;
 								}
 							}
@@ -3337,17 +3353,17 @@
 							// Seconde méthode : calcul de la valeur-p par l'approche itérative
 							else {
 								// calcul de la valeur-p de l'indice de Geary avec la méthode itérative
-								var valeur_p = calculerPvalue_iterative_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, moyenne_global, variance_global);
+								var Zscore_Pvalue = calculerPvalue_iterative_Igeary_global(n, Igeary, Matrice_ponderation_standardisee, moyenne_global, variance_global);
 								
 								// l'indice est significatif ssi |z_score| > z_score_minimal
-								if (Math.abs(valeur_p) <= seuil) {
+								if (Math.abs(Zscore_Pvalue) <= seuil) {
 									significativite = 1;
 								}
 							}
 							
 							
 							// ajoute la donnée du secteur
-							var indice = new Indice(n, moyenne, Igeary, significativite);
+							var indice = new Indice(n, moyenne, Igeary, significativite, Zscore_Pvalue);
 							L_corr.push(indice);
 						}
 					}
@@ -3402,6 +3418,13 @@
 					var valeur = element_secteur.moyenne; // moyenne statistique du secteur
 					
 					var significativite = element_secteur.significativite; // significativité du secteur
+					
+					var Zscore_Pvalue = element_secteur.Zscore_Pvalue; // valeur du z-score ou de la valeur-p (selon la méthode de test statistique réalisée) de l'indice
+					var Zscore_Pvalue_text = ""; // texte associé à cette valeur
+					if (methode_significativite == "z_score")
+						Zscore_Pvalue_text = "<span>z-score : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
+					else
+						Zscore_Pvalue_text = "<span>valeur-p : </span><strong>" + Zscore_Pvalue.toFixed(2) + "</strong>";
 
 					
 					var couleur = "white"; // couleur du secteur ("White" si le secteur ne possède aucun indice (manque de données))
@@ -3432,7 +3455,7 @@
 					}).addTo(mapStats);
 					
 					// créer au clic sur le polygône une fenêtre popup contenant le nombre de valeurs statistiques du secteur, sa moyenne, ainsi que son indice de Geary
-					var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Geary : </span><strong>" + I.toFixed(2) + "</strong>";
+					var popup_text = "<span>Nombre de valeurs : </span><strong>" + nombre + "</strong><br/><span>Moyenne : </span><strong>" + valeur.toFixed(2) + "</strong>  (globale : <strong>" + moyenne.toFixed(2) + ")</strong><br/><span>Indice de Geary : </span><strong>" + I.toFixed(2) + "</strong><br/>" + Zscore_Pvalue_text;
 					polygon.bindPopup(popup_text);
 				}
 
@@ -3749,7 +3772,7 @@
 					}
 				}
 				
-				if (nombre > 0) {
+				if (nombre > 0)
 					return [somme_valeurs / nombre, somme_valeurs_2 / nombre];
 				else
 					return [0, 0];
@@ -4016,7 +4039,7 @@
 				for (var i = 0; i < n; i++) {
 					
 					var x_i = 2 * (Math.random()+Math.random()+Math.random()+Math.random()+Math.random())/5 + 1; // nombre aléatoire généré, suivant approximativement une loi normale d'espérance 0 et de variance 1/15
-					var y_i = (15*variance_global)**0.5 * x_i + moyenne_global; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_globale, variance_globale)
+					var y_i = (15*variance_global)**0.5 * x_i + moyenne_global; // i-ème valeur statistique générée dans le secteur : nombre aléatoire suivant approximativement une loi normale N(moyenne_global, variance_global)
 					
 					L.push(y_i);
 					moyenne += y_i;
