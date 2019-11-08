@@ -999,8 +999,8 @@
 			
 			
 			// nombre et poids des voisins pour le calcul de la carte raster d'autocorrélation spatiale
-			var nombre_voisins_raster = 5; // nombre de "cercles" de voisins à prendre en compte dans l'autocorrélation spatiale
-			var poids_voisins_raster = [0,5,4,3,2,1]; // poids de chaque "cercle" de voisin (ATTENTION : poids_voisins_raster.length == nombre_voisins_raster + 1 !!!)
+			var couches_voisins_raster = 5; // nombre de "cercles" de voisins à prendre en compte dans l'autocorrélation spatiale
+			var poids_voisins_raster = [0,5,4,3,2,1]; // poids de chaque "cercle" de voisin (ATTENTION : poids_voisins_raster.length == couches_voisins_raster + 1 !!!)
 			
 			
 			// nombre minimum de carrés raster voisins possédant une valeur statistique pour que son indice local d'autocorrélation spatiale soit pris en compte
@@ -1046,11 +1046,11 @@
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
 				if (variance == 0) {
 					
-					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+					for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 					
 						var L_a = []; // a-ième ligne de la liste des indices d'autocorrélation spatiale
 						
-						for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+						for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 							
 							var nombre = L[a][b].nombre; // nombre de valeurs statistiques du carré
 							
@@ -1068,12 +1068,12 @@
 				
 				else {
 					
-					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+					for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 					
 						var L_a = []; // a-ième ligne de la liste des indices d'autocorrélation spatiale
 						
 						
-						for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+						for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 							
 							var carre = L[a][b]; // informations du carré concernant l'élément mesuré
 							
@@ -1103,7 +1103,7 @@
 								var couches = [0]; // nombre de voisins (avec une valeur statistiques) appartenant à chaque couche
 								
 								
-								for (var k = 1; k <= nombre_voisins_raster; k++) {
+								for (var k = 1; k <= couches_voisins_raster; k++) {
 									
 									var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
 									
@@ -1263,11 +1263,11 @@
 				var liste = L_corr[1]; // données des différents carrés raster de la ville sélectionnée
 				
 				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+				for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+					for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 						
-						var element_raster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
+						var element_raster = liste[a - couches_voisins_raster][b - couches_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'couches_voisins_raster')
 						
 						var cluster = element_raster.cluster; // cluster auquel appartient le carré
 						
@@ -1489,11 +1489,11 @@
 				// ATTENTION au cas très hypothétique mais potentiellement possible où l'ensemble des valeurs seraient égales (et donc la variance nulle)
 				if (variance == 0) {
 					
-					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+					for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 					
 						var L_a = []; // a-ième ligne de la liste des indices d'autocorrélation spatiale
 						
-						for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+						for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 							
 							var nombre = L[a][b].nombre; // nombre de valeurs statistique du carré
 							
@@ -1511,12 +1511,12 @@
 				
 				else {
 					
-					for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+					for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 					
 						var L_a = []; // a-ième ligne de la liste des indices d'autocorrélation spatiale
 						
 						
-						for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+						for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 							
 							var carre = L[a][b]; // informations du carré concernant l'élément mesuré
 							
@@ -1541,7 +1541,7 @@
 								var couches = [0]; // nombre de voisins (avec une valeur statistiques) appartenant à chaque couche
 								
 							
-								for (var k = 1; k <= nombre_voisins_raster; k++) {
+								for (var k = 1; k <= couches_voisins_raster; k++) {
 									
 									var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
 									
@@ -1703,11 +1703,11 @@
 				var liste_negative_decimales = calculerDecimale(liste_negative_valeurs); // dernière décimale importante des bornes des intervalles
 
 
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+				for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 				
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+					for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 						
-						var element_raster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
+						var element_raster = liste[a - couches_voisins_raster][b - couches_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'couches_voisins_raster')
 						
 						
 						var I = element_raster.indice; // indice de Geary du carré
@@ -1788,11 +1788,11 @@
 				var indices_nuls = false; // boolean qui indique si la liste contient des indices nuls (cas rare mais possible où l'ensemble des valeurs du secteur sont égales)
 				
 				
-				for (var a = nombre_voisins_raster; a < a_max - nombre_voisins_raster; a++) {
+				for (var a = couches_voisins_raster; a < a_max - couches_voisins_raster; a++) {
 					
-					for (var b = nombre_voisins_raster; b < b_max - nombre_voisins_raster; b++) {
+					for (var b = couches_voisins_raster; b < b_max - couches_voisins_raster; b++) {
 						
-						var element_raster = liste[a - nombre_voisins_raster][b - nombre_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'nombre_voisins_raster')
+						var element_raster = liste[a - couches_voisins_raster][b - couches_voisins_raster]; // élément correspondant au carré raster (ATTENTION il faut prendre en compte le décalage des valeurs de 'couches_voisins_raster')
 						
 						var I = element_raster.indice; // indice de Geary du carré
 						var significativite = element_raster.significativite; // significativité du carré
@@ -2148,7 +2148,7 @@
 				
 				var m = 0; // nombre d'indices de Moran locaux générés itérativement supérieurs (respectivement inférieurs) ou égaux à l'Indice de Moran local mesuré
 				
-				for (var k = 0; k < nombre_permutations; k++) {
+				for (var r = 0; r < nombre_permutations; r++) {
 					
 					Ik = calculerImoran_local_iterative(valeur_centrale, couches, W, moyenne, variance); // calcule l'indice de Moran local pour des valeurs générées itérativement
 					
@@ -2177,7 +2177,7 @@
 				
 				var j = 0; // j-ème voisin du carré raster étudié
 				
-				for (var k = 1; k <= nombre_voisins_raster; k++) {
+				for (var k = 1; k <= couches_voisins_raster; k++) {
 						
 					var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
 					
@@ -2219,7 +2219,7 @@
 				
 				var m = 0; // nombre d'indices de Geary locaux générés itérativement supérieurs (respectivement inférieurs) ou égaux à l'Indice de Geary local mesuré
 				
-				for (var k = 0; k < nombre_permutations; k++) {
+				for (var r = 0; r < nombre_permutations; r++) {
 					
 					Ik = calculerIgeary_local_iterative(valeur_centrale, couches, W, moyenne, variance, n); // calcule l'indice de Geary local pour des valeurs générées itérativement
 					
@@ -2248,7 +2248,7 @@
 				
 				var j = 0; // j-ème voisin du carré raster étudié
 				
-				for (var k = 1; k <= nombre_voisins_raster; k++) {
+				for (var k = 1; k <= couches_voisins_raster; k++) {
 					
 					var ponderation = poids_voisins_raster[k]; // pondération pour la k-ième couche de voisins
 					
